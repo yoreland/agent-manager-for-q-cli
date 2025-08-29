@@ -1,0 +1,143 @@
+{
+  "name": "context-manager-for-q-cli",
+  "displayName": "Context Manager for Q CLI",
+  "description": "VS Code Extension that simplifies Amazon Q Developer CLI context management through an intuitive drag-and-drop interface",
+  "version": "0.0.1",
+  "publisher": "qcli-context-manager",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qcli-context-manager/context-manager-for-q-cli.git"
+  },
+  "engines": {
+    "vscode": "^1.94.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "amazon-q",
+    "q-cli",
+    "context-management",
+    "ai-assistant"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "qcli-context.openContextManager",
+        "title": "Q CLI Context Manager 열기",
+        "category": "Q CLI Context Manager"
+      },
+      {
+        "command": "qcli-context.refreshTree",
+        "title": "새로고침",
+        "icon": "$(refresh)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "qcli-context",
+          "title": "Q CLI Context Manager",
+          "icon": "$(symbol-class)"
+        }
+      ]
+    },
+    "views": {
+      "qcli-context": [
+        {
+          "id": "qcli-context-tree",
+          "name": "Q CLI Context Manager",
+          "when": "true"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "qcli-context.refreshTree",
+          "when": "view == qcli-context-tree",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Q CLI Context Manager",
+      "properties": {
+        "qcli-context.logLevel": {
+          "type": "string",
+          "enum": ["debug", "info", "warn", "error"],
+          "default": "info",
+          "description": "Set the logging level for the Q CLI Context Manager extension"
+        },
+        "qcli-context.enableDebugMode": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable debug mode for additional logging and notifications"
+        },
+        "qcli-context.showOutputOnError": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically show output channel when errors occur"
+        },
+        "qcli-context.logToConsole": {
+          "type": "boolean",
+          "default": false,
+          "description": "Also log messages to the developer console (useful for development)"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "npm run check-types && npm run lint && node esbuild.js",
+    "compile:dev": "node esbuild.js",
+    "compile:prod": "node esbuild.js --production",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "package": "npm run check-types && npm run lint && node esbuild.js --production",
+    "package:dev": "npm run check-types && npm run lint && node esbuild.js",
+    "vsce:package": "npm run package && npx @vscode/vsce package",
+    "vsce:publish": "npm run package && npx @vscode/vsce publish",
+    "package:vsix": "node scripts/package.js",
+    "package:vsix:skip-build": "node scripts/package.js --skip-build",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "test": "vscode-test",
+    "test:unit": "jest",
+    "test:unit:watch": "jest --watch",
+    "test:unit:coverage": "jest --coverage",
+    "test:all": "npm run test:unit",
+    "clean": "rimraf out",
+    "rebuild": "npm run clean && npm run compile",
+    "dev": "node scripts/dev.js",
+    "dev:watch": "node scripts/dev.js watch",
+    "dev:build": "node scripts/dev.js build",
+    "dev:test": "node scripts/dev.js test",
+    "dev:clean": "node scripts/dev.js clean"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.94.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "@typescript-eslint/eslint-plugin": "^8.39.0",
+    "@typescript-eslint/parser": "^8.39.0",
+    "@vscode/vsce": "^3.2.1",
+    "eslint": "^9.32.0",
+    "esbuild": "^0.25.8",
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.9.2",
+    "@vscode/test-cli": "^0.0.11",
+    "@vscode/test-electron": "^2.5.2",
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.12",
+    "ts-jest": "^29.1.2"
+  }
+}
