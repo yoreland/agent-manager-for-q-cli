@@ -55,7 +55,7 @@
         {
           "id": "qcli-context",
           "title": "Q CLI Context Manager",
-          "icon": "$(symbol-class)"
+          "icon": "$(organization)"
         }
       ]
     },

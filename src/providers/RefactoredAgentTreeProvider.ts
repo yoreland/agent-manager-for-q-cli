@@ -115,7 +115,7 @@ export class RefactoredAgentTreeProvider implements vscode.TreeDataProvider<Agen
                 title: 'Open Agent Configuration',
                 arguments: [agent]
             },
-            new vscode.ThemeIcon('file-code'),
+            new vscode.ThemeIcon('person'),
             'agent'
         );
         
