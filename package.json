@@ -106,6 +106,16 @@
           "command": "qcli-agents.runAgent",
           "when": "view == qcli-agents-tree && viewItem == agentItem",
           "group": "inline@2"
+        },
+        {
+          "command": "qcli-agents.openAgent",
+          "when": "view == qcli-agents-tree && viewItem == agentItem",
+          "group": "context@1"
+        },
+        {
+          "command": "qcli-agents.runAgent",
+          "when": "view == qcli-agents-tree && viewItem == agentItem",
+          "group": "context@2"
         }
       ]
     },
