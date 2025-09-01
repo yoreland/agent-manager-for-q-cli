@@ -1,0 +1,31 @@
+{
+  "$schema": "https://raw.githubusercontent.com/aws/amazon-q-developer-cli/refs/heads/main/schemas/agent-v1.json",
+  "description": "Custom Q CLI Agent",
+  "prompt": null,
+  "mcpServers": {},
+  "tools": [
+    "fs_read",
+    "fs_write",
+    "execute_bash",
+    "knowledge",
+    "thinking",
+    "use_aws",
+    "gh_issue",
+    "web_search",
+    "calculator",
+    "code_interpreter"
+  ],
+  "toolAliases": {},
+  "allowedTools": [
+    "fs_read"
+  ],
+  "resources": [
+    "file://AmazonQ.md",
+    "file://README.md",
+    "file://.amazonq/rules/**/*.md"
+  ],
+  "hooks": {},
+  "toolsSettings": {},
+  "useLegacyMcpJson": true,
+  "name": "q-for-kiro"
+}

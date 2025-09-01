@@ -79,6 +79,9 @@ export interface ExtensionState {
     
     /** Context tree provider for Activity Bar integration */
     contextTreeProvider?: any; // Using any to avoid circular dependency
+    
+    /** Agent tree provider for Activity Bar integration */
+    agentTreeProvider?: any; // Using any to avoid circular dependency
 }
 
 /**

@@ -148,9 +148,13 @@ export function deactivate(): void {
         // Clear context items array
         extensionState.contextItems = [];
         
-        // Dispose of tree provider if it exists
+        // Dispose of tree providers if they exist
         if (extensionState.contextTreeProvider && typeof extensionState.contextTreeProvider.dispose === 'function') {
             extensionState.contextTreeProvider.dispose();
+        }
+        
+        if (extensionState.agentTreeProvider && typeof extensionState.agentTreeProvider.dispose === 'function') {
+            extensionState.agentTreeProvider.dispose();
         }
         
         // Clear any cached data
@@ -204,8 +208,86 @@ function registerCoreCommands(context: ISafeExtensionContext, logger: ExtensionL
             }
         );
 
-        // Add command to subscriptions for proper cleanup
+        // Register Agent management commands (placeholder - will be properly initialized later)
+        const createAgentCommand = vscode.commands.registerCommand(
+            'qcli-agents.createAgent',
+            async () => {
+                try {
+                    logger.logUserAction('Create Agent command executed');
+                    
+                    // Get the agent management service from extension state
+                    if (!extensionState?.agentTreeProvider) {
+                        // If tree provider is not initialized yet, show a message
+                        await errorHandler!.showWarningMessage(
+                            'Agent management is still initializing. Please try again in a moment.',
+                            ['Retry']
+                        );
+                        return;
+                    }
+                    
+                    // Get the agent management service from the tree provider
+                    const agentManagementService = (extensionState.agentTreeProvider as any).agentManagementService;
+                    if (!agentManagementService) {
+                        throw new Error('Agent management service not available');
+                    }
+                    
+                    // Create new agent with user interaction
+                    await agentManagementService.createNewAgentInteractive();
+                    
+                } catch (error) {
+                    const commandError = error as Error;
+                    logger.error('Failed to execute create agent command', commandError);
+                    
+                    // Use enhanced error handler for command errors
+                    await errorHandler!.handleAgentCreationError(commandError);
+                }
+            }
+        );
+
+        // Register open agent command
+        const openAgentCommand = vscode.commands.registerCommand(
+            'qcli-agents.openAgent',
+            async (agentItem: any) => {
+                try {
+                    logger.logUserAction('Open Agent command executed', { agentName: agentItem?.label });
+                    
+                    if (!agentItem) {
+                        await errorHandler!.showErrorMessage('No agent selected to open');
+                        return;
+                    }
+                    
+                    // Get the agent management service from extension state
+                    if (!extensionState?.agentTreeProvider) {
+                        await errorHandler!.showWarningMessage(
+                            'Agent management is still initializing. Please try again in a moment.',
+                            ['Retry']
+                        );
+                        return;
+                    }
+                    
+                    // Get the agent management service from the tree provider
+                    const agentManagementService = (extensionState.agentTreeProvider as any).agentManagementService;
+                    if (!agentManagementService) {
+                        throw new Error('Agent management service not available');
+                    }
+                    
+                    // Open the agent configuration file
+                    await agentManagementService.openAgentConfigFile(agentItem);
+                    
+                } catch (error) {
+                    const commandError = error as Error;
+                    logger.error('Failed to open agent file', commandError);
+                    
+                    // Error handling is already done in the management service
+                    // Just log the command failure
+                }
+            }
+        );
+
+        // Add commands to subscriptions for proper cleanup
         context.original.subscriptions.push(openContextManagerCommand);
+        context.original.subscriptions.push(createAgentCommand);
+        context.original.subscriptions.push(openAgentCommand);
         
         logger.debug('Core commands registered successfully');
     } catch (error) {
@@ -342,45 +424,134 @@ async function initializeNonCriticalComponents(
 }
 
 /**
- * Initialize tree view provider with lazy loading
+ * Initialize tree view providers with lazy loading
  */
 async function initializeTreeViewProvider(context: vscode.ExtensionContext, logger: ExtensionLogger): Promise<void> {
     try {
-        // Lazy load the ContextTreeProvider class
+        // Initialize Agent Tree View
+        await initializeAgentTreeView(context, logger);
+        
+        // Initialize Context Tree View
+        await initializeContextTreeView(context, logger);
+
+        logger.debug('All tree view providers initialized successfully');
+    } catch (error) {
+        const registrationError = error as Error;
+        logger.error('Failed to initialize tree view providers', registrationError);
+        throw new Error(`Tree view provider initialization failed: ${registrationError.message}`);
+    }
+}
+
+/**
+ * Initialize Agent tree view provider
+ */
+async function initializeAgentTreeView(context: vscode.ExtensionContext, logger: ExtensionLogger): Promise<void> {
+    try {
+        // Import the required classes
+        const { AgentTreeProvider } = await import('./providers/agentTreeProvider');
+        const { AgentManagementService } = await import('./services/agentManagementService');
+        const { AgentConfigService } = await import('./services/agentConfigService');
+        
+        // Create the agent config service with error handler
+        const agentConfigService = new AgentConfigService(logger, errorHandler!);
+        
+        // Ensure agent directory exists during initialization
+        await agentConfigService.ensureAgentDirectory();
+        logger.info('Agent directory ensured during extension activation');
+        
+        // Create the agent management service with error handler
+        const agentManagementService = new AgentManagementService(agentConfigService, logger, errorHandler!);
+        
+        // Create the agent tree provider
+        const agentTreeProvider = new AgentTreeProvider(agentManagementService, logger);
+        
+        // Register the tree data provider with VS Code
+        const agentTreeView = vscode.window.createTreeView('qcli-agents-tree', {
+            treeDataProvider: agentTreeProvider,
+            showCollapseAll: true
+        });
+
+        // Add tree view to subscriptions for proper cleanup
+        context.subscriptions.push(agentTreeView);
+
+        // Store the tree provider in extension state for later use
+        if (extensionState) {
+            extensionState.agentTreeProvider = agentTreeProvider;
+        }
+
+        // Start file watcher for automatic updates
+        agentManagementService.startFileWatcher();
+
+        // Register agent tree view commands with enhanced error handling
+        const refreshAgentCommand = vscode.commands.registerCommand('qcli-agents.refreshTree', async () => {
+            try {
+                logger.logUserAction('Refresh agent tree command executed');
+                const startTime = Date.now();
+                await agentManagementService.refreshAgentList();
+                logger.logTiming('Agent tree view refresh', startTime);
+            } catch (error) {
+                const commandError = error as Error;
+                logger.error('Failed to refresh agent tree', commandError);
+                
+                // Use enhanced error handler for refresh errors
+                await errorHandler!.showErrorMessage(
+                    'Failed to refresh agent list. Please check your workspace and try again.',
+                    commandError,
+                    ['Retry', 'Check Permissions', 'Open Settings']
+                );
+            }
+        });
+
+        context.subscriptions.push(refreshAgentCommand);
+
+        logger.debug('Agent tree view provider initialized successfully');
+    } catch (error) {
+        const registrationError = error as Error;
+        logger.error('Failed to initialize agent tree view provider', registrationError);
+        throw new Error(`Agent tree view provider initialization failed: ${registrationError.message}`);
+    }
+}
+
+/**
+ * Initialize Context tree view provider
+ */
+async function initializeContextTreeView(context: vscode.ExtensionContext, logger: ExtensionLogger): Promise<void> {
+    try {
+        // Import the ContextTreeProvider class
         const { ContextTreeProvider } = await import('./providers/contextTreeProvider');
         
         // Create the context tree provider
         const contextTreeProvider = new ContextTreeProvider();
         
         // Register the tree data provider with VS Code
-        const treeView = vscode.window.createTreeView('qcli-context-tree', {
+        const contextTreeView = vscode.window.createTreeView('qcli-context-tree', {
             treeDataProvider: contextTreeProvider,
             showCollapseAll: true
         });
 
         // Add tree view to subscriptions for proper cleanup
-        context.subscriptions.push(treeView);
+        context.subscriptions.push(contextTreeView);
 
         // Store the tree provider in extension state for later use
         if (extensionState) {
             extensionState.contextTreeProvider = contextTreeProvider;
         }
 
-        // Register tree view commands with lazy loading
-        const refreshCommand = vscode.commands.registerCommand('qcli-context.refreshTree', () => {
-            logger.logUserAction('Refresh tree command executed');
+        // Register context tree view commands
+        const refreshContextCommand = vscode.commands.registerCommand('qcli-context.refreshTree', () => {
+            logger.logUserAction('Refresh context tree command executed');
             const startTime = Date.now();
             contextTreeProvider.refresh();
-            logger.logTiming('Tree view refresh', startTime);
+            logger.logTiming('Context tree view refresh', startTime);
         });
 
-        context.subscriptions.push(refreshCommand);
+        context.subscriptions.push(refreshContextCommand);
 
-        logger.debug('Tree view provider initialized successfully');
+        logger.debug('Context tree view provider initialized successfully');
     } catch (error) {
         const registrationError = error as Error;
-        logger.error('Failed to initialize tree view provider', registrationError);
-        throw new Error(`Tree view provider initialization failed: ${registrationError.message}`);
+        logger.error('Failed to initialize context tree view provider', registrationError);
+        throw new Error(`Context tree view provider initialization failed: ${registrationError.message}`);
     }
 }
 
@@ -412,5 +583,7 @@ export function getExtensionState(): ExtensionState | undefined {
  * Check if extension is fully initialized (including non-critical components)
  */
 export function isExtensionFullyInitialized(): boolean {
-    return extensionState?.isActivated === true && extensionState?.contextTreeProvider !== undefined;
+    return extensionState?.isActivated === true && 
+           extensionState?.contextTreeProvider !== undefined &&
+           extensionState?.agentTreeProvider !== undefined;
 }

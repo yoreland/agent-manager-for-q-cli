@@ -33,6 +33,21 @@
         "command": "qcli-context.refreshTree",
         "title": "새로고침",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "qcli-agents.refreshTree",
+        "title": "새로고침",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "qcli-agents.createAgent",
+        "title": "Create New Agent",
+        "icon": "$(add)"
+      },
+      {
+        "command": "qcli-agents.openAgent",
+        "title": "Open Agent Configuration",
+        "icon": "$(edit)"
       }
     ],
     "viewsContainers": {
@@ -47,14 +62,29 @@
     "views": {
       "qcli-context": [
         {
+          "id": "qcli-agents-tree",
+          "name": "Q CLI Agents",
+          "when": "true"
+        },
+        {
           "id": "qcli-context-tree",
-          "name": "Q CLI Context Manager",
+          "name": "Context Files",
           "when": "true"
         }
       ]
     },
     "menus": {
       "view/title": [
+        {
+          "command": "qcli-agents.refreshTree",
+          "when": "view == qcli-agents-tree",
+          "group": "navigation"
+        },
+        {
+          "command": "qcli-agents.createAgent",
+          "when": "view == qcli-agents-tree",
+          "group": "navigation"
+        },
         {
           "command": "qcli-context.refreshTree",
           "when": "view == qcli-context-tree",
@@ -67,7 +97,12 @@
       "properties": {
         "qcli-context.logLevel": {
           "type": "string",
-          "enum": ["debug", "info", "warn", "error"],
+          "enum": [
+            "debug",
+            "info",
+            "warn",
+            "error"
+          ],
           "default": "info",
           "description": "Set the logging level for the Q CLI Context Manager extension"
         },
@@ -123,21 +158,23 @@
     "dev:clean": "node scripts/dev.js clean"
   },
   "devDependencies": {
-    "@types/vscode": "^1.94.0",
+    "@types/jest": "^29.5.12",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
+    "@types/sinon": "^17.0.4",
+    "@types/vscode": "^1.94.0",
     "@typescript-eslint/eslint-plugin": "^8.39.0",
     "@typescript-eslint/parser": "^8.39.0",
-    "@vscode/vsce": "^3.2.1",
-    "eslint": "^9.32.0",
-    "esbuild": "^0.25.8",
-    "npm-run-all": "^4.1.5",
-    "rimraf": "^6.0.1",
-    "typescript": "^5.9.2",
     "@vscode/test-cli": "^0.0.11",
     "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^3.2.1",
+    "esbuild": "^0.25.8",
+    "eslint": "^9.32.0",
     "jest": "^29.7.0",
-    "@types/jest": "^29.5.12",
-    "ts-jest": "^29.1.2"
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^6.0.1",
+    "sinon": "^21.0.0",
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.9.2"
   }
 }

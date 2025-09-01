@@ -1,0 +1,267 @@
+import * as vscode from 'vscode';
+
+/**
+ * Q CLI Agent configuration schema interface
+ * Based on the official Q CLI agent schema
+ */
+export interface AgentConfig {
+    /** Schema reference URL */
+    $schema: string;
+    
+    /** Agent name (must match filename without .json extension) */
+    name: string;
+    
+    /** Human-readable description of the agent */
+    description: string;
+    
+    /** Custom prompt for the agent (optional) */
+    prompt: string | null;
+    
+    /** MCP (Model Context Protocol) servers configuration */
+    mcpServers: Record<string, any>;
+    
+    /** List of available tools for the agent */
+    tools: string[];
+    
+    /** Tool aliases mapping */
+    toolAliases: Record<string, string>;
+    
+    /** List of explicitly allowed tools */
+    allowedTools: string[];
+    
+    /** Resource paths (files, directories, etc.) */
+    resources: string[];
+    
+    /** Hook configurations */
+    hooks: Record<string, any>;
+    
+    /** Tool-specific settings */
+    toolsSettings: Record<string, any>;
+    
+    /** Whether to use legacy MCP JSON format */
+    useLegacyMcpJson: boolean;
+}
+
+/**
+ * Represents an agent item in the tree view
+ */
+export interface AgentItem {
+    /** Display label for the agent item */
+    label: string;
+    
+    /** Optional description shown as tooltip */
+    description?: string;
+    
+    /** Icon to display next to the item */
+    iconPath?: vscode.ThemeIcon | vscode.Uri;
+    
+    /** Context value for command enablement */
+    contextValue: string;
+    
+    /** Full file path to the agent configuration file */
+    filePath: string;
+    
+    /** Parsed agent configuration */
+    config: AgentConfig;
+    
+    /** Child items for tree structure (if any) */
+    children?: AgentItem[];
+    
+    /** Whether this item is collapsible */
+    collapsibleState?: vscode.TreeItemCollapsibleState;
+    
+    /** Command to execute when the item is clicked */
+    command?: vscode.Command;
+}
+
+/**
+ * Result of agent creation operation
+ */
+export interface AgentCreationResult {
+    /** Whether the operation was successful */
+    success: boolean;
+    
+    /** Human-readable message about the operation result */
+    message: string;
+    
+    /** Created agent item (if successful) */
+    agentItem?: AgentItem;
+    
+    /** Error details (if failed) */
+    error?: Error;
+}
+
+/**
+ * Result of validation operations
+ */
+export interface ValidationResult {
+    /** Whether the validation passed */
+    isValid: boolean;
+    
+    /** List of validation errors */
+    errors: string[];
+    
+    /** List of validation warnings (optional) */
+    warnings?: string[];
+}
+
+/**
+ * Agent template configuration options
+ */
+export interface AgentTemplateOptions {
+    /** Agent name to be used in the template */
+    name: string;
+    
+    /** Custom description for the agent */
+    description?: string;
+    
+    /** Custom prompt for the agent */
+    prompt?: string | null;
+    
+    /** Additional tools to include beyond the default set */
+    additionalTools?: string[];
+    
+    /** Additional resources to include beyond the default set */
+    additionalResources?: string[];
+    
+    /** Whether to include advanced tools (use_aws, gh_issue) */
+    includeAdvancedTools?: boolean;
+    
+    /** Whether to include all available tools */
+    includeAllTools?: boolean;
+}
+
+/**
+ * Types of agent-related operations
+ */
+export enum AgentOperationType {
+    CREATE = 'create',
+    UPDATE = 'update',
+    DELETE = 'delete',
+    VALIDATE = 'validate',
+    REFRESH = 'refresh'
+}
+
+/**
+ * Agent operation results
+ */
+export enum AgentOperationResult {
+    SUCCESS = 'success',
+    ERROR = 'error',
+    CANCELLED = 'cancelled',
+    NOT_FOUND = 'not_found',
+    ALREADY_EXISTS = 'already_exists',
+    INVALID_NAME = 'invalid_name',
+    PERMISSION_DENIED = 'permission_denied'
+}
+
+/**
+ * Agent-related constants
+ */
+export const AGENT_CONSTANTS = {
+    /** Default agent directory path relative to workspace root */
+    AGENT_DIRECTORY: '.amazonq/cli-agents',
+    
+    /** Agent file extension */
+    AGENT_FILE_EXTENSION: '.json',
+    
+    /** Maximum agent name length */
+    MAX_AGENT_NAME_LENGTH: 50,
+    
+    /** Minimum agent name length */
+    MIN_AGENT_NAME_LENGTH: 1,
+    
+    /** Valid agent name pattern (alphanumeric, hyphens, underscores) */
+    VALID_NAME_PATTERN: /^[a-zA-Z0-9_-]+$/,
+    
+    /** Reserved agent names that cannot be used */
+    RESERVED_NAMES: ['default', 'system', 'config', 'settings'],
+    
+    /** Default agent icon */
+    DEFAULT_ICON: new vscode.ThemeIcon('robot'),
+    
+    /** Create new agent button icon */
+    CREATE_ICON: new vscode.ThemeIcon('add'),
+    
+    /** Agent context values for commands */
+    CONTEXT_VALUES: {
+        AGENT_ITEM: 'agentItem',
+        CREATE_BUTTON: 'createAgentButton',
+        EMPTY_STATE: 'emptyAgentState'
+    },
+    
+    /** Template-related constants */
+    TEMPLATES: {
+        /** Official Q CLI agent schema URL */
+        SCHEMA_URL: 'https://raw.githubusercontent.com/aws/amazon-q-developer-cli/refs/heads/main/schemas/agent-v1.json',
+        
+        /** Default description for new agents */
+        DEFAULT_DESCRIPTION: 'Custom Q CLI Agent',
+        
+        /** Basic tools available to all agents */
+        BASIC_TOOLS: ['fs_read', 'fs_write', 'execute_bash', 'knowledge', 'thinking'],
+        
+        /** Advanced tools for specialized use cases */
+        ADVANCED_TOOLS: ['use_aws', 'gh_issue', 'web_search', 'calculator', 'code_interpreter'],
+        
+        /** Default resources for new agents */
+        DEFAULT_RESOURCES: [
+            'file://README.md',
+            'file://.amazonq/rules/**/*.md'
+        ],
+        
+        /** Common additional resources */
+        COMMON_RESOURCES: [
+            'file://docs/**/*.md',
+            'file://src/**/*.ts',
+            'file://src/**/*.js',
+            'file://package.json',
+            'file://tsconfig.json'
+        ]
+    }
+} as const;
+
+/**
+ * Default agent configuration template
+ * Based on the official Q CLI agent schema
+ * This template provides a comprehensive starting point for new agents
+ */
+export const DEFAULT_AGENT_CONFIG: Omit<AgentConfig, 'name'> = {
+    $schema: AGENT_CONSTANTS.TEMPLATES.SCHEMA_URL,
+    description: AGENT_CONSTANTS.TEMPLATES.DEFAULT_DESCRIPTION,
+    prompt: null,
+    mcpServers: {},
+    tools: [
+        ...AGENT_CONSTANTS.TEMPLATES.BASIC_TOOLS,
+        ...AGENT_CONSTANTS.TEMPLATES.ADVANCED_TOOLS
+    ],
+    toolAliases: {},
+    allowedTools: ['fs_read'],
+    resources: [...AGENT_CONSTANTS.TEMPLATES.DEFAULT_RESOURCES],
+    hooks: {},
+    toolsSettings: {},
+    useLegacyMcpJson: true
+};
+
+/**
+ * Agent-related commands
+ */
+export const AGENT_COMMANDS = {
+    /** Create new agent command */
+    CREATE_AGENT: 'qcli-agents.createAgent',
+    
+    /** Delete agent command */
+    DELETE_AGENT: 'qcli-agents.deleteAgent',
+    
+    /** Edit agent command */
+    EDIT_AGENT: 'qcli-agents.editAgent',
+    
+    /** Open agent file command */
+    OPEN_AGENT: 'qcli-agents.openAgent',
+    
+    /** Refresh agent list command */
+    REFRESH_AGENTS: 'qcli-agents.refreshTree',
+    
+    /** Validate agent command */
+    VALIDATE_AGENT: 'qcli-agents.validateAgent'
+} as const;

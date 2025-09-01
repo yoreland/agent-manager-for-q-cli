@@ -94,4 +94,4 @@
   - 호환성 가이드 및 트러블슈팅 문서 작성
   - package.json에서 지원 IDE 명시
   - 릴리스 노트에 호환성 개선사항 포함
-  - _Requirements: 4.3_
+  - _Requirements: 4.3_w
