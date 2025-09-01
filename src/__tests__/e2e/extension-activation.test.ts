@@ -1,8 +1,8 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
-import { getExtensionState } from '../extension';
+import { getExtensionState } from '../../extension';
 
-suite('Extension Test Suite', () => {
+suite('Extension E2E Test Suite', () => {
 	vscode.window.showInformationMessage('Start all tests.');
 
 	test('Extension should be present', () => {

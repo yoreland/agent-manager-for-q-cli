@@ -7,14 +7,18 @@
 const mockVscode = {
   window: {
     createOutputChannel: jest.fn(() => ({
+      name: 'Mock Output Channel',
+      append: jest.fn(),
       appendLine: jest.fn(),
+      clear: jest.fn(),
       show: jest.fn(),
-      dispose: jest.fn()
+      hide: jest.fn(),
+      dispose: jest.fn(),
+      replace: jest.fn()
     })),
     showInformationMessage: jest.fn(() => Promise.resolve()),
     showErrorMessage: jest.fn(() => Promise.resolve()),
     showWarningMessage: jest.fn(() => Promise.resolve()),
-    // webview removed - using tree view only
     createTreeView: jest.fn(() => ({
       dispose: jest.fn(),
       reveal: jest.fn(),
@@ -22,12 +26,18 @@ const mockVscode = {
       onDidChangeVisibility: jest.fn(),
       onDidCollapseElement: jest.fn(),
       onDidExpandElement: jest.fn()
-    })),
-    // webview serializer removed - using tree view only
+    }))
   },
   commands: {
     registerCommand: jest.fn(),
-    executeCommand: jest.fn()
+    executeCommand: jest.fn(),
+    getCommands: jest.fn(() => Promise.resolve([
+      'qcli-context.openContextManager',
+      'qcli-context.refreshTree',
+      'qcli-agents.refreshTree',
+      'qcli-agents.createAgent',
+      'qcli-agents.openAgent'
+    ]))
   },
   workspace: {
     getConfiguration: jest.fn(() => ({
@@ -42,10 +52,23 @@ const mockVscode = {
     })),
     onDidChangeConfiguration: jest.fn(() => ({
       dispose: jest.fn()
+    })),
+    createFileSystemWatcher: jest.fn(() => ({
+      ignoreCreateEvents: false,
+      ignoreChangeEvents: false,
+      ignoreDeleteEvents: false,
+      onDidCreate: jest.fn(() => ({ dispose: jest.fn() })),
+      onDidChange: jest.fn(() => ({ dispose: jest.fn() })),
+      onDidDelete: jest.fn(() => ({ dispose: jest.fn() })),
+      dispose: jest.fn()
     }))
   },
   extensions: {
-    getExtension: jest.fn()
+    getExtension: jest.fn(() => ({
+      isActive: true,
+      activate: jest.fn(() => Promise.resolve()),
+      exports: {}
+    }))
   },
   ExtensionContext: jest.fn(),
   ExtensionMode: {
@@ -54,7 +77,7 @@ const mockVscode = {
     Production: 3
   },
   Disposable: {
-    from: jest.fn()
+    from: jest.fn(() => ({ dispose: jest.fn() }))
   },
   TreeItem: jest.fn(),
   TreeItemCollapsibleState: {
@@ -77,17 +100,92 @@ const mockVscode = {
   },
   Uri: {
     joinPath: jest.fn(() => ({ toString: () => 'mock://path' })),
-    file: jest.fn(() => ({ toString: () => 'file://mock/path' })),
+    file: jest.fn((path: string) => ({ 
+      toString: () => `file://${path}`,
+      fsPath: path,
+      path: path,
+      scheme: 'file'
+    })),
     parse: jest.fn(() => ({ toString: () => 'mock://parsed' }))
-  }
+  },
+  RelativePattern: jest.fn((base: string, pattern: string) => ({
+    base,
+    pattern,
+    baseUri: { toString: () => `file://${base}` }
+  }))
 };
 
 // Mock the vscode module
 jest.mock('vscode', () => mockVscode, { virtual: true });
 
-// Global test utilities - no need to expose globally
+// Mock Node.js modules commonly used in tests
+jest.mock('fs', () => ({
+  promises: {
+    readFile: jest.fn(),
+    writeFile: jest.fn(),
+    mkdir: jest.fn(),
+    stat: jest.fn(),
+    readdir: jest.fn()
+  },
+  existsSync: jest.fn(),
+  readFileSync: jest.fn(),
+  writeFileSync: jest.fn()
+}));
 
-// Reset all mocks before each test
+jest.mock('path', () => ({
+  join: jest.fn((...args) => args.join('/')),
+  resolve: jest.fn((...args) => '/' + args.join('/')),
+  dirname: jest.fn((path) => path.split('/').slice(0, -1).join('/')),
+  basename: jest.fn((path) => path.split('/').pop()),
+  extname: jest.fn((path) => {
+    const parts = path.split('.');
+    return parts.length > 1 ? '.' + parts.pop() : '';
+  }),
+  sep: '/',
+  delimiter: ':'
+}));
+
+// Global test setup
 beforeEach(() => {
   jest.clearAllMocks();
+  jest.restoreAllMocks();
+});
+
+// Global test teardown
+afterEach(() => {
+  jest.clearAllTimers();
+});
+
+// Performance testing setup
+if (typeof performance === 'undefined') {
+  global.performance = {
+    now: () => Date.now(),
+    mark: jest.fn(),
+    measure: jest.fn(),
+    clearMarks: jest.fn(),
+    clearMeasures: jest.fn(),
+    getEntries: jest.fn(() => []),
+    getEntriesByName: jest.fn(() => []),
+    getEntriesByType: jest.fn(() => [])
+  } as any;
+}
+
+// Console setup for tests
+const originalConsole = console;
+beforeAll(() => {
+  // Suppress console output during tests unless explicitly needed
+  if (process.env['JEST_VERBOSE'] !== 'true') {
+    global.console = {
+      ...originalConsole,
+      log: jest.fn(),
+      debug: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn()
+    };
+  }
+});
+
+afterAll(() => {
+  global.console = originalConsole;
 });

@@ -1,11 +1,11 @@
 /** @type {import('jest').Config} */
 module.exports = {
-  displayName: 'All Tests',
+  displayName: 'Integration Tests',
   preset: 'ts-jest',
   testEnvironment: 'node',
   roots: ['<rootDir>/src'],
   testMatch: [
-    '**/src/__tests__/**/*.test.ts'
+    '**/src/__tests__/integration/**/*.test.ts'
   ],
   transform: {
     '^.+\\.ts$': 'ts-jest'
@@ -16,18 +16,14 @@ module.exports = {
     '!src/__tests__/**/*',
     '!src/test/**/*'
   ],
-  coverageDirectory: 'coverage',
+  coverageDirectory: 'coverage/integration',
   coverageReporters: ['text', 'lcov', 'html'],
   setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.ts'],
   moduleFileExtensions: ['ts', 'js', 'json'],
-  testTimeout: 10000,
+  testTimeout: 15000,
   verbose: true,
   clearMocks: true,
   restoreMocks: true,
-  // Test organization
-  projects: [
-    '<rootDir>/jest.unit.config.js',
-    '<rootDir>/jest.integration.config.js',
-    '<rootDir>/jest.performance.config.js'
-  ]
+  // Integration tests may need more setup time
+  slowTestThreshold: 10
 };

@@ -1,11 +1,10 @@
-import * as assert from 'assert';
 import * as vscode from 'vscode';
 
-suite('File Watching Integration Tests', () => {
+describe('File Watching Integration Tests', () => {
     let mockFileWatcher: any;
     let createFileSystemWatcherStub: any;
 
-    setup(() => {
+    beforeEach(() => {
         // Mock file system watcher
         mockFileWatcher = {
             onDidCreate: (_callback: any) => {
@@ -25,20 +24,20 @@ suite('File Watching Integration Tests', () => {
         (vscode.workspace as any).createFileSystemWatcher = () => mockFileWatcher;
     });
 
-    teardown(() => {
+    afterEach(() => {
         // Restore original function
         (vscode.workspace as any).createFileSystemWatcher = createFileSystemWatcherStub;
     });
 
-    suite('File System Watcher Setup', () => {
+    describe('File System Watcher Setup', () => {
         test('should create file system watcher', () => {
             // Test that the file watcher can be created
             const watcher = vscode.workspace.createFileSystemWatcher('*.json');
-            assert.ok(watcher);
-            assert.ok(typeof watcher.onDidCreate === 'function');
-            assert.ok(typeof watcher.onDidChange === 'function');
-            assert.ok(typeof watcher.onDidDelete === 'function');
-            assert.ok(typeof watcher.dispose === 'function');
+            expect(watcher).toBeTruthy();
+            expect(typeof watcher.onDidCreate).toBe('function');
+            expect(typeof watcher.onDidChange).toBe('function');
+            expect(typeof watcher.onDidDelete).toBe('function');
+            expect(typeof watcher.dispose).toBe('function');
         });
 
         test('should register event handlers', () => {
@@ -49,9 +48,9 @@ suite('File Watching Integration Tests', () => {
             const changeDisposable = watcher.onDidChange(() => {});
             const deleteDisposable = watcher.onDidDelete(() => {});
             
-            assert.ok(createDisposable);
-            assert.ok(changeDisposable);
-            assert.ok(deleteDisposable);
+            expect(createDisposable).toBeTruthy();
+            expect(changeDisposable).toBeTruthy();
+            expect(deleteDisposable).toBeTruthy();
             
             // Clean up
             createDisposable.dispose();
@@ -64,25 +63,25 @@ suite('File Watching Integration Tests', () => {
             const watcher = vscode.workspace.createFileSystemWatcher('*.json');
             
             // Should not throw when disposing
-            assert.doesNotThrow(() => {
+            expect(() => {
                 watcher.dispose();
-            });
+            }).not.toThrow();
         });
     });
 
-    suite('File Event Handling', () => {
+    describe('File Event Handling', () => {
         test('should handle file creation events', () => {
             const watcher = vscode.workspace.createFileSystemWatcher('*.json');
             let eventFired = false;
             
             const disposable = watcher.onDidCreate((uri) => {
                 eventFired = true;
-                assert.ok(uri);
+                expect(uri).toBeTruthy();
             });
             
             // Simulate event (in real scenario, this would be triggered by file system)
             // For this test, we just verify the handler can be registered
-            assert.ok(!eventFired); // Event hasn't been triggered yet
+            expect(eventFired).toBe(false); // Event hasn't been triggered yet
             
             disposable.dispose();
             watcher.dispose();
@@ -94,11 +93,11 @@ suite('File Watching Integration Tests', () => {
             
             const disposable = watcher.onDidChange((uri) => {
                 eventFired = true;
-                assert.ok(uri);
+                expect(uri).toBeTruthy();
             });
             
             // Verify handler can be registered
-            assert.ok(!eventFired);
+            expect(eventFired).toBe(false);
             
             disposable.dispose();
             watcher.dispose();
@@ -110,25 +109,25 @@ suite('File Watching Integration Tests', () => {
             
             const disposable = watcher.onDidDelete((uri) => {
                 eventFired = true;
-                assert.ok(uri);
+                expect(uri).toBeTruthy();
             });
             
             // Verify handler can be registered
-            assert.ok(!eventFired);
+            expect(eventFired).toBe(false);
             
             disposable.dispose();
             watcher.dispose();
         });
     });
 
-    suite('Resource Management', () => {
+    describe('Resource Management', () => {
         test('should dispose file watcher properly', () => {
             const watcher = vscode.workspace.createFileSystemWatcher('*.json');
             
             // Should not throw when disposing
-            assert.doesNotThrow(() => {
+            expect(() => {
                 watcher.dispose();
-            });
+            }).not.toThrow();
         });
 
         test('should dispose event handlers properly', () => {
@@ -139,31 +138,31 @@ suite('File Watching Integration Tests', () => {
             const deleteDisposable = watcher.onDidDelete(() => {});
             
             // Should not throw when disposing handlers
-            assert.doesNotThrow(() => {
+            expect(() => {
                 createDisposable.dispose();
                 changeDisposable.dispose();
                 deleteDisposable.dispose();
                 watcher.dispose();
-            });
+            }).not.toThrow();
         });
 
         test('should handle multiple dispose calls gracefully', () => {
             const watcher = vscode.workspace.createFileSystemWatcher('*.json');
             
             // Should not throw when disposing multiple times
-            assert.doesNotThrow(() => {
+            expect(() => {
                 watcher.dispose();
                 watcher.dispose(); // Second call should not throw
-            });
+            }).not.toThrow();
         });
     });
 
-    suite('Pattern Matching', () => {
+    describe('Pattern Matching', () => {
         test('should create watcher with specific pattern', () => {
             const pattern = '*.json';
             const watcher = vscode.workspace.createFileSystemWatcher(pattern);
             
-            assert.ok(watcher);
+            expect(watcher).toBeTruthy();
             watcher.dispose();
         });
 
@@ -171,7 +170,7 @@ suite('File Watching Integration Tests', () => {
             const pattern = new vscode.RelativePattern('/test/workspace/.amazonq/cli-agents', '*.json');
             const watcher = vscode.workspace.createFileSystemWatcher(pattern);
             
-            assert.ok(watcher);
+            expect(watcher).toBeTruthy();
             watcher.dispose();
         });
 
@@ -179,7 +178,7 @@ suite('File Watching Integration Tests', () => {
             const pattern = '**/*.json';
             const watcher = vscode.workspace.createFileSystemWatcher(pattern);
             
-            assert.ok(watcher);
+            expect(watcher).toBeTruthy();
             watcher.dispose();
         });
     });

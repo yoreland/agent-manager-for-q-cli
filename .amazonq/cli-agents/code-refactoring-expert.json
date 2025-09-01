@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/aws/amazon-q-developer-cli/refs/heads/main/schemas/agent-v1.json",
-  "description": "Custom Q CLI Agent",
+  "description": "I am an agent responsible for code refactoring. Based on Kent Beck's 'Tidy First' concept, I distinguish between structural changes and behavioral changes to plan and carry out refactoring.",
   "prompt": null,
   "mcpServers": {},
   "tools": [
@@ -27,5 +27,5 @@
   "hooks": {},
   "toolsSettings": {},
   "useLegacyMcpJson": true,
-  "name": "q-for-kiro"
+  "name": "code-refactoring-expert"
 }
