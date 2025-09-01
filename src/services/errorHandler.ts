@@ -9,7 +9,6 @@ import { ValidationResult } from '../types/agent';
 export enum FileSystemErrorType {
     PERMISSION_DENIED = 'EACCES',
     FILE_NOT_FOUND = 'ENOENT',
-    DIRECTORY_NOT_FOUND = 'ENOENT',
     DISK_FULL = 'ENOSPC',
     FILE_EXISTS = 'EEXIST',
     INVALID_PATH = 'EINVAL',
@@ -211,7 +210,6 @@ export class ErrorHandler implements IErrorHandler {
                 break;
                 
             case FileSystemErrorType.FILE_NOT_FOUND:
-            case FileSystemErrorType.DIRECTORY_NOT_FOUND:
                 userMessage = `파일 또는 폴더를 찾을 수 없습니다${context}`;
                 suggestions.push('경로가 올바른지 확인하세요');
                 suggestions.push('파일이 삭제되었거나 이동되었는지 확인하세요');

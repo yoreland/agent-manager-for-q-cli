@@ -10,10 +10,21 @@ VS Code Extension that simplifies Amazon Q Developer CLI context management thro
 
 ## Key Features
 
-### Phase 1 (MVP)
+### Phase 1 (MVP) - ✅ Completed
 - **Drag & Drop Context Addition**: Drop files/directories from VS Code File Explorer directly into extension window to add them to Q CLI context
 - **Visual Context Management**: Display current context files with easy removal options
 - **Agent Configuration Integration**: Automatically update agent configuration files with new context entries
+- **Agent Tree View with Actions**: 
+  - Right-click context menu for agent management
+  - Inline play button for quick agent execution
+  - Streamlined UI without redundant create buttons
+- **Terminal Integration**: One-click agent execution with `q chat --agent "<name>"`
+
+### Phase 1.1 (Latest - v1.0.1) - ✅ Completed
+- **Enhanced Agent Interaction**: Context menus and inline buttons for better UX
+- **Quick Agent Execution**: Direct terminal launch from tree view
+- **Improved Navigation**: Cleaner tree view with better empty state guidance
+- **VS Code Integration**: Consistent UI patterns following VS Code conventions
 
 ### Phase 2 (Future)
 - **Project Rules Management**: GUI for managing `.amazonq/rules/` directory contents

@@ -48,6 +48,11 @@
         "command": "qcli-agents.openAgent",
         "title": "Open Agent Configuration",
         "icon": "$(edit)"
+      },
+      {
+        "command": "qcli-agents.runAgent",
+        "title": "Run Agent in Terminal",
+        "icon": "$(play)"
       }
     ],
     "viewsContainers": {
@@ -89,6 +94,18 @@
           "command": "qcli-context.refreshTree",
           "when": "view == qcli-context-tree",
           "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "qcli-agents.openAgent",
+          "when": "view == qcli-agents-tree && viewItem == agentItem",
+          "group": "inline@1"
+        },
+        {
+          "command": "qcli-agents.runAgent",
+          "when": "view == qcli-agents-tree && viewItem == agentItem",
+          "group": "inline@2"
         }
       ]
     },

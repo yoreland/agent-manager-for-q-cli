@@ -284,10 +284,57 @@ function registerCoreCommands(context: ISafeExtensionContext, logger: ExtensionL
             }
         );
 
+        // Register run agent command
+        const runAgentCommand = vscode.commands.registerCommand(
+            'qcli-agents.runAgent',
+            async (agentItem: any) => {
+                try {
+                    logger.logUserAction('Run Agent command executed', { agentName: agentItem?.label });
+                    
+                    if (!agentItem) {
+                        await errorHandler!.showErrorMessage('No agent selected to run');
+                        return;
+                    }
+                    
+                    const agentName = agentItem.label || agentItem.agentItem?.label;
+                    if (!agentName) {
+                        await errorHandler!.showErrorMessage('Agent name not found');
+                        return;
+                    }
+                    
+                    // Create or get terminal
+                    const terminal = vscode.window.createTerminal({
+                        name: `Q CLI - ${agentName}`,
+                        shellPath: process.env.SHELL || '/bin/bash'
+                    });
+                    terminal.show();
+                    
+                    // Send command immediately - VS Code handles timing
+                    terminal.sendText(`q chat --agent "${agentName}"`);
+                    
+                    // Refresh to show green icon after a short delay
+                    setTimeout(() => {
+                        if (extensionState?.agentTreeProvider) {
+                            const agentManagementService = (extensionState.agentTreeProvider as any).agentManagementService;
+                            if (agentManagementService) {
+                                agentManagementService.refreshAgentList();
+                            }
+                        }
+                    }, 100);
+                    
+                } catch (error) {
+                    const commandError = error as Error;
+                    logger.error('Failed to run agent', commandError);
+                    await errorHandler!.showErrorMessage(`Failed to run agent: ${commandError.message}`);
+                }
+            }
+        );
+
         // Add commands to subscriptions for proper cleanup
         context.original.subscriptions.push(openContextManagerCommand);
         context.original.subscriptions.push(createAgentCommand);
         context.original.subscriptions.push(openAgentCommand);
+        context.original.subscriptions.push(runAgentCommand);
         
         logger.debug('Core commands registered successfully');
     } catch (error) {

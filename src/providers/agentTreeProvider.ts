@@ -183,9 +183,6 @@ export class AgentTreeProvider implements vscode.TreeDataProvider<AgentItem | Cr
     private getRootItems(): (AgentItem | CreateAgentItem | EmptyStateItem)[] {
         const items: (AgentItem | CreateAgentItem | EmptyStateItem)[] = [];
         
-        // Always show create button at the top
-        items.push(this.createCreateAgentItem());
-        
         // Add agent items
         if (this.agentItems.length > 0) {
             items.push(...this.agentItems);
@@ -290,7 +287,7 @@ export class AgentTreeProvider implements vscode.TreeDataProvider<AgentItem | Cr
     private createEmptyStateItem(): EmptyStateItem {
         return {
             label: 'No agents found',
-            description: 'Create your first Q CLI agent to get started',
+            description: 'Use the + button above to create a new agent',
             iconPath: new vscode.ThemeIcon('info'),
             contextValue: AGENT_CONSTANTS.CONTEXT_VALUES.EMPTY_STATE
         };

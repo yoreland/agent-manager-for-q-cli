@@ -278,6 +278,23 @@ export class AgentManagementService implements IAgentManagementService {
                 this.logger.debug('Agent file deleted', { path: uri.fsPath });
                 await this.handleFileSystemChange('deleted', uri.fsPath);
             });
+
+            // Watch for terminal changes to update agent status
+            vscode.window.onDidOpenTerminal((terminal) => {
+                this.logger.debug(`Terminal opened: ${terminal.name}`);
+                // Only refresh if it's a Q CLI terminal
+                if (terminal.name.toLowerCase().includes('q cli')) {
+                    setTimeout(() => this.refreshAgentList(), 500);
+                }
+            });
+
+            vscode.window.onDidCloseTerminal((terminal) => {
+                this.logger.debug(`Terminal closed: ${terminal.name}`);
+                // Only refresh if it's a Q CLI terminal
+                if (terminal.name.toLowerCase().includes('q cli')) {
+                    setTimeout(() => this.refreshAgentList(), 500);
+                }
+            });
             
             // Register disposable
             this.disposables.push(this.fileWatcher);
@@ -364,13 +381,48 @@ export class AgentManagementService implements IAgentManagementService {
     }
 
     /**
+     * Check if an agent is currently running in any terminal
+     */
+    private isAgentRunning(agentName: string): boolean {
+        const terminals = vscode.window.terminals;
+        
+        // Debug: log all terminal names
+        console.log('=== Agent Running Check ===');
+        console.log(`Looking for agent: "${agentName}"`);
+        console.log('Active terminals:', terminals.map(t => t.name));
+        
+        const isRunning = terminals.some(terminal => {
+            const terminalName = terminal.name;
+            const expectedName = `Q CLI - ${agentName}`;
+            const isMatch = terminalName === expectedName;
+            
+            console.log(`Terminal "${terminalName}" === "${expectedName}": ${isMatch}`);
+            return isMatch;
+        });
+        
+        console.log(`Agent "${agentName}" is running: ${isRunning}`);
+        console.log('=== End Check ===');
+        
+        return isRunning;
+    }
+
+    /**
+     * Get appropriate icon for agent based on running status
+     */
+    private getAgentIcon(agentName: string): vscode.ThemeIcon {
+        if (this.isAgentRunning(agentName)) {
+            return new vscode.ThemeIcon('robot', new vscode.ThemeColor('charts.green'));
+        }
+        return AGENT_CONSTANTS.DEFAULT_ICON;
+    }
+
+    /**
      * Create an AgentItem from an AgentConfig
      */
     private createAgentItemFromConfig(config: AgentConfig, filePath: string): AgentItem {
         return {
             label: config.name,
-            description: config.description || 'Q CLI Agent',
-            iconPath: AGENT_CONSTANTS.DEFAULT_ICON,
+            iconPath: this.getAgentIcon(config.name),
             contextValue: AGENT_CONSTANTS.CONTEXT_VALUES.AGENT_ITEM,
             filePath,
             config,

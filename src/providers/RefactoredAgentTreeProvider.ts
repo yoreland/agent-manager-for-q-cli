@@ -40,10 +40,7 @@ export class RefactoredAgentTreeProvider implements vscode.TreeDataProvider<Agen
                 return [this.createEmptyStateItem()];
             }
 
-            const items = this.agentItems.map(agent => this.createAgentTreeItem(agent));
-            items.unshift(this.createNewAgentItem());
-            
-            return items;
+            return this.agentItems.map(agent => this.createAgentTreeItem(agent));
         });
     }
 
@@ -80,24 +77,10 @@ export class RefactoredAgentTreeProvider implements vscode.TreeDataProvider<Agen
         this.logger.debug('Agent tree updated', { count: agents.length });
     }
 
-    private createNewAgentItem(): AgentTreeItem {
-        return new AgentTreeItem(
-            'Create New Agent',
-            'Click to create a new agent',
-            vscode.TreeItemCollapsibleState.None,
-            {
-                command: 'qcli-agents.createAgent',
-                title: 'Create New Agent'
-            },
-            new vscode.ThemeIcon('add'),
-            'createAgent'
-        );
-    }
-
     private createEmptyStateItem(): AgentTreeItem {
         return new AgentTreeItem(
             'No agents found',
-            'Click "Create New Agent" to get started',
+            'Use the + button above to create a new agent',
             vscode.TreeItemCollapsibleState.None,
             undefined,
             new vscode.ThemeIcon('info'),

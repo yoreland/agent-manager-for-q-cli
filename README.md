@@ -188,7 +188,22 @@ test: add integration tests for caching
 
 ## Release Notes
 
-### 1.0.0 (Latest)
+### 1.0.1 (Latest)
+
+**Agent Tree View Enhancements:**
+- Added context menu for agent items with "Open Agent Configuration" and "Run Agent in Terminal" options
+- Added inline play button (▶️) next to each agent for quick terminal execution
+- Removed "Create New Agent" item from tree view (use + button in title bar instead)
+- Updated empty state message to guide users to the + button
+- Fixed contextValue mapping for proper menu integration
+
+**User Experience Improvements:**
+- Right-click on any agent to access configuration and execution options
+- Click the ▶️ button for instant terminal launch with `q chat --agent "<agent name>"`
+- Cleaner tree view without redundant create button
+- Consistent UI patterns following VS Code conventions
+
+### 1.0.0
 
 **Major Architecture Refactoring:**
 - Complete rewrite with clean, layered architecture

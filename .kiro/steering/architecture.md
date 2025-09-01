@@ -153,6 +153,36 @@ src/
 - **Performance**: Caching and optimization built-in
 - **Type Safety**: Runtime validation prevents errors
 
+### Recent UI Enhancements (v1.0.1)
+
+#### Agent Tree View Improvements
+- **Context Menu Integration**: Added right-click context menu for agent items
+  - "Open Agent Configuration" - Opens agent JSON file in editor
+  - "Run Agent in Terminal" - Launches `q chat --agent "<name>"` in new terminal
+- **Inline Action Buttons**: Added play button (▶️) next to each agent for quick execution
+- **Streamlined UI**: Removed redundant "Create New Agent" tree item, using title bar + button instead
+- **Improved Empty State**: Updated message to guide users to the + button in title bar
+- **Context Value Mapping**: Fixed `viewItem` mapping from `agent` to `agentItem` for proper menu integration
+
+#### Technical Implementation
+- **Package.json Menu Configuration**: 
+  ```json
+  "view/item/context": [
+    {
+      "command": "qcli-agents.openAgent",
+      "when": "view == qcli-agents-tree && viewItem == agentItem",
+      "group": "inline@1"
+    },
+    {
+      "command": "qcli-agents.runAgent", 
+      "when": "view == qcli-agents-tree && viewItem == agentItem",
+      "group": "inline@2"
+    }
+  ]
+  ```
+- **Command Registration**: Added `qcli-agents.runAgent` command with terminal integration
+- **Tree Provider Cleanup**: Removed `createNewAgentItem()` method and updated `getRootItems()`
+
 ## Future Architecture Considerations
 
 ### Scalability
