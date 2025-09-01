@@ -79,7 +79,7 @@ export class RefactoredAgentManagementService {
             }
         });
 
-        if (!name) return;
+        if (!name) {return;}
 
         const templates = ['None', 'basic', 'developer', 'documentation'];
         const selectedTemplate = await this.vscodeAdapter.showQuickPick(
@@ -87,7 +87,7 @@ export class RefactoredAgentManagementService {
             { placeHolder: 'Select a template' }
         );
 
-        if (!selectedTemplate) return;
+        if (!selectedTemplate) {return;}
 
         const templateName = selectedTemplate.label === 'None' ? undefined : selectedTemplate.label;
         await this.createNewAgent(name, templateName);
@@ -112,7 +112,7 @@ export class RefactoredAgentManagementService {
             'Delete', 'Cancel'
         );
 
-        if (confirmation !== 'Delete') return;
+        if (confirmation !== 'Delete') {return;}
 
         const result = await this.agentDomainService.deleteAgent(agentItem.name);
         if (result.success) {
@@ -157,7 +157,7 @@ export class RefactoredAgentManagementService {
 
     private startFileWatcher(): void {
         const workspaceFolders = this.vscodeAdapter.getWorkspaceFolders();
-        if (!workspaceFolders || workspaceFolders.length === 0) return;
+        if (!workspaceFolders || workspaceFolders.length === 0) {return;}
 
         const agentDir = vscode.Uri.joinPath(workspaceFolders[0].uri, '.amazonq', 'cli-agents');
         
@@ -172,7 +172,7 @@ export class RefactoredAgentManagementService {
     }
 
     dispose(): void {
-        if (this.disposed) return;
+        if (this.disposed) {return;}
         
         this.disposed = true;
         this._onAgentListChanged.dispose();

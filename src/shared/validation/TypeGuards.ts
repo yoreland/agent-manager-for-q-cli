@@ -27,7 +27,7 @@ export class TypeGuards {
     }
 
     static isAgentConfig(value: unknown): value is AgentConfig {
-        if (!this.isObject(value)) return false;
+        if (!this.isObject(value)) {return false;}
 
         const config = value as Record<string, unknown>;
         
@@ -53,7 +53,7 @@ export class TypeGuards {
     }
 
     static isContextItem(value: unknown): value is ContextItem {
-        if (!this.isObject(value)) return false;
+        if (!this.isObject(value)) {return false;}
 
         const item = value as Record<string, unknown>;
         
@@ -65,7 +65,7 @@ export class TypeGuards {
     }
 
     static isValidPath(value: unknown): value is string {
-        if (!this.isString(value)) return false;
+        if (!this.isString(value)) {return false;}
         
         // Basic path validation
         const pathRegex = /^[^\0<>:"|?*]+$/;
@@ -73,7 +73,7 @@ export class TypeGuards {
     }
 
     static isValidAgentName(value: unknown): value is string {
-        if (!this.isString(value)) return false;
+        if (!this.isString(value)) {return false;}
         
         // Agent name validation: alphanumeric, hyphens, underscores
         const nameRegex = /^[a-zA-Z0-9_-]+$/;
@@ -81,7 +81,7 @@ export class TypeGuards {
     }
 
     static isValidUrl(value: unknown): value is string {
-        if (!this.isString(value)) return false;
+        if (!this.isString(value)) {return false;}
         
         try {
             new URL(value);
@@ -92,7 +92,7 @@ export class TypeGuards {
     }
 
     static isValidEmail(value: unknown): value is string {
-        if (!this.isString(value)) return false;
+        if (!this.isString(value)) {return false;}
         
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(value);
@@ -111,7 +111,7 @@ export class TypeGuards {
     }
 
     static isValidJsonString(value: unknown): value is string {
-        if (!this.isString(value)) return false;
+        if (!this.isString(value)) {return false;}
         
         try {
             JSON.parse(value);

@@ -195,7 +195,7 @@ export class CachedFileSystemAdapter implements IFileSystemAdapter {
     }
 
     dispose(): void {
-        if (this.disposed) return;
+        if (this.disposed) {return;}
         
         this.disposed = true;
         

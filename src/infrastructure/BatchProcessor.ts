@@ -42,7 +42,7 @@ export class BatchProcessor<T, R> {
     }
 
     private scheduleProcessing(): void {
-        if (this.processing || this.disposed) return;
+        if (this.processing || this.disposed) {return;}
 
         // Process immediately if batch is full
         if (this.queue.length >= this.batchSize) {
@@ -61,7 +61,7 @@ export class BatchProcessor<T, R> {
     }
 
     private async processBatch(): Promise<void> {
-        if (this.processing || this.queue.length === 0 || this.disposed) return;
+        if (this.processing || this.queue.length === 0 || this.disposed) {return;}
 
         this.processing = true;
         
@@ -108,7 +108,7 @@ export class BatchProcessor<T, R> {
     }
 
     dispose(): void {
-        if (this.disposed) return;
+        if (this.disposed) {return;}
 
         this.disposed = true;
 

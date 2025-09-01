@@ -48,7 +48,7 @@ export class RefactoredAgentTreeProvider implements vscode.TreeDataProvider<Agen
     }
 
     async refresh(): Promise<void> {
-        if (this.disposed) return;
+        if (this.disposed) {return;}
         
         this.logger.debug('Refreshing agent tree');
         await this.agentManagementService.refreshAgentList();
@@ -72,7 +72,7 @@ export class RefactoredAgentTreeProvider implements vscode.TreeDataProvider<Agen
     }
 
     private updateAgentItems(agents: AgentItem[]): void {
-        if (this.disposed) return;
+        if (this.disposed) {return;}
         
         this.agentItems = agents;
         this._onDidChangeTreeData.fire();
@@ -124,7 +124,7 @@ export class RefactoredAgentTreeProvider implements vscode.TreeDataProvider<Agen
     }
 
     dispose(): void {
-        if (this.disposed) return;
+        if (this.disposed) {return;}
         
         this.disposed = true;
         
@@ -151,9 +151,9 @@ export class AgentTreeItem extends vscode.TreeItem {
         super(label, collapsibleState);
         this.label = label;
         this.tooltip = tooltip;
-        if (command) this.command = command;
-        if (iconPath) this.iconPath = iconPath;
-        if (contextValue) this.contextValue = contextValue;
+        if (command) {this.command = command;}
+        if (iconPath) {this.iconPath = iconPath;}
+        if (contextValue) {this.contextValue = contextValue;}
     }
 
     agentItem?: AgentItem;

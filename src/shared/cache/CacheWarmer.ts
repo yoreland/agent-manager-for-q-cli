@@ -56,7 +56,7 @@ export class CacheWarmer {
     private async warmContextData(): Promise<void> {
         // Get list of agents to warm their context
         const agentsResult = await this.agentRepository.findAll();
-        if (!agentsResult.success) return;
+        if (!agentsResult.success) {return;}
 
         for (const agent of agentsResult.data) {
             try {

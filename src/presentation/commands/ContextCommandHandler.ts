@@ -80,7 +80,7 @@ export class ContextCommandHandler extends BaseCommandHandler {
             'Clear', 'Cancel'
         );
 
-        if (confirmation !== 'Clear') return;
+        if (confirmation !== 'Clear') {return;}
 
         await this.executeCommand(
             'clearContext',

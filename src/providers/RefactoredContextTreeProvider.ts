@@ -46,14 +46,14 @@ export class RefactoredContextTreeProvider implements vscode.TreeDataProvider<Co
     }
 
     async setCurrentAgent(agentName: string): Promise<void> {
-        if (this.disposed) return;
+        if (this.disposed) {return;}
         
         this.currentAgent = agentName;
         await this.loadContextItems();
     }
 
     async addContextItem(path: string, type: ContextType): Promise<void> {
-        if (!this.currentAgent) return;
+        if (!this.currentAgent) {return;}
         
         const result = await this.contextDomainService.addContextItem(this.currentAgent, path, type);
         if (result.success) {
@@ -65,7 +65,7 @@ export class RefactoredContextTreeProvider implements vscode.TreeDataProvider<Co
     }
 
     async removeContextItem(path: string): Promise<void> {
-        if (!this.currentAgent) return;
+        if (!this.currentAgent) {return;}
         
         const result = await this.contextDomainService.removeContextItem(this.currentAgent, path);
         if (result.success) {
@@ -77,7 +77,7 @@ export class RefactoredContextTreeProvider implements vscode.TreeDataProvider<Co
     }
 
     async refresh(): Promise<void> {
-        if (this.disposed) return;
+        if (this.disposed) {return;}
         
         this.logger.debug('Refreshing context tree');
         await this.loadContextItems();
@@ -173,7 +173,7 @@ export class RefactoredContextTreeProvider implements vscode.TreeDataProvider<Co
     }
 
     dispose(): void {
-        if (this.disposed) return;
+        if (this.disposed) {return;}
         
         this.disposed = true;
         

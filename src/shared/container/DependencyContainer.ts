@@ -46,7 +46,7 @@ export class DependencyContainer {
     }
 
     dispose(): void {
-        if (this.disposed) return;
+        if (this.disposed) {return;}
 
         this.disposed = true;
 

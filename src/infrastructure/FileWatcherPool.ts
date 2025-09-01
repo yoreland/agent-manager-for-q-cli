@@ -66,7 +66,7 @@ export class FileWatcherPool {
 
     private handleEvent(key: string, event: FileEvent): void {
         const pooledWatcher = this.watchers.get(key);
-        if (!pooledWatcher) return;
+        if (!pooledWatcher) {return;}
 
         // Notify all callbacks
         for (const callback of pooledWatcher.callbacks) {
@@ -80,7 +80,7 @@ export class FileWatcherPool {
 
     private releaseWatcher(key: string, callback: (event: FileEvent) => void): void {
         const pooledWatcher = this.watchers.get(key);
-        if (!pooledWatcher) return;
+        if (!pooledWatcher) {return;}
 
         // Remove callback and decrement reference count
         pooledWatcher.callbacks.delete(callback);
@@ -95,7 +95,7 @@ export class FileWatcherPool {
     }
 
     dispose(): void {
-        if (this.disposed) return;
+        if (this.disposed) {return;}
 
         this.disposed = true;
 

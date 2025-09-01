@@ -42,10 +42,10 @@ const mockVscode = {
   workspace: {
     getConfiguration: jest.fn(() => ({
       get: jest.fn((key: string, defaultValue?: any) => {
-        if (key === 'logLevel') return 'info';
-        if (key === 'enableDebugMode') return false;
-        if (key === 'showOutputOnError') return true;
-        if (key === 'logToConsole') return false;
+        if (key === 'logLevel') {return 'info';}
+        if (key === 'enableDebugMode') {return false;}
+        if (key === 'showOutputOnError') {return true;}
+        if (key === 'logToConsole') {return false;}
         return defaultValue;
       }),
       update: jest.fn()

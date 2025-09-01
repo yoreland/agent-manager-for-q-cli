@@ -13,7 +13,7 @@ describe('Extension Activation Performance', () => {
         const extension = vscode.extensions.getExtension('qcli-context-manager.context-manager-for-q-cli');
         expect(extension).toBeTruthy();
         
-        if (!extension) return;
+        if (!extension) {return;}
 
         // Measure activation time
         const activationTime = await PerformanceTestUtils.assertExecutionTime(
@@ -34,7 +34,7 @@ describe('Extension Activation Performance', () => {
         const extension = vscode.extensions.getExtension('qcli-context-manager.context-manager-for-q-cli');
         expect(extension).toBeTruthy();
         
-        if (!extension) return;
+        if (!extension) {return;}
 
         if (!extension.isActive) {
             await extension.activate();
@@ -58,7 +58,7 @@ describe('Extension Activation Performance', () => {
         const extension = vscode.extensions.getExtension('qcli-context-manager.context-manager-for-q-cli');
         expect(extension).toBeTruthy();
         
-        if (!extension) return;
+        if (!extension) {return;}
 
         // Get initial memory usage
         const initialMemory = process.memoryUsage();
@@ -88,7 +88,7 @@ describe('Extension Activation Performance', () => {
         const extension = vscode.extensions.getExtension('qcli-context-manager.context-manager-for-q-cli');
         expect(extension).toBeTruthy();
         
-        if (!extension) return;
+        if (!extension) {return;}
 
         // Benchmark multiple activation checks
         const benchmark = await PerformanceTestUtils.benchmark(
@@ -113,7 +113,7 @@ describe('Extension Activation Performance', () => {
         const extension = vscode.extensions.getExtension('qcli-context-manager.context-manager-for-q-cli');
         expect(extension).toBeTruthy();
         
-        if (!extension) return;
+        if (!extension) {return;}
 
         // Create multiple concurrent activation attempts
         const activationPromises = Array.from({ length: 5 }, () => 

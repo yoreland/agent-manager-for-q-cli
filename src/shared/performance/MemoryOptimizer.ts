@@ -12,7 +12,7 @@ export class MemoryOptimizer {
     ) {}
 
     startMonitoring(): void {
-        if (this.disposed || this.intervalId) return;
+        if (this.disposed || this.intervalId) {return;}
 
         this.intervalId = setInterval(() => {
             this.checkMemoryUsage();
@@ -71,7 +71,7 @@ export class MemoryOptimizer {
     }
 
     dispose(): void {
-        if (this.disposed) return;
+        if (this.disposed) {return;}
 
         this.disposed = true;
         this.stopMonitoring();

@@ -12,10 +12,10 @@ export class MemoryCache implements ICache {
     }
 
     async get<T>(key: string): Promise<T | null> {
-        if (this.disposed) return null;
+        if (this.disposed) {return null;}
         
         const entry = this.cache.get(key);
-        if (!entry) return null;
+        if (!entry) {return null;}
         
         if (Date.now() > entry.expiresAt) {
             await this.delete(key);
@@ -26,7 +26,7 @@ export class MemoryCache implements ICache {
     }
 
     async set<T>(key: string, value: T, ttl?: number): Promise<void> {
-        if (this.disposed) return;
+        if (this.disposed) {return;}
         
         const defaultTtl = this.options.defaultTtl || 300000; // 5 minutes
         const timeToLive = ttl || defaultTtl;
@@ -59,7 +59,7 @@ export class MemoryCache implements ICache {
     }
 
     async delete(key: string): Promise<void> {
-        if (this.disposed) return;
+        if (this.disposed) {return;}
         
         this.cache.delete(key);
         
@@ -71,7 +71,7 @@ export class MemoryCache implements ICache {
     }
 
     async clear(): Promise<void> {
-        if (this.disposed) return;
+        if (this.disposed) {return;}
         
         // Clear all timers
         for (const timer of this.timers.values()) {
@@ -83,10 +83,10 @@ export class MemoryCache implements ICache {
     }
 
     async has(key: string): Promise<boolean> {
-        if (this.disposed) return false;
+        if (this.disposed) {return false;}
         
         const entry = this.cache.get(key);
-        if (!entry) return false;
+        if (!entry) {return false;}
         
         if (Date.now() > entry.expiresAt) {
             await this.delete(key);
@@ -117,7 +117,7 @@ export class MemoryCache implements ICache {
     }
 
     private cleanup(): void {
-        if (this.disposed) return;
+        if (this.disposed) {return;}
         
         const now = Date.now();
         const expiredKeys: string[] = [];
@@ -134,7 +134,7 @@ export class MemoryCache implements ICache {
     }
 
     dispose(): void {
-        if (this.disposed) return;
+        if (this.disposed) {return;}
         
         this.disposed = true;
         

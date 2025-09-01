@@ -16,7 +16,7 @@ export class OptimizedExtension {
     }
 
     async activate(): Promise<void> {
-        if (this.activated) return;
+        if (this.activated) {return;}
 
         const logger = this.container.getServiceSync<EnhancedLogger>('logger');
 
@@ -84,7 +84,7 @@ export class OptimizedExtension {
     }
 
     deactivate(): void {
-        if (!this.activated) return;
+        if (!this.activated) {return;}
 
         const logger = this.container.getServiceSync<EnhancedLogger>('logger');
         logger.info('Deactivating extension');
