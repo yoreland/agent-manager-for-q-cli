@@ -73,6 +73,7 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
                 
                 case 'formDataChanged':
                     this.logger.debug('Form data changed', message.data);
+                    // Could be used for auto-save functionality in the future
                     break;
                 
                 case 'validateForm':
@@ -85,19 +86,48 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
                     break;
                 
                 case 'submitForm':
-                    this.logger.info('Submitting form data');
+                    this.logger.info('Submitting form data', { agentName: message.data.name });
+                    
+                    // Validate one more time before creation
+                    const finalValidation = this.formService.validateFormData(message.data);
+                    if (!finalValidation.isValid) {
+                        this.sendMessage({
+                            type: 'validationResult',
+                            result: finalValidation
+                        });
+                        return;
+                    }
+                    
                     const creationResult = await this.formService.createAgentFromFormData(message.data);
                     this.sendMessage({
                         type: 'creationResult',
                         result: creationResult
                     });
+                    
                     if (creationResult.success) {
-                        this.panel?.dispose();
+                        this.logger.info('Agent created successfully', { 
+                            agentName: message.data.name,
+                            agentPath: creationResult.agentPath 
+                        });
+                        // Auto-close after successful creation
+                        setTimeout(() => {
+                            this.panel?.dispose();
+                        }, 2000);
                     }
                     break;
                 
+                case 'addResource':
+                    this.logger.debug('Adding resource', { path: message.path });
+                    // This is handled in the webview, but we could add server-side validation here
+                    break;
+                
+                case 'removeResource':
+                    this.logger.debug('Removing resource', { index: message.index });
+                    // This is handled in the webview, but we could add server-side validation here
+                    break;
+                
                 case 'cancel':
-                    this.logger.info('Form cancelled');
+                    this.logger.info('Form cancelled by user');
                     this.panel?.dispose();
                     break;
                 
@@ -108,7 +138,7 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
             this.logger.error('Error handling webview message', error as Error);
             this.sendMessage({
                 type: 'error',
-                message: error instanceof Error ? error.message : 'Unknown error'
+                message: error instanceof Error ? error.message : 'Unknown error occurred'
             });
         }
     }
@@ -378,11 +408,13 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
                 <div class="form-group">
                     <label for="agentDescription">Description</label>
                     <input type="text" id="agentDescription" name="description">
+                    <div class="error hidden" id="descriptionError"></div>
                 </div>
                 
                 <div class="form-group">
                     <label for="agentPrompt">Prompt</label>
                     <textarea id="agentPrompt" name="prompt" placeholder="Enter the system prompt for your agent..."></textarea>
+                    <div class="error hidden" id="promptError"></div>
                 </div>
             </div>
             
@@ -404,6 +436,7 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
                         <div id="allowedTools"></div>
                     </div>
                 </div>
+                <div class="error hidden" id="toolsError"></div>
             </div>
             
             <!-- Resources Section -->
@@ -419,6 +452,7 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
                     <input type="text" id="newResource" placeholder="file://path/to/resource">
                     <button type="button" class="btn btn-secondary" onclick="addResource()">Add Resource</button>
                 </div>
+                <div class="error hidden" id="resourcesError"></div>
             </div>
             
             <div class="form-actions">
@@ -449,6 +483,10 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
                     
                 case 'validationResult':
                     handleValidationResult(message.result);
+                    if (pendingSubmit && message.result.isValid) {
+                        pendingSubmit = false;
+                        vscode.postMessage({ type: 'submitForm', data: formData });
+                    }
                     break;
                     
                 case 'creationResult':
@@ -556,11 +594,24 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
             const input = document.getElementById('newResource');
             const path = input.value.trim();
             
-            if (path && !formData.resources.includes(path)) {
-                formData.resources.push(path);
-                input.value = '';
-                renderResources();
+            if (!path) {
+                alert('Please enter a resource path');
+                return;
             }
+            
+            if (!path.startsWith('file://')) {
+                alert('Resource path must start with "file://"');
+                return;
+            }
+            
+            if (formData.resources.includes(path)) {
+                alert('This resource is already added');
+                return;
+            }
+            
+            formData.resources.push(path);
+            input.value = '';
+            renderResources();
         }
         
         function removeResource(index) {
@@ -581,8 +632,23 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
                 if (errorEl) {
                     errorEl.textContent = error.message;
                     errorEl.classList.remove('hidden');
+                } else {
+                    // Show general error for fields without specific error elements
+                    alert('Error: ' + error.message);
                 }
             });
+            
+            // Show warnings
+            result.warnings.forEach(warning => {
+                console.warn('Warning:', warning.message);
+            });
+            
+            // Enable/disable submit button
+            const submitBtn = document.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = !result.isValid;
+                submitBtn.style.opacity = result.isValid ? '1' : '0.5';
+            }
         }
         
         function handleCreationResult(result) {
@@ -606,12 +672,57 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
             formData.description = document.getElementById('agentDescription').value;
             formData.prompt = document.getElementById('agentPrompt').value;
             
-            // Validate and submit
+            // Validate first
             vscode.postMessage({ type: 'validateForm', data: formData });
+        });
+        
+        // Real-time validation on name input
+        document.getElementById('agentName').addEventListener('input', (e) => {
+            const name = e.target.value;
+            const nameError = document.getElementById('nameError');
             
-            setTimeout(() => {
-                vscode.postMessage({ type: 'submitForm', data: formData });
-            }, 100);
+            if (!name.trim()) {
+                nameError.textContent = 'Agent name is required';
+                nameError.classList.remove('hidden');
+            } else if (!/^[a-zA-Z0-9_-]+$/.test(name)) {
+                nameError.textContent = 'Agent name can only contain letters, numbers, hyphens, and underscores';
+                nameError.classList.remove('hidden');
+            } else {
+                nameError.classList.add('hidden');
+            }
+        });
+        
+        // Submit after successful validation
+        let pendingSubmit = false;
+        
+        // Form submission
+        document.getElementById('agentForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Update form data from inputs
+            formData.name = document.getElementById('agentName').value;
+            formData.description = document.getElementById('agentDescription').value;
+            formData.prompt = document.getElementById('agentPrompt').value;
+            
+            // Validate first, then submit if valid
+            pendingSubmit = true;
+            vscode.postMessage({ type: 'validateForm', data: formData });
+        });
+        
+        // Real-time validation on name input
+        document.getElementById('agentName').addEventListener('input', (e) => {
+            const name = e.target.value;
+            const nameError = document.getElementById('nameError');
+            
+            if (!name.trim()) {
+                nameError.textContent = 'Agent name is required';
+                nameError.classList.remove('hidden');
+            } else if (!/^[a-zA-Z0-9_-]+$/.test(name)) {
+                nameError.textContent = 'Agent name can only contain letters, numbers, hyphens, and underscores';
+                nameError.classList.remove('hidden');
+            } else {
+                nameError.classList.add('hidden');
+            }
         });
         
         // Allow Enter key to add resources

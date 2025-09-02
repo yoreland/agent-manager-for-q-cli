@@ -113,10 +113,15 @@ export class AgentCreationFormService implements IAgentCreationFormService {
         });
 
         // Validate resources
+        const seenResources = new Set<string>();
         data.resources.forEach((resource, index) => {
             if (!resource.startsWith('file://')) {
                 errors.push({ field: 'resources', message: `Resource ${index + 1} must start with "file://"` });
             }
+            if (seenResources.has(resource)) {
+                warnings.push({ field: 'resources', message: `Duplicate resource: ${resource}` });
+            }
+            seenResources.add(resource);
         });
 
         return {
