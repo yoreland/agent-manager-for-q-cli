@@ -126,6 +126,23 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
                     // This is handled in the webview, but we could add server-side validation here
                     break;
                 
+                case 'openAgentFile':
+                    this.logger.info('Opening agent file', { path: message.path });
+                    try {
+                        const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+                        if (workspaceFolder) {
+                            const fullPath = vscode.Uri.joinPath(workspaceFolder.uri, message.path);
+                            await vscode.window.showTextDocument(fullPath);
+                        }
+                    } catch (error) {
+                        this.logger.error('Failed to open agent file', error as Error);
+                        this.sendMessage({
+                            type: 'error',
+                            message: 'Failed to open agent file'
+                        });
+                    }
+                    break;
+                
                 case 'cancel':
                     this.logger.info('Form cancelled by user');
                     this.panel?.dispose();
@@ -170,6 +187,50 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
         .form-container {
             max-width: 800px;
             margin: 0 auto;
+            position: relative;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--vscode-panel-border);
+            border-top: 4px solid var(--vscode-button-background);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .progress-indicator {
+            width: 100%;
+            height: 4px;
+            background-color: var(--vscode-panel-border);
+            border-radius: 2px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: var(--vscode-button-background);
+            width: 0%;
+            transition: width 0.3s ease;
         }
         
         h1 {
@@ -214,12 +275,34 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
             font-family: var(--vscode-font-family);
             font-size: var(--vscode-font-size);
             box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
         
         input[type="text"]:focus, textarea:focus {
             outline: none;
             border-color: var(--vscode-focusBorder);
             box-shadow: 0 0 0 1px var(--vscode-focusBorder);
+        }
+        
+        input[type="text"]::placeholder, textarea::placeholder {
+            color: var(--vscode-input-placeholderForeground);
+            opacity: 0.7;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        .form-group .help-text {
+            font-size: 12px;
+            color: var(--vscode-descriptionForeground);
+            margin-top: 4px;
+            display: none;
+        }
+        
+        .form-group:hover .help-text {
+            display: block;
         }
         
         input[type="checkbox"]:focus {
@@ -439,6 +522,44 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
                 opacity: 1;
             }
         }
+        
+        .post-creation-actions {
+            text-align: center;
+            padding: 30px;
+            border: 2px solid var(--vscode-button-background);
+            border-radius: 8px;
+            background-color: var(--vscode-panel-background);
+            margin-top: 20px;
+        }
+        
+        .success-message h3 {
+            color: var(--vscode-button-background);
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+        
+        .success-message p {
+            color: var(--vscode-descriptionForeground);
+            margin-bottom: 20px;
+        }
+        
+        .success-message code {
+            background-color: var(--vscode-textCodeBlock-background);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: var(--vscode-editor-font-family);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .action-buttons .btn {
+            min-width: 150px;
+        }
     </style>
 </head>
 <body>
@@ -453,22 +574,27 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
                 <div class="form-group">
                     <label for="agentName">Agent Name *</label>
                     <input type="text" id="agentName" name="name" required 
-                           aria-describedby="nameError" aria-invalid="false">
+                           placeholder="e.g., my-coding-assistant"
+                           aria-describedby="nameError nameHelp" aria-invalid="false">
+                    <div class="help-text" id="nameHelp">Use letters, numbers, hyphens, and underscores only</div>
                     <div class="error hidden" id="nameError" role="alert" aria-live="polite"></div>
                 </div>
                 
                 <div class="form-group">
                     <label for="agentDescription">Description</label>
                     <input type="text" id="agentDescription" name="description"
-                           aria-describedby="descriptionError">
+                           placeholder="Brief description of what this agent does"
+                           aria-describedby="descriptionError descriptionHelp">
+                    <div class="help-text" id="descriptionHelp">Optional: Describe the agent's purpose and capabilities</div>
                     <div class="error hidden" id="descriptionError" role="alert" aria-live="polite"></div>
                 </div>
                 
                 <div class="form-group">
                     <label for="agentPrompt">Prompt</label>
                     <textarea id="agentPrompt" name="prompt" 
-                              placeholder="Enter the system prompt for your agent..."
-                              aria-describedby="promptError"></textarea>
+                              placeholder="You are a helpful assistant that..."
+                              aria-describedby="promptError promptHelp"></textarea>
+                    <div class="help-text" id="promptHelp">Define the agent's personality, role, and behavior instructions</div>
                     <div class="error hidden" id="promptError" role="alert" aria-live="polite"></div>
                 </div>
             </div>
@@ -504,15 +630,18 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
                 <div class="resources-list" id="resourcesList"></div>
                 
                 <div class="add-resource">
-                    <input type="text" id="newResource" placeholder="file://path/to/resource">
-                    <button type="button" class="btn btn-secondary" onclick="addResource()">Add Resource</button>
+                    <input type="text" id="newResource" placeholder="file://path/to/resource" 
+                           title="Enter a file path starting with file://">
+                    <button type="button" class="btn btn-secondary" onclick="addResource()" 
+                            title="Add this resource to the agent">Add Resource</button>
                 </div>
-                <div class="error hidden" id="resourcesError"></div>
+                <div class="help-text">Resources define which files and directories the agent can access</div>
+                <div class="error hidden" id="resourcesError" role="alert" aria-live="polite"></div>
             </div>
             
             <div class="form-actions">
-                <button type="button" class="btn btn-secondary" onclick="cancelForm()">Cancel</button>
-                <button type="submit" class="btn btn-primary">Create Agent</button>
+                <button type="button" class="btn btn-secondary" onclick="cancelForm()" title="Cancel (Esc)">Cancel</button>
+                <button type="submit" class="btn btn-primary" title="Create Agent (Ctrl+Enter)">Create Agent</button>
             </div>
         </form>
     </div>
@@ -540,6 +669,7 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
                     availableToolsList = message.tools;
                     populateForm();
                     formState.hasUnsavedChanges = false;
+                    updateProgressIndicator(100);
                     break;
                     
                 case 'validationResult':
@@ -547,17 +677,21 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
                     handleValidationResult(message.result);
                     if (pendingSubmit && message.result.isValid) {
                         pendingSubmit = false;
+                        updateProgressIndicator(50);
                         submitForm();
                     }
                     break;
                     
                 case 'creationResult':
                     formState.isSubmitting = false;
+                    showLoadingState(false);
+                    updateProgressIndicator(100);
                     handleCreationResult(message.result);
                     break;
                     
                 case 'error':
                     formState.isSubmitting = false;
+                    showLoadingState(false);
                     showNotification('Error: ' + message.message, 'error');
                     break;
             }
@@ -733,7 +867,39 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
             
             formState.isSubmitting = true;
             updateFormState();
+            showLoadingState(true);
             vscode.postMessage({ type: 'submitForm', data: formData });
+        }
+        
+        function showLoadingState(show) {
+            let overlay = document.querySelector('.loading-overlay');
+            if (show && !overlay) {
+                overlay = document.createElement('div');
+                overlay.className = 'loading-overlay';
+                overlay.innerHTML = '<div class="loading-spinner"></div>';
+                document.body.appendChild(overlay);
+            } else if (!show && overlay) {
+                overlay.remove();
+            }
+        }
+        
+        function updateProgressIndicator(progress) {
+            let indicator = document.querySelector('.progress-indicator');
+            if (!indicator) {
+                indicator = document.createElement('div');
+                indicator.className = 'progress-indicator';
+                indicator.innerHTML = '<div class="progress-bar"></div>';
+                document.querySelector('.form-container').insertBefore(indicator, document.querySelector('h1').nextSibling);
+            }
+            
+            const bar = indicator.querySelector('.progress-bar');
+            bar.style.width = progress + '%';
+            
+            if (progress >= 100) {
+                setTimeout(() => {
+                    indicator.remove();
+                }, 500);
+            }
         }
         
         function handleValidationResult(result) {
@@ -799,11 +965,20 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
         
         function handleCreationResult(result) {
             if (result.success) {
-                showNotification('Agent created successfully at: ' + result.agentPath, 'success');
-                // Form will auto-close after 2 seconds
+                showNotification('Agent created successfully!', 'success');
+                
+                // Show post-creation actions
+                showPostCreationActions(result.agentPath);
+                
+                // Form will auto-close after 3 seconds unless user interacts
                 setTimeout(() => {
-                    showNotification('Closing form...', 'info');
-                }, 1500);
+                    if (!document.querySelector('.post-creation-actions:hover')) {
+                        showNotification('Closing form...', 'info');
+                        setTimeout(() => {
+                            vscode.postMessage({ type: 'cancel' });
+                        }, 1000);
+                    }
+                }, 3000);
             } else {
                 showNotification('Failed to create agent: ' + result.error, 'error');
                 // Re-enable form for retry
@@ -814,6 +989,79 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
                     submitBtn.style.cursor = 'pointer';
                 }
             }
+        }
+        
+        function showPostCreationActions(agentPath) {
+            const existingActions = document.querySelector('.post-creation-actions');
+            if (existingActions) {
+                existingActions.remove();
+            }
+            
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'post-creation-actions';
+            actionsDiv.innerHTML = \`
+                <div class="success-message">
+                    <h3>🎉 Agent Created Successfully!</h3>
+                    <p>Your agent has been saved to: <code>\${agentPath}</code></p>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="openAgentFile('\${agentPath}')">
+                        📝 Open Configuration
+                    </button>
+                    <button class="btn btn-secondary" onclick="createAnotherAgent()">
+                        ➕ Create Another Agent
+                    </button>
+                    <button class="btn btn-secondary" onclick="closeForm()">
+                        ✅ Done
+                    </button>
+                </div>
+            \`;
+            
+            // Insert after form
+            const form = document.getElementById('agentForm');
+            form.style.display = 'none';
+            form.parentNode.insertBefore(actionsDiv, form.nextSibling);
+        }
+        
+        function openAgentFile(agentPath) {
+            vscode.postMessage({ type: 'openAgentFile', path: agentPath });
+        }
+        
+        function createAnotherAgent() {
+            // Reset form and show it again
+            const form = document.getElementById('agentForm');
+            const actions = document.querySelector('.post-creation-actions');
+            
+            if (actions) actions.remove();
+            form.style.display = 'block';
+            
+            // Reset form data
+            formData = {
+                name: '',
+                description: '',
+                prompt: '',
+                tools: {
+                    available: availableToolsList.map(tool => tool.name),
+                    allowed: availableToolsList.filter(tool => tool.defaultAllowed).map(tool => tool.name)
+                },
+                resources: [
+                    'file://AmazonQ.md',
+                    'file://README.md',
+                    'file://.amazonq/rules/**/*.md'
+                ]
+            };
+            
+            populateForm();
+            formState.hasUnsavedChanges = false;
+            formState.isSubmitting = false;
+            updateFormState();
+            
+            // Focus on name field
+            document.getElementById('agentName').focus();
+        }
+        
+        function closeForm() {
+            vscode.postMessage({ type: 'cancel' });
         }
         
         function cancelForm() {
@@ -892,6 +1140,34 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
         document.getElementById('newResource').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 addResource();
+            }
+        });
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Ctrl/Cmd + Enter to submit form
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                const submitBtn = document.querySelector('button[type="submit"]');
+                if (submitBtn && !submitBtn.disabled) {
+                    document.getElementById('agentForm').dispatchEvent(new Event('submit'));
+                }
+            }
+            
+            // Escape to cancel
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                if (document.querySelector('.post-creation-actions')) {
+                    closeForm();
+                } else {
+                    cancelForm();
+                }
+            }
+            
+            // Ctrl/Cmd + N for new agent (when in post-creation state)
+            if ((e.ctrlKey || e.metaKey) && e.key === 'n' && document.querySelector('.post-creation-actions')) {
+                e.preventDefault();
+                createAnotherAgent();
             }
         });
     </script>

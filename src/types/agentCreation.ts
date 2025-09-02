@@ -47,7 +47,8 @@ export type WebviewMessage =
     | { type: 'submitForm'; data: AgentFormData }
     | { type: 'cancel' }
     | { type: 'addResource'; path: string }
-    | { type: 'removeResource'; index: number };
+    | { type: 'removeResource'; index: number }
+    | { type: 'openAgentFile'; path: string };
 
 export type ExtensionMessage = 
     | { type: 'initialData'; data: AgentFormData; tools: BuiltInTool[] }
