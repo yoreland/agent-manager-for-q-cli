@@ -1,47 +1,57 @@
-# Product Overview: Context Manager for Q CLI
+# Product Overview: Agent Manager for Q CLI
 
 ## Purpose
-VS Code Extension that simplifies Amazon Q Developer CLI context management through an intuitive drag-and-drop interface, eliminating the need for manual JSON configuration editing.
+VS Code Extension that simplifies Amazon Q Developer CLI agent management through an intuitive interface, providing comprehensive agent creation, configuration, and management capabilities without manual JSON editing.
 
 ## Target Users
-- **Primary**: Developers using Amazon Q Developer CLI who want easier context management
-- **Secondary**: Development teams establishing consistent Q CLI workflows
-- **Tertiary**: DevOps engineers setting up Q CLI configurations for teams
+- **Primary**: Developers using Amazon Q Developer CLI who want easier agent management
+- **Secondary**: Development teams establishing consistent Q CLI agent workflows
+- **Tertiary**: DevOps engineers setting up Q CLI agent configurations for teams
 
 ## Key Features
 
 ### Phase 1 (MVP) - ✅ Completed
-- **Drag & Drop Context Addition**: Drop files/directories from VS Code File Explorer directly into extension window to add them to Q CLI context
-- **Visual Context Management**: Display current context files with easy removal options
-- **Agent Configuration Integration**: Automatically update agent configuration files with new context entries
+- **Visual Agent Management**: Tree view display of all Q CLI agents with management actions
 - **Agent Tree View with Actions**: 
-  - Right-click context menu for agent management
-  - Inline play button for quick agent execution
-  - Streamlined UI without redundant create buttons
+  - Right-click context menu for agent management (Open Configuration, Run Agent)
+  - Inline play button (▶️) for quick agent execution
+  - Streamlined UI with proper empty state guidance
 - **Terminal Integration**: One-click agent execution with `q chat --agent "<name>"`
+- **Agent Configuration Integration**: Direct integration with `.amazonq/cli-agents/` directory
 
-### Phase 1.1 (Latest - v1.0.1) - ✅ Completed
-- **Enhanced Agent Interaction**: Context menus and inline buttons for better UX
-- **Quick Agent Execution**: Direct terminal launch from tree view
-- **Improved Navigation**: Cleaner tree view with better empty state guidance
-- **VS Code Integration**: Consistent UI patterns following VS Code conventions
+### Phase 1.5 (Agent Creation UI) - ✅ Completed
+- **Comprehensive Agent Creation Form**: Full webview-based agent creation interface
+- **Real-time Form Validation**: Immediate feedback with inline error messages
+- **Tool Selection Interface**: Dual-column tool management (Available vs Allowed tools)
+- **Resource Management**: Add/remove file resources with validation
+- **Post-Creation Workflow**: Success actions (Open Config, Create Another, Done)
+- **Accessibility Support**: Full keyboard navigation and screen reader compatibility
+- **Loading States**: Professional loading indicators and progress feedback
 
 ### Phase 2 (Future)
-- **Project Rules Management**: GUI for managing `.amazonq/rules/` directory contents
-- **Context Validation**: Real-time validation of context files and token usage estimation
-- **Template Management**: Pre-configured context templates for common project types
+- **Agent Templates**: Pre-configured agent templates for common use cases
+- **Bulk Agent Operations**: Import/export multiple agents
+- **Advanced Tool Configuration**: Custom tool settings and aliases
+- **Agent Analytics**: Usage tracking and performance insights
 
 ## Business Objectives
-- **Developer Productivity**: Reduce time spent on Q CLI context configuration from minutes to seconds
-- **Adoption Acceleration**: Lower barrier to entry for Q CLI usage through improved UX
-- **Error Reduction**: Minimize configuration errors through visual interface instead of manual JSON editing
-- **Team Consistency**: Standardize context management practices across development teams
+- **Developer Productivity**: Reduce time spent on Q CLI agent setup from hours to minutes
+- **Adoption Acceleration**: Lower barrier to entry for Q CLI agent usage through improved UX
+- **Error Reduction**: Minimize configuration errors through visual interface and validation
+- **Team Consistency**: Standardize agent management practices across development teams
 
 ## Success Metrics
-- Time to add context files reduced by 80%
-- Reduction in Q CLI configuration errors
-- Increased Q CLI adoption within development teams
-- Positive user feedback on ease of use
+- Time to create new agents reduced by 90%
+- Reduction in Q CLI agent configuration errors
+- Increased Q CLI agent adoption within development teams
+- Positive user feedback on agent creation experience
 
 ## Value Proposition
-Transform Q CLI context management from a technical configuration task into an intuitive visual workflow, making Amazon Q Developer more accessible to developers of all experience levels.
+Transform Q CLI agent management from complex JSON configuration to an intuitive visual workflow, making Amazon Q Developer agent creation and management accessible to developers of all experience levels.
+
+## Current Capabilities (v1.0.1)
+- **Complete Agent Lifecycle**: Create, view, configure, and execute agents
+- **Professional UI**: VS Code-native interface with comprehensive form validation
+- **Accessibility Compliant**: WCAG guidelines compliance with full keyboard support
+- **Error Recovery**: Intelligent error handling with user-friendly recovery options
+- **Performance Optimized**: Fast loading, efficient caching, and smooth interactions

@@ -298,10 +298,6 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
             font-size: 12px;
             color: var(--vscode-descriptionForeground);
             margin-top: 4px;
-            display: none;
-        }
-        
-        .form-group:hover .help-text {
             display: block;
         }
         
