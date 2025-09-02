@@ -1,5 +1,8 @@
 import { AgentFormData, BuiltInTool, FormValidationResult, AgentCreationResult } from '../types/agentCreation';
 import { ExtensionLogger } from './logger';
+import * as vscode from 'vscode';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export interface IAgentCreationFormService {
     getDefaultFormData(): AgentFormData;
@@ -103,6 +106,15 @@ export class AgentCreationFormService implements IAgentCreationFormService {
             errors.push({ field: 'name', message: 'Agent name is required' });
         } else if (!/^[a-zA-Z0-9_-]+$/.test(data.name)) {
             errors.push({ field: 'name', message: 'Agent name can only contain letters, numbers, hyphens, and underscores' });
+        } else {
+            // Check if agent already exists
+            const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+            if (workspaceFolder) {
+                const agentPath = path.join(workspaceFolder.uri.fsPath, '.amazonq', 'cli-agents', `${data.name}.json`);
+                if (fs.existsSync(agentPath)) {
+                    errors.push({ field: 'name', message: `Agent "${data.name}" already exists` });
+                }
+            }
         }
 
         // Validate tools
@@ -135,11 +147,53 @@ export class AgentCreationFormService implements IAgentCreationFormService {
         try {
             this.logger.info('Creating agent from form data', { name: data.name });
             
-            // TODO: Implement actual agent creation
-            // For now, return success
+            // Get workspace folder
+            const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+            if (!workspaceFolder) {
+                throw new Error('No workspace folder found');
+            }
+            
+            // Create agent configuration
+            const agentConfig = {
+                $schema: "https://raw.githubusercontent.com/aws/amazon-q-developer-cli/refs/heads/main/schemas/agent-v1.json",
+                name: data.name,
+                description: data.description,
+                prompt: data.prompt,
+                mcpServers: {},
+                tools: data.tools.available,
+                toolAliases: {},
+                allowedTools: data.tools.allowed,
+                toolsSettings: {},
+                resources: data.resources,
+                hooks: {},
+                useLegacyMcpJson: true
+            };
+            
+            // Create .amazonq/cli-agents directory if it doesn't exist
+            const agentsDir = path.join(workspaceFolder.uri.fsPath, '.amazonq', 'cli-agents');
+            if (!fs.existsSync(agentsDir)) {
+                fs.mkdirSync(agentsDir, { recursive: true });
+            }
+            
+            // Create agent file
+            const agentPath = path.join(agentsDir, `${data.name}.json`);
+            
+            // Check if agent already exists
+            if (fs.existsSync(agentPath)) {
+                throw new Error(`Agent "${data.name}" already exists`);
+            }
+            
+            // Write agent configuration
+            fs.writeFileSync(agentPath, JSON.stringify(agentConfig, null, 2));
+            
+            this.logger.info('Agent created successfully', { agentPath });
+            
+            // Refresh tree view
+            await vscode.commands.executeCommand('qcli-agents.refreshTree');
+            
             return {
                 success: true,
-                agentPath: `.amazonq/cli-agents/${data.name}.json`
+                agentPath: path.relative(workspaceFolder.uri.fsPath, agentPath)
             };
         } catch (error) {
             this.logger.error('Failed to create agent', error as Error);

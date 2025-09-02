@@ -388,6 +388,47 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
         .hidden {
             display: none;
         }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 16px;
+            border-radius: 4px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            max-width: 400px;
+            word-wrap: break-word;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .notification-success {
+            background-color: #4CAF50;
+        }
+        
+        .notification-error {
+            background-color: #f44336;
+        }
+        
+        .notification-warning {
+            background-color: #FF9800;
+        }
+        
+        .notification-info {
+            background-color: #2196F3;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
     </style>
 </head>
 <body>
@@ -466,6 +507,11 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
         const vscode = acquireVsCodeApi();
         let formData = {};
         let availableToolsList = [];
+        let formState = {
+            isSubmitting: false,
+            hasUnsavedChanges: false,
+            lastValidation: null
+        };
         
         // Notify extension that webview is ready
         vscode.postMessage({ type: 'ready' });
@@ -479,22 +525,26 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
                     formData = message.data;
                     availableToolsList = message.tools;
                     populateForm();
+                    formState.hasUnsavedChanges = false;
                     break;
                     
                 case 'validationResult':
+                    formState.lastValidation = message.result;
                     handleValidationResult(message.result);
                     if (pendingSubmit && message.result.isValid) {
                         pendingSubmit = false;
-                        vscode.postMessage({ type: 'submitForm', data: formData });
+                        submitForm();
                     }
                     break;
                     
                 case 'creationResult':
+                    formState.isSubmitting = false;
                     handleCreationResult(message.result);
                     break;
                     
                 case 'error':
-                    alert('Error: ' + message.message);
+                    formState.isSubmitting = false;
+                    showNotification('Error: ' + message.message, 'error');
                     break;
             }
         });
@@ -506,6 +556,47 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
             
             renderTools();
             renderResources();
+            updateFormState();
+        }
+        
+        function updateFormState() {
+            // Update form state indicators
+            const hasChanges = formState.hasUnsavedChanges;
+            const isValid = formState.lastValidation?.isValid ?? true;
+            
+            // Update submit button state
+            const submitBtn = document.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = formState.isSubmitting || !isValid;
+                submitBtn.textContent = formState.isSubmitting ? 'Creating...' : 'Create Agent';
+                submitBtn.style.opacity = (formState.isSubmitting || !isValid) ? '0.5' : '1';
+                submitBtn.style.cursor = (formState.isSubmitting || !isValid) ? 'not-allowed' : 'pointer';
+            }
+        }
+        
+        function markFormChanged() {
+            formState.hasUnsavedChanges = true;
+            updateFormState();
+            
+            // Debounced validation
+            clearTimeout(window.validationTimeout);
+            window.validationTimeout = setTimeout(() => {
+                if (formData.name.trim()) {
+                    validateForm();
+                }
+            }, 500);
+        }
+        
+        function validateForm() {
+            // Update form data from inputs
+            updateFormDataFromInputs();
+            vscode.postMessage({ type: 'validateForm', data: formData });
+        }
+        
+        function updateFormDataFromInputs() {
+            formData.name = document.getElementById('agentName').value;
+            formData.description = document.getElementById('agentDescription').value;
+            formData.prompt = document.getElementById('agentPrompt').value;
         }
         
         function renderTools() {
@@ -573,6 +664,7 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
                     formData.tools.allowed = formData.tools.allowed.filter(t => t !== toolName);
                 }
             }
+            markFormChanged();
         }
         
         function renderResources() {
@@ -595,32 +687,42 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
             const path = input.value.trim();
             
             if (!path) {
-                alert('Please enter a resource path');
+                showNotification('Please enter a resource path', 'warning');
                 return;
             }
             
             if (!path.startsWith('file://')) {
-                alert('Resource path must start with "file://"');
+                showNotification('Resource path must start with "file://"', 'error');
                 return;
             }
             
             if (formData.resources.includes(path)) {
-                alert('This resource is already added');
+                showNotification('This resource is already added', 'warning');
                 return;
             }
             
             formData.resources.push(path);
             input.value = '';
             renderResources();
+            markFormChanged();
         }
         
         function removeResource(index) {
             formData.resources.splice(index, 1);
             renderResources();
+            markFormChanged();
+        }
+        
+        function submitForm() {
+            if (formState.isSubmitting) return;
+            
+            formState.isSubmitting = true;
+            updateFormState();
+            vscode.postMessage({ type: 'submitForm', data: formData });
         }
         
         function handleValidationResult(result) {
-            // Clear previous errors
+            // Clear previous errors and warnings
             document.querySelectorAll('.error').forEach(el => {
                 el.classList.add('hidden');
                 el.textContent = '';
@@ -634,13 +736,15 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
                     errorEl.classList.remove('hidden');
                 } else {
                     // Show general error for fields without specific error elements
-                    alert('Error: ' + error.message);
+                    console.error('Validation error:', error.message);
+                    showNotification('Error: ' + error.message, 'error');
                 }
             });
             
-            // Show warnings
+            // Show warnings as notifications
             result.warnings.forEach(warning => {
                 console.warn('Warning:', warning.message);
+                showNotification('Warning: ' + warning.message, 'warning');
             });
             
             // Enable/disable submit button
@@ -648,14 +752,52 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
             if (submitBtn) {
                 submitBtn.disabled = !result.isValid;
                 submitBtn.style.opacity = result.isValid ? '1' : '0.5';
+                submitBtn.style.cursor = result.isValid ? 'pointer' : 'not-allowed';
             }
+            
+            // Scroll to first error if any
+            if (result.errors.length > 0) {
+                const firstErrorField = result.errors[0].field;
+                const firstErrorEl = document.getElementById(firstErrorField + 'Error');
+                if (firstErrorEl) {
+                    firstErrorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        }
+        
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = \`notification notification-\${type}\`;
+            notification.textContent = message;
+            
+            // Add to body
+            document.body.appendChild(notification);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 5000);
         }
         
         function handleCreationResult(result) {
             if (result.success) {
-                alert('Agent created successfully at: ' + result.agentPath);
+                showNotification('Agent created successfully at: ' + result.agentPath, 'success');
+                // Form will auto-close after 2 seconds
+                setTimeout(() => {
+                    showNotification('Closing form...', 'info');
+                }, 1500);
             } else {
-                alert('Failed to create agent: ' + result.error);
+                showNotification('Failed to create agent: ' + result.error, 'error');
+                // Re-enable form for retry
+                const submitBtn = document.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.style.opacity = '1';
+                    submitBtn.style.cursor = 'pointer';
+                }
             }
         }
         
@@ -699,17 +841,23 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
         document.getElementById('agentForm').addEventListener('submit', (e) => {
             e.preventDefault();
             
+            if (formState.isSubmitting) return;
+            
             // Update form data from inputs
-            formData.name = document.getElementById('agentName').value;
-            formData.description = document.getElementById('agentDescription').value;
-            formData.prompt = document.getElementById('agentPrompt').value;
+            updateFormDataFromInputs();
             
             // Validate first, then submit if valid
             pendingSubmit = true;
             vscode.postMessage({ type: 'validateForm', data: formData });
         });
         
-        // Real-time validation on name input
+        // Real-time validation and change tracking
+        ['agentName', 'agentDescription', 'agentPrompt'].forEach(id => {
+            const element = document.getElementById(id);
+            element.addEventListener('input', markFormChanged);
+        });
+        
+        // Special handling for name field
         document.getElementById('agentName').addEventListener('input', (e) => {
             const name = e.target.value;
             const nameError = document.getElementById('nameError');
