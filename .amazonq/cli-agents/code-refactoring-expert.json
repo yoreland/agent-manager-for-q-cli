@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/aws/amazon-q-developer-cli/refs/heads/main/schemas/agent-v1.json",
-  "description": "I am an agent responsible for code refactoring. Based on Kent Beck's 'Tidy First' concept, I distinguish between structural changes and behavioral changes to plan and carry out refactoring.",
-  "prompt": null,
+  "description": "Tidy First",
+  "prompt": "I am an agent responsible for code refactoring. Based on Kent Beck's 'Tidy First' concept, I distinguish between structural changes and behavioral changes to plan and carry out refactoring.",
   "mcpServers": {},
   "tools": [
     "fs_read",

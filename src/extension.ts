@@ -208,38 +208,28 @@ function registerCoreCommands(context: ISafeExtensionContext, logger: ExtensionL
             }
         );
 
-        // Register Agent management commands (placeholder - will be properly initialized later)
+        // Register Agent management commands
         const createAgentCommand = vscode.commands.registerCommand(
             'qcli-agents.createAgent',
             async () => {
                 try {
                     logger.logUserAction('Create Agent command executed');
                     
-                    // Get the agent management service from extension state
-                    if (!extensionState?.agentTreeProvider) {
-                        // If tree provider is not initialized yet, show a message
-                        await errorHandler!.showWarningMessage(
-                            'Agent management is still initializing. Please try again in a moment.',
-                            ['Retry']
-                        );
-                        return;
-                    }
+                    // Import and create webview provider
+                    const { AgentCreationWebviewProvider } = await import('./providers/agentCreationWebviewProvider');
+                    const webviewProvider = new AgentCreationWebviewProvider(context, logger);
                     
-                    // Get the agent management service from the tree provider
-                    const agentManagementService = (extensionState.agentTreeProvider as any).agentManagementService;
-                    if (!agentManagementService) {
-                        throw new Error('Agent management service not available');
-                    }
+                    // Show the creation form
+                    await webviewProvider.showCreationForm();
                     
-                    // Create new agent with user interaction
-                    await agentManagementService.createNewAgentInteractive();
-                    
+                    logger.info('Agent creation webview opened successfully');
                 } catch (error) {
                     const commandError = error as Error;
-                    logger.error('Failed to execute create agent command', commandError);
+                    logger.error('Failed to open agent creation form', commandError);
                     
-                    // Use enhanced error handler for command errors
-                    await errorHandler!.handleAgentCreationError(commandError);
+                    vscode.window.showErrorMessage(
+                        `Failed to open agent creation form: ${commandError.message}`
+                    );
                 }
             }
         );
