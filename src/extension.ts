@@ -39,7 +39,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         const ideInfo = compatibilityService.getIDEInfo();
         
         // Initialize minimal required components synchronously
-        const outputChannel = vscode.window.createOutputChannel('Q CLI Context Manager');
+        const outputChannel = vscode.window.createOutputChannel('Q CLI Agent Manager');
         const logger = new ExtensionLogger(
             outputChannel, 
             getLogLevel(), 
@@ -106,7 +106,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         if (errorHandler && safeContext) {
             errorHandler.handleActivationError(activationError, safeContext);
         } else {
-            const errorMessage = `Failed to activate Q CLI Context Manager extension: ${activationError.message}`;
+            const errorMessage = `Failed to activate Q CLI Agent Manager extension: ${activationError.message}`;
             
             // Log error details
             if (extensionState?.logger) {
@@ -117,7 +117,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
             // Show user-friendly error message
             vscode.window.showErrorMessage(
-                'Q CLI Context Manager extension failed to activate. Check the output panel for details.',
+                'Q CLI Agent Manager extension failed to activate. Check the output panel for details.',
                 'Show Output'
             ).then(selection => {
                 if (selection === 'Show Output' && extensionState?.outputChannel) {
@@ -183,26 +183,26 @@ export function deactivate(): void {
  */
 function registerCoreCommands(context: ISafeExtensionContext, logger: ExtensionLogger): void {
     try {
-        // Register the main command to focus Q CLI Context Manager tree view
+        // Register the main command to focus Q CLI Agent Manager tree view
         const openContextManagerCommand = vscode.commands.registerCommand(
-            'qcli-context.openContextManager',
+            'qcli-agent.openAgentManager',
             async () => {
                 try {
-                    logger.logUserAction('Focus Q CLI Context Manager command executed');
+                    logger.logUserAction('Focus Q CLI Agent Manager command executed');
                     
-                    // Focus the Q CLI Context Manager tree view
+                    // Focus the Q CLI Agent Manager tree view
                     await vscode.commands.executeCommand('qcli-context-tree.focus');
                     
                     // Show success message to user
-                    vscode.window.showInformationMessage('Q CLI Context Manager에 포커스했습니다!');
+                    vscode.window.showInformationMessage('Q CLI Agent Manager에 포커스했습니다!');
                     
-                    logger.info('Q CLI Context Manager tree view focused successfully');
+                    logger.info('Q CLI Agent Manager tree view focused successfully');
                 } catch (error) {
                     const commandError = error as Error;
-                    logger.error('Failed to focus Q CLI Context Manager tree view', commandError);
+                    logger.error('Failed to focus Q CLI Agent Manager tree view', commandError);
                     
                     vscode.window.showErrorMessage(
-                        `Failed to focus Q CLI Context Manager: ${commandError.message}`
+                        `Failed to focus Q CLI Agent Manager: ${commandError.message}`
                     );
                 }
             }
@@ -459,7 +459,7 @@ async function initializeNonCriticalComponents(
         // Show success message only in debug mode and only after full initialization
         if (isDebugMode()) {
             vscode.window.showInformationMessage(
-                `Q CLI Context Manager activated in ${totalTime}ms`
+                `Q CLI Agent Manager activated in ${totalTime}ms`
             );
         }
         

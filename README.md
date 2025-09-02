@@ -1,11 +1,11 @@
-# Context Manager for Q CLI
+# Agent Manager for Q CLI
 
-A VS Code Extension that simplifies Amazon Q Developer CLI context management through an intuitive drag-and-drop interface, eliminating the need for manual JSON configuration editing.
+A VS Code Extension that simplifies Amazon Q Developer CLI agent management through an intuitive drag-and-drop interface, eliminating the need for manual JSON configuration editing.
 
 ## Features
 
-- **Activity Bar Integration**: Access Context Manager directly from VS Code's Activity Bar
-- **Command Palette Support**: Open Context Manager using "Q CLI: Context Manager 열기" command
+- **Activity Bar Integration**: Access Agent Manager directly from VS Code's Activity Bar
+- **Command Palette Support**: Open Agent Manager using "Q CLI: Agent Manager 열기" command
 - **Tree View Interface**: Visual representation of context files and management options
 - **Webview Panel**: Dedicated panel for context management operations
 - **Comprehensive Logging**: Built-in logging system with configurable log levels
@@ -39,20 +39,20 @@ This extension follows a clean, layered architecture:
 
 1. Install the extension from the VS Code Marketplace
 2. Reload VS Code
-3. The Q CLI Context Manager icon will appear in the Activity Bar
+3. The Q CLI Agent Manager icon will appear in the Activity Bar
 
 ## Usage
 
-### Opening Context Manager
+### Opening Agent Manager
 
 **Method 1: Activity Bar**
-1. Click the Q CLI Context icon in the Activity Bar
-2. The Context Manager view will open in the side panel
+1. Click the Q CLI Agent icon in the Activity Bar
+2. The Agent Manager view will open in the side panel
 
 **Method 2: Command Palette**
 1. Press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (macOS)
-2. Type "Q CLI: Context Manager 열기"
-3. Press Enter to open the Context Manager panel
+2. Type "Q CLI: Agent Manager 열기"
+3. Press Enter to open the Agent Manager panel
 
 ### Managing Context
 
@@ -66,7 +66,7 @@ This extension follows a clean, layered architecture:
 ```bash
 # Clone and setup
 git clone <repository-url>
-cd context-manager-for-q-cli
+cd agent-manager-for-q-cli
 npm install
 
 # Development build
@@ -227,7 +227,7 @@ test: add integration tests for caching
 
 ### 0.0.1 (Initial)
 
-Initial release of Context Manager for Q CLI:
+Initial release of Agent Manager for Q CLI:
 - Basic VS Code extension structure
 - Activity Bar integration
 - Command palette support

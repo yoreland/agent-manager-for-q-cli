@@ -1,5 +1,5 @@
 /**
- * Performance monitoring utilities for the Q CLI Context Manager extension
+ * Performance monitoring utilities for the Q CLI Agent Manager extension
  * Helps track activation time and memory usage to ensure requirements are met
  */
 

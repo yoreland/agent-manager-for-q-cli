@@ -36,7 +36,7 @@ describe('Extension Activation Tests', () => {
     
     await activate(mockContext);
 
-    expect(vscode.window.createOutputChannel).toHaveBeenCalledWith('Q CLI Context Manager');
+    expect(vscode.window.createOutputChannel).toHaveBeenCalledWith('Q CLI Agent Manager');
   });
 
   test('should initialize extension state correctly', async () => {

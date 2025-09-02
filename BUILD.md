@@ -1,6 +1,6 @@
 # Build System Documentation
 
-This document describes the build system for the Context Manager for Q CLI VS Code Extension.
+This document describes the build system for the Agent Manager for Q CLI VS Code Extension.
 
 ## Build Configuration
 
@@ -193,7 +193,7 @@ npm run vsce:package
 - Source maps are enabled in development mode
 - Use VS Code debugger with Extension Development Host
 - Console logs available in development builds
-- Output channel: "Q CLI Context Manager"
+- Output channel: "Q CLI Agent Manager"
 
 ## Continuous Integration
 

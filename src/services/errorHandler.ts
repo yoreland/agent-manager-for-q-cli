@@ -77,7 +77,7 @@ export class ErrorHandler implements IErrorHandler {
         });
 
         // IDE별 맞춤 오류 메시지
-        let userMessage = 'Q CLI Context Manager 익스텐션을 활성화할 수 없습니다.';
+        let userMessage = 'Q CLI Agent Manager 익스텐션을 활성화할 수 없습니다.';
         
         switch (context.ideType) {
             case IDEType.Kiro:
@@ -497,7 +497,7 @@ export class ErrorHandler implements IErrorHandler {
         const suggestions: string[] = [];
 
         if (error.message.includes('tree view')) {
-            suggestions.push('Activity Bar에서 Q CLI Context Manager 아이콘을 확인하세요');
+            suggestions.push('Activity Bar에서 Q CLI Agent Manager 아이콘을 확인하세요');
             suggestions.push('IDE를 재시작 후 다시 시도');
         }
 

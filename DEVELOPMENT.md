@@ -11,7 +11,7 @@
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd context-manager-for-q-cli
+cd agent-manager-for-q-cli
 
 # Install dependencies
 npm install

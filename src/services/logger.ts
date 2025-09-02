@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { Logger, LogLevel } from '../types/extension';
 
 /**
- * Logger implementation for the Q CLI Context Manager extension
+ * Logger implementation for the Q CLI Agent Manager extension
  */
 export class ExtensionLogger implements Logger {
     private outputChannel: vscode.OutputChannel;

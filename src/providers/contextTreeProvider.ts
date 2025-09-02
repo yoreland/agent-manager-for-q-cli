@@ -3,7 +3,7 @@ import { ContextItem } from '../types/context';
 import { getExtensionState } from '../extension';
 
 /**
- * Tree Data Provider for the Q CLI Context Manager Activity Bar view
+ * Tree Data Provider for the Q CLI Agent Manager Activity Bar view
  * Implements VS Code's TreeDataProvider interface to display context items
  * Optimized for memory efficiency and performance
  */
@@ -24,7 +24,7 @@ export class ContextTreeProvider implements vscode.TreeDataProvider<ContextItem>
      */
     private createWelcomeItem(): ContextItem {
         return {
-            label: 'Q CLI Context Manager에 오신 것을 환영합니다',
+            label: 'Q CLI Agent Manager에 오신 것을 환영합니다',
             description: '아직 추가된 컨텍스트 파일이 없습니다',
             iconPath: new vscode.ThemeIcon('info'),
             contextValue: 'welcome'

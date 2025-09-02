@@ -1,6 +1,6 @@
 # Change Log
 
-All notable changes to the "context-manager-for-q-cli" extension will be documented in this file.
+All notable changes to the "agent-manager-for-q-cli" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 

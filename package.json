@@ -1,12 +1,12 @@
 {
-  "name": "context-manager-for-q-cli",
-  "displayName": "Context Manager for Q CLI",
-  "description": "VS Code Extension that simplifies Amazon Q Developer CLI context management through an intuitive drag-and-drop interface",
+  "name": "agent-manager-for-q-cli",
+  "displayName": "Agent Manager for Q CLI",
+  "description": "VS Code Extension that simplifies Amazon Q Developer CLI agent management through an intuitive drag-and-drop interface",
   "version": "0.0.1",
-  "publisher": "qcli-context-manager",
+  "publisher": "qcli-agent-manager",
   "repository": {
     "type": "git",
-    "url": "https://github.com/qcli-context-manager/context-manager-for-q-cli.git"
+    "url": "https://github.com/qcli-agent-manager/agent-manager-for-q-cli.git"
   },
   "engines": {
     "vscode": "^1.94.0"
@@ -17,7 +17,7 @@
   "keywords": [
     "amazon-q",
     "q-cli",
-    "context-management",
+    "agent-management",
     "ai-assistant"
   ],
   "activationEvents": [],
@@ -25,9 +25,9 @@
   "contributes": {
     "commands": [
       {
-        "command": "qcli-context.openContextManager",
-        "title": "Q CLI Context Manager 열기",
-        "category": "Q CLI Context Manager"
+        "command": "qcli-agent.openAgentManager",
+        "title": "Q CLI Agent Manager 열기",
+        "category": "Q CLI Agent Manager"
       },
       {
         "command": "qcli-context.refreshTree",
@@ -59,7 +59,7 @@
       "activitybar": [
         {
           "id": "qcli-context",
-          "title": "Q CLI Context Manager",
+          "title": "Q CLI Agent Manager",
           "icon": "$(organization)"
         }
       ]
@@ -120,7 +120,7 @@
       ]
     },
     "configuration": {
-      "title": "Q CLI Context Manager",
+      "title": "Q CLI Agent Manager",
       "properties": {
         "qcli-context.logLevel": {
           "type": "string",
@@ -131,7 +131,7 @@
             "error"
           ],
           "default": "info",
-          "description": "Set the logging level for the Q CLI Context Manager extension"
+          "description": "Set the logging level for the Q CLI Agent Manager extension"
         },
         "qcli-context.enableDebugMode": {
           "type": "boolean",

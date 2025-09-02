@@ -92,7 +92,7 @@ export const EXTENSION_CONSTANTS = {
     EXTENSION_ID: 'qcli-context-manager',
     
     /** Output channel name */
-    OUTPUT_CHANNEL_NAME: 'Q CLI Context Manager',
+    OUTPUT_CHANNEL_NAME: 'Q CLI Agent Manager',
     
     /** Command prefix */
     COMMAND_PREFIX: 'qcli-context',
@@ -111,8 +111,8 @@ export const EXTENSION_CONSTANTS = {
  * Extension commands
  */
 export const EXTENSION_COMMANDS = {
-    /** Open Context Manager command */
-    OPEN_CONTEXT_MANAGER: `${EXTENSION_CONSTANTS.COMMAND_PREFIX}.openContextManager`,
+    /** Open Agent Manager command */
+    OPEN_CONTEXT_MANAGER: `${EXTENSION_CONSTANTS.COMMAND_PREFIX}.openAgentManager`,
     
     /** Refresh context command */
     REFRESH_CONTEXT: `${EXTENSION_CONSTANTS.COMMAND_PREFIX}.refreshContext`
