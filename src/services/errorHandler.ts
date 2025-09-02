@@ -4,7 +4,7 @@ import { ISafeExtensionContext, IDEType } from './compatibilityService';
 import { ValidationResult } from '../types/agent';
 
 /**
- * 파일 시스템 오류 타입
+ * File system error types
  */
 export enum FileSystemErrorType {
     PERMISSION_DENIED = 'EACCES',
@@ -17,7 +17,7 @@ export enum FileSystemErrorType {
 }
 
 /**
- * Agent 관련 오류 타입
+ * Agent related error types
  */
 export enum AgentErrorType {
     VALIDATION_FAILED = 'VALIDATION_FAILED',
@@ -28,32 +28,32 @@ export enum AgentErrorType {
 }
 
 /**
- * 오류 핸들러 인터페이스
+ * Error handler interface
  */
 export interface IErrorHandler {
     handleActivationError(error: Error, context: ISafeExtensionContext): void;
     logCompatibilityIssue(issue: string, context: ISafeExtensionContext): void;
     
-    // Agent 관련 오류 처리
+    // Agent related error handling
     handleAgentCreationError(error: Error, agentName?: string): Promise<void>;
     handleFileSystemError(error: Error, operation: string, filePath?: string): Promise<void>;
     handleValidationError(validation: ValidationResult, context?: string): Promise<void>;
     handleFileAccessError(error: Error, filePath: string): Promise<void>;
     
-    // 사용자 피드백
+    // User feedback
     showSuccessMessage(message: string, actions?: string[]): Promise<string | undefined>;
     showErrorMessage(message: string, error?: Error, actions?: string[]): Promise<string | undefined>;
     showWarningMessage(message: string, actions?: string[]): Promise<string | undefined>;
     
-    // 오류 분석
+    // Error analysis
     categorizeError(error: Error): FileSystemErrorType | AgentErrorType;
     getErrorSuggestions(error: Error, context?: string): string[];
     isRecoverableError(error: Error): boolean;
 }
 
 /**
- * 포괄적인 오류 처리 서비스
- * Agent 관리, 파일 시스템, 유효성 검사 등의 오류를 처리하고 사용자 피드백을 제공
+ * Comprehensive error handling service
+ * Handles errors from agent management, file system, validation, etc. and provides user feedback
  */
 export class ErrorHandler implements IErrorHandler {
     private readonly logger: ExtensionLogger;
@@ -63,7 +63,7 @@ export class ErrorHandler implements IErrorHandler {
     }
 
     /**
-     * 익스텐션 활성화 오류 처리
+     * Handle extension activation errors
      */
     public handleActivationError(error: Error, context: ISafeExtensionContext): void {
         const errorMessage = `Extension activation failed on ${context.ideType} IDE`;
@@ -76,23 +76,23 @@ export class ErrorHandler implements IErrorHandler {
             stack: error.stack
         });
 
-        // IDE별 맞춤 오류 메시지
-        let userMessage = 'Q CLI Agent Manager 익스텐션을 활성화할 수 없습니다.';
+        // IDE-specific error messages
+        let userMessage = 'Unable to activate Agent Manager for Q CLI extension.';
         
         switch (context.ideType) {
             case IDEType.Kiro:
-                userMessage += ' Kiro IDE 호환성 문제일 수 있습니다. 최신 버전을 사용하고 있는지 확인해주세요.';
+                userMessage += ' This may be a Kiro IDE compatibility issue. Please ensure you are using the latest version.';
                 break;
             case IDEType.VSCode:
-                userMessage += ' VS Code를 재시작하거나 익스텐션을 다시 설치해보세요.';
+                userMessage += ' Try restarting VS Code or reinstalling the extension.';
                 break;
             default:
-                userMessage += ' 지원되지 않는 IDE이거나 호환성 문제가 있을 수 있습니다.';
+                userMessage += ' This may be an unsupported IDE or compatibility issue.';
                 break;
         }
 
-        vscode.window.showErrorMessage(userMessage, '자세히 보기').then(selection => {
-            if (selection === '자세히 보기') {
+        vscode.window.showErrorMessage(userMessage, 'Show Details').then(selection => {
+            if (selection === 'Show Details') {
                 this.showDetailedError(error, context);
             }
         });
@@ -101,7 +101,7 @@ export class ErrorHandler implements IErrorHandler {
     // Webview creation error handler removed - using tree view only
 
     /**
-     * 호환성 문제 로깅
+     * Log compatibility issues
      */
     public logCompatibilityIssue(issue: string, context: ISafeExtensionContext): void {
         this.logger.logCompatibility(`Compatibility issue detected: ${issue}`, {
@@ -112,21 +112,21 @@ export class ErrorHandler implements IErrorHandler {
     }
 
     /**
-     * 상세 오류 정보 표시
+     * Show detailed error information
      */
     private showDetailedError(error: Error, context: ISafeExtensionContext): void {
         const errorDetails = [
-            `오류 이름: ${error.name}`,
-            `오류 메시지: ${error.message}`,
-            `IDE 타입: ${context.ideType}`,
+            `Error Name: ${error.name}`,
+            `Error Message: ${error.message}`,
+            `IDE Type: ${context.ideType}`,
             `Extension URI: ${context.extensionUri.toString()}`,
             `Extension Path: ${context.extensionPath}`,
             '',
-            '스택 트레이스:',
-            error.stack || '스택 트레이스를 사용할 수 없습니다.'
+            'Stack Trace:',
+            error.stack || 'Stack trace not available.'
         ].join('\n');
 
-        // 새 문서에 오류 정보 표시
+        // Display error information in a new document
         vscode.workspace.openTextDocument({
             content: errorDetails,
             language: 'plaintext'
@@ -138,7 +138,7 @@ export class ErrorHandler implements IErrorHandler {
     // Error action handler removed - no longer needed without webview
 
     /**
-     * Agent 생성 오류 처리
+     * Handle agent creation errors
      */
     public async handleAgentCreationError(error: Error, agentName?: string): Promise<void> {
         const errorType = this.categorizeError(error);
@@ -146,7 +146,7 @@ export class ErrorHandler implements IErrorHandler {
         
         this.logger.error(`Agent creation failed for ${context}`, error);
         
-        let userMessage = `Agent 생성에 실패했습니다`;
+        let userMessage = `Failed to create agent`;
         if (agentName) {
             userMessage += ` (${agentName})`;
         }
@@ -155,29 +155,29 @@ export class ErrorHandler implements IErrorHandler {
         
         switch (errorType) {
             case AgentErrorType.NAME_ALREADY_EXISTS:
-                userMessage = `Agent '${agentName}'은(는) 이미 존재합니다. 다른 이름을 사용해주세요.`;
+                userMessage = `Agent '${agentName}' already exists. Please use a different name.`;
                 await this.showErrorMessage(userMessage);
                 break;
                 
             case AgentErrorType.VALIDATION_FAILED:
-                userMessage += ': 입력한 정보가 올바르지 않습니다.';
+                userMessage += ': The entered information is not valid.';
                 await this.showErrorMessage(userMessage, error, suggestions);
                 break;
                 
             case FileSystemErrorType.PERMISSION_DENIED:
-                userMessage += ': 파일을 생성할 권한이 없습니다.';
+                userMessage += ': Permission denied to create file.';
                 await this.showErrorMessage(userMessage, error, [
-                    '폴더 권한 확인',
-                    '관리자 권한으로 실행',
-                    '다른 위치에서 시도'
+                    'Check folder permissions',
+                    'Run as administrator',
+                    'Try in a different location'
                 ]);
                 break;
                 
             case FileSystemErrorType.DISK_FULL:
-                userMessage += ': 디스크 공간이 부족합니다.';
+                userMessage += ': Insufficient disk space.';
                 await this.showErrorMessage(userMessage, error, [
-                    '디스크 정리',
-                    '다른 드라이브 사용'
+                    'Clean up disk space',
+                    'Use a different drive'
                 ]);
                 break;
                 
@@ -188,7 +188,7 @@ export class ErrorHandler implements IErrorHandler {
     }
 
     /**
-     * 파일 시스템 오류 처리
+     * Handle file system errors
      */
     public async handleFileSystemError(error: Error, operation: string, filePath?: string): Promise<void> {
         const errorType = this.categorizeError(error);
@@ -196,48 +196,48 @@ export class ErrorHandler implements IErrorHandler {
         
         this.logger.error(`File system error during ${operation}${context}`, error);
         
-        let userMessage = `파일 시스템 작업 실패: ${operation}`;
+        let userMessage = `File system operation failed: ${operation}`;
         const suggestions: string[] = [];
         
         switch (errorType) {
             case FileSystemErrorType.PERMISSION_DENIED:
-                userMessage = `권한이 없어 ${operation} 작업을 수행할 수 없습니다${context}`;
-                suggestions.push('파일/폴더 권한을 확인하세요');
-                suggestions.push('관리자 권한으로 VS Code를 실행하세요');
+                userMessage = `Permission denied for ${operation} operation${context}`;
+                suggestions.push('Check file/folder permissions');
+                suggestions.push('Run VS Code as administrator');
                 if (filePath) {
-                    suggestions.push('파일이 다른 프로그램에서 사용 중인지 확인하세요');
+                    suggestions.push('Check if file is being used by another program');
                 }
                 break;
                 
             case FileSystemErrorType.FILE_NOT_FOUND:
-                userMessage = `파일 또는 폴더를 찾을 수 없습니다${context}`;
-                suggestions.push('경로가 올바른지 확인하세요');
-                suggestions.push('파일이 삭제되었거나 이동되었는지 확인하세요');
+                userMessage = `File or folder not found${context}`;
+                suggestions.push('Check if the path is correct');
+                suggestions.push('Check if file was deleted or moved');
                 break;
                 
             case FileSystemErrorType.DISK_FULL:
-                userMessage = `디스크 공간이 부족하여 ${operation} 작업을 완료할 수 없습니다`;
-                suggestions.push('디스크 정리를 수행하세요');
-                suggestions.push('불필요한 파일을 삭제하세요');
-                suggestions.push('다른 드라이브를 사용하세요');
+                userMessage = `Cannot complete ${operation} operation due to insufficient disk space`;
+                suggestions.push('Perform disk cleanup');
+                suggestions.push('Delete unnecessary files');
+                suggestions.push('Use a different drive');
                 break;
                 
             case FileSystemErrorType.FILE_EXISTS:
-                userMessage = `파일이 이미 존재하여 ${operation} 작업을 완료할 수 없습니다${context}`;
-                suggestions.push('다른 이름을 사용하세요');
-                suggestions.push('기존 파일을 삭제하거나 이동하세요');
+                userMessage = `Cannot complete ${operation} operation because file already exists${context}`;
+                suggestions.push('Use a different name');
+                suggestions.push('Delete or move existing file');
                 break;
                 
             case FileSystemErrorType.INVALID_PATH:
-                userMessage = `잘못된 경로로 인해 ${operation} 작업을 수행할 수 없습니다${context}`;
-                suggestions.push('경로에 특수문자가 포함되어 있는지 확인하세요');
-                suggestions.push('경로 길이가 너무 긴지 확인하세요');
+                userMessage = `Cannot perform ${operation} operation due to invalid path${context}`;
+                suggestions.push('Check if path contains special characters');
+                suggestions.push('Check if path is too long');
                 break;
                 
             default:
                 userMessage += context;
-                suggestions.push('잠시 후 다시 시도하세요');
-                suggestions.push('VS Code를 재시작하세요');
+                suggestions.push('Try again later');
+                suggestions.push('Restart VS Code');
                 break;
         }
         
@@ -245,7 +245,7 @@ export class ErrorHandler implements IErrorHandler {
     }
 
     /**
-     * 유효성 검사 오류 처리
+     * Handle validation errors
      */
     public async handleValidationError(validation: ValidationResult, context?: string): Promise<void> {
         if (validation.isValid) {
@@ -255,21 +255,21 @@ export class ErrorHandler implements IErrorHandler {
         const contextStr = context ? ` (${context})` : '';
         this.logger.warn(`Validation failed${contextStr}`, { errors: validation.errors, warnings: validation.warnings });
         
-        let message = '입력한 정보가 올바르지 않습니다';
+        let message = 'The entered information is not valid';
         if (context) {
             message += ` - ${context}`;
         }
         
-        // 구체적인 오류 메시지 생성
+        // Generate specific error message
         if (validation.errors.length === 1 && validation.errors[0]) {
             message = validation.errors[0];
         } else if (validation.errors.length > 1) {
             message += ':\n' + validation.errors.map(error => `• ${error}`).join('\n');
         }
         
-        // 경고가 있는 경우 별도 처리
+        // Handle warnings separately
         if (validation.warnings && validation.warnings.length > 0) {
-            const warningMessage = '다음 사항을 확인해주세요:\n' + 
+            const warningMessage = 'Please check the following:\n' + 
                 validation.warnings.map(warning => `• ${warning}`).join('\n');
             await this.showWarningMessage(warningMessage);
         }
@@ -278,35 +278,35 @@ export class ErrorHandler implements IErrorHandler {
     }
 
     /**
-     * 파일 접근 오류 처리 (Agent 파일 열기 등)
+     * Handle file access errors (opening agent files, etc.)
      */
     public async handleFileAccessError(error: Error, filePath: string): Promise<void> {
         const errorType = this.categorizeError(error);
         
         this.logger.error(`File access error for ${filePath}`, error);
         
-        let userMessage = `파일에 접근할 수 없습니다: ${filePath}`;
+        let userMessage = `Cannot access file: ${filePath}`;
         const suggestions: string[] = [];
         
         switch (errorType) {
             case FileSystemErrorType.FILE_NOT_FOUND:
-                userMessage = `파일을 찾을 수 없습니다: ${filePath}`;
-                suggestions.push('파일이 삭제되었거나 이동되었는지 확인하세요');
-                suggestions.push('Agent 목록을 새로고침하세요');
-                suggestions.push('Agent를 다시 생성하세요');
+                userMessage = `File not found: ${filePath}`;
+                suggestions.push('Check if file was deleted or moved');
+                suggestions.push('Refresh agent list');
+                suggestions.push('Recreate the agent');
                 break;
                 
             case FileSystemErrorType.PERMISSION_DENIED:
-                userMessage = `파일에 접근할 권한이 없습니다: ${filePath}`;
-                suggestions.push('파일 권한을 확인하세요');
-                suggestions.push('관리자 권한으로 VS Code를 실행하세요');
-                suggestions.push('파일이 다른 프로그램에서 사용 중인지 확인하세요');
+                userMessage = `Permission denied to access file: ${filePath}`;
+                suggestions.push('Check file permissions');
+                suggestions.push('Run VS Code as administrator');
+                suggestions.push('Check if file is being used by another program');
                 break;
                 
             default:
-                suggestions.push('파일 경로가 올바른지 확인하세요');
-                suggestions.push('잠시 후 다시 시도하세요');
-                suggestions.push('VS Code를 재시작하세요');
+                suggestions.push('Check if file path is correct');
+                suggestions.push('Try again later');
+                suggestions.push('Restart VS Code');
                 break;
         }
         
@@ -314,7 +314,7 @@ export class ErrorHandler implements IErrorHandler {
     }
 
     /**
-     * 성공 메시지 표시
+     * Show success message
      */
     public async showSuccessMessage(message: string, actions?: string[]): Promise<string | undefined> {
         this.logger.info(`Success: ${message}`);
@@ -328,7 +328,7 @@ export class ErrorHandler implements IErrorHandler {
     }
 
     /**
-     * 오류 메시지 표시
+     * Show error message
      */
     public async showErrorMessage(message: string, error?: Error, actions?: string[]): Promise<string | undefined> {
         this.logger.error(`Error shown to user: ${message}`, error);
@@ -342,7 +342,7 @@ export class ErrorHandler implements IErrorHandler {
     }
 
     /**
-     * 경고 메시지 표시
+     * Show warning message
      */
     public async showWarningMessage(message: string, actions?: string[]): Promise<string | undefined> {
         this.logger.warn(`Warning shown to user: ${message}`);
@@ -356,13 +356,13 @@ export class ErrorHandler implements IErrorHandler {
     }
 
     /**
-     * 오류 분류
+     * Categorize errors
      */
     public categorizeError(error: Error): FileSystemErrorType | AgentErrorType {
         const errorCode = (error as NodeJS.ErrnoException).code;
         const errorMessage = error.message.toLowerCase();
         
-        // 파일 시스템 오류 분류
+        // File system error classification
         switch (errorCode) {
             case 'EACCES':
             case 'EPERM':
@@ -377,7 +377,7 @@ export class ErrorHandler implements IErrorHandler {
                 return FileSystemErrorType.INVALID_PATH;
         }
         
-        // Agent 관련 오류 분류
+        // Agent related error classification
         if (errorMessage.includes('already exists')) {
             return AgentErrorType.NAME_ALREADY_EXISTS;
         }
@@ -398,7 +398,7 @@ export class ErrorHandler implements IErrorHandler {
             return AgentErrorType.TEMPLATE_ERROR;
         }
         
-        // 파일 시스템 관련 키워드 확인
+        // Check file system related keywords
         if (errorMessage.includes('permission') || errorMessage.includes('access')) {
             return FileSystemErrorType.PERMISSION_DENIED;
         }
@@ -415,7 +415,7 @@ export class ErrorHandler implements IErrorHandler {
     }
 
     /**
-     * 오류에 대한 해결 제안 생성
+     * Generate error resolution suggestions
      */
     public getErrorSuggestions(error: Error, context?: string): string[] {
         const errorType = this.categorizeError(error);
@@ -423,58 +423,58 @@ export class ErrorHandler implements IErrorHandler {
         
         switch (errorType) {
             case FileSystemErrorType.PERMISSION_DENIED:
-                suggestions.push('관리자 권한으로 VS Code 실행');
-                suggestions.push('파일/폴더 권한 확인');
-                suggestions.push('바이러스 백신 소프트웨어 확인');
+                suggestions.push('Run VS Code as administrator');
+                suggestions.push('Check file/folder permissions');
+                suggestions.push('Check antivirus software');
                 break;
                 
             case FileSystemErrorType.DISK_FULL:
-                suggestions.push('디스크 정리 수행');
-                suggestions.push('임시 파일 삭제');
-                suggestions.push('다른 드라이브 사용');
+                suggestions.push('Perform disk cleanup');
+                suggestions.push('Delete temporary files');
+                suggestions.push('Use a different drive');
                 break;
                 
             case FileSystemErrorType.FILE_NOT_FOUND:
-                suggestions.push('경로 확인');
-                suggestions.push('파일 존재 여부 확인');
-                suggestions.push('워크스페이스 새로고침');
+                suggestions.push('Check path');
+                suggestions.push('Check if file exists');
+                suggestions.push('Refresh workspace');
                 break;
                 
             case AgentErrorType.VALIDATION_FAILED:
-                suggestions.push('입력 형식 확인');
-                suggestions.push('특수문자 사용 제한 확인');
-                suggestions.push('길이 제한 확인');
+                suggestions.push('Check input format');
+                suggestions.push('Check special character restrictions');
+                suggestions.push('Check length restrictions');
                 break;
                 
             case AgentErrorType.NAME_ALREADY_EXISTS:
-                suggestions.push('다른 이름 사용');
-                suggestions.push('기존 Agent 확인');
+                suggestions.push('Use a different name');
+                suggestions.push('Check existing agents');
                 break;
                 
             case AgentErrorType.INVALID_CONFIG:
-                suggestions.push('JSON 형식 확인');
-                suggestions.push('필수 필드 확인');
-                suggestions.push('스키마 검증');
+                suggestions.push('Check JSON format');
+                suggestions.push('Check required fields');
+                suggestions.push('Validate schema');
                 break;
                 
             default:
-                suggestions.push('잠시 후 다시 시도');
-                suggestions.push('VS Code 재시작');
-                suggestions.push('익스텐션 재설치');
+                suggestions.push('Try again later');
+                suggestions.push('Restart VS Code');
+                suggestions.push('Reinstall extension');
                 break;
         }
         
-        // 컨텍스트별 추가 제안
+        // Context-specific additional suggestions
         if (context === 'agent_creation') {
-            suggestions.push('Agent 이름 규칙 확인');
-            suggestions.push('.amazonq/cli-agents/ 폴더 권한 확인');
+            suggestions.push('Check agent name rules');
+            suggestions.push('Check .amazonq/cli-agents/ folder permissions');
         }
         
         return suggestions;
     }
 
     /**
-     * 복구 가능한 오류인지 확인
+     * Check if error is recoverable
      */
     public isRecoverableError(error: Error): boolean {
         const errorType = this.categorizeError(error);
@@ -491,24 +491,24 @@ export class ErrorHandler implements IErrorHandler {
     }
 
     /**
-     * 오류에 대한 복구 제안 생성 (기존 호환성 유지)
+     * Generate recovery suggestions for errors (maintaining backward compatibility)
      */
     public getRecoverySuggestions(error: Error, context: ISafeExtensionContext): string[] {
         const suggestions: string[] = [];
 
         if (error.message.includes('tree view')) {
-            suggestions.push('Activity Bar에서 Q CLI Agent Manager 아이콘을 확인하세요');
-            suggestions.push('IDE를 재시작 후 다시 시도');
+            suggestions.push('Check Agent Manager for Q CLI icon in Activity Bar');
+            suggestions.push('Restart IDE and try again');
         }
 
         if (error.message.includes('extension')) {
-            suggestions.push('익스텐션을 다시 설치');
-            suggestions.push('VS Code/Kiro IDE 업데이트 확인');
+            suggestions.push('Reinstall extension');
+            suggestions.push('Check VS Code/Kiro IDE updates');
         }
 
         if (context.ideType === IDEType.Kiro) {
-            suggestions.push('Kiro IDE 호환 모드로 실행');
-            suggestions.push('VS Code에서 테스트해보기');
+            suggestions.push('Run in Kiro IDE compatibility mode');
+            suggestions.push('Test in VS Code');
         }
 
         return suggestions;

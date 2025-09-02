@@ -24,8 +24,8 @@ export class ContextTreeProvider implements vscode.TreeDataProvider<ContextItem>
      */
     private createWelcomeItem(): ContextItem {
         return {
-            label: 'Q CLI Agent Manager에 오신 것을 환영합니다',
-            description: '아직 추가된 컨텍스트 파일이 없습니다',
+            label: 'Welcome to Agent Manager for Q CLI',
+            description: 'No context files added yet',
             iconPath: new vscode.ThemeIcon('info'),
             contextValue: 'welcome'
         };
@@ -147,8 +147,8 @@ export class ContextTreeProvider implements vscode.TreeDataProvider<ContextItem>
      */
     private createEmptyItem(): ContextItem {
         return {
-            label: '컨텍스트 파일이 없습니다',
-            description: '파일을 추가하여 시작하세요',
+            label: 'No context files',
+            description: 'Add files to get started',
             iconPath: new vscode.ThemeIcon('file-add'),
             contextValue: 'empty'
         };

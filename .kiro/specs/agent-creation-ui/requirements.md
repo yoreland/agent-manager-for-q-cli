@@ -8,7 +8,7 @@ This feature adds a user-friendly UI form for creating new Q CLI agents, replaci
 
 ### Requirement 1
 
-**User Story:** As a developer using the Q CLI Agent Manager extension, I want to create new agents through a visual form interface, so that I can quickly configure agents without manually editing JSON files.
+**User Story:** As a developer using the Agent Manager for Q CLI extension, I want to create new agents through a visual form interface, so that I can quickly configure agents without manually editing JSON files.
 
 #### Acceptance Criteria
 

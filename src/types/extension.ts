@@ -92,7 +92,7 @@ export const EXTENSION_CONSTANTS = {
     EXTENSION_ID: 'qcli-context-manager',
     
     /** Output channel name */
-    OUTPUT_CHANNEL_NAME: 'Q CLI Agent Manager',
+    OUTPUT_CHANNEL_NAME: 'Agent Manager for Q CLI',
     
     /** Command prefix */
     COMMAND_PREFIX: 'qcli-context',

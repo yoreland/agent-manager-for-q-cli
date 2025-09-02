@@ -193,7 +193,7 @@ npm run vsce:package
 - Source maps are enabled in development mode
 - Use VS Code debugger with Extension Development Host
 - Console logs available in development builds
-- Output channel: "Q CLI Agent Manager"
+- Output channel: "Agent Manager for Q CLI"
 
 ## Continuous Integration
 

@@ -2,8 +2,8 @@
   "name": "agent-manager-for-q-cli",
   "displayName": "Agent Manager for Q CLI",
   "description": "VS Code Extension that simplifies Amazon Q Developer CLI agent management with intuitive agent creation, configuration, and execution tools",
-  "version": "0.0.2",
-  "publisher": "jungseob-shin",
+  "version": "0.0.1",
+  "publisher": "raphael-shin",
   "icon": "media/logo.png",
   "repository": {
     "type": "git",
@@ -27,8 +27,8 @@
     "commands": [
       {
         "command": "qcli-agent.openAgentManager",
-        "title": "Q CLI Agent Manager 열기",
-        "category": "Q CLI Agent Manager"
+        "title": "Open Agent Manager for Q CLI",
+        "category": "Agent Manager for Q CLI"
       },
       {
         "command": "qcli-context.refreshTree",
@@ -60,7 +60,7 @@
       "activitybar": [
         {
           "id": "qcli-context",
-          "title": "Q CLI Agent Manager",
+          "title": "Agent Manager for Q CLI",
           "icon": "$(robot)"
         }
       ]
@@ -69,7 +69,7 @@
       "qcli-context": [
         {
           "id": "qcli-agents-tree",
-          "name": "Q CLI Agents",
+          "name": "Agent Manager for Q CLI",
           "when": "true"
         },
         {
@@ -121,7 +121,7 @@
       ]
     },
     "configuration": {
-      "title": "Q CLI Agent Manager",
+      "title": "Agent Manager for Q CLI",
       "properties": {
         "qcli-context.logLevel": {
           "type": "string",
@@ -132,7 +132,7 @@
             "error"
           ],
           "default": "info",
-          "description": "Set the logging level for the Q CLI Agent Manager extension"
+          "description": "Set the logging level for the Agent Manager for Q CLI extension"
         },
         "qcli-context.enableDebugMode": {
           "type": "boolean",

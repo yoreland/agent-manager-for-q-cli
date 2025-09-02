@@ -31,12 +31,12 @@ A VS Code Extension that simplifies Amazon Q Developer CLI agent management with
 
 ### Accessing the Extension
 - **Activity Bar**: Click the 🤖 robot icon
-- **Command Palette**: `Ctrl+Shift+P` → "Q CLI: Agent Manager 열기"
+- **Command Palette**: `Ctrl+Shift+P` → "Q CLI: Open Agent Manager"
 
 ## Requirements
 
 - VS Code 1.103.0 or higher
-- Amazon Q Developer CLI installed and configured
+- Amazon Q Developer CLI installed and confiㅑgured
 
 ---
 
