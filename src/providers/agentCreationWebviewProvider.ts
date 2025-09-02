@@ -222,6 +222,16 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
             box-shadow: 0 0 0 1px var(--vscode-focusBorder);
         }
         
+        input[type="checkbox"]:focus {
+            outline: 2px solid var(--vscode-focusBorder);
+            outline-offset: 2px;
+        }
+        
+        .btn:focus {
+            outline: 2px solid var(--vscode-focusBorder);
+            outline-offset: 2px;
+        }
+        
         textarea {
             min-height: 100px;
             resize: vertical;
@@ -442,20 +452,24 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
                 
                 <div class="form-group">
                     <label for="agentName">Agent Name *</label>
-                    <input type="text" id="agentName" name="name" required>
-                    <div class="error hidden" id="nameError"></div>
+                    <input type="text" id="agentName" name="name" required 
+                           aria-describedby="nameError" aria-invalid="false">
+                    <div class="error hidden" id="nameError" role="alert" aria-live="polite"></div>
                 </div>
                 
                 <div class="form-group">
                     <label for="agentDescription">Description</label>
-                    <input type="text" id="agentDescription" name="description">
-                    <div class="error hidden" id="descriptionError"></div>
+                    <input type="text" id="agentDescription" name="description"
+                           aria-describedby="descriptionError">
+                    <div class="error hidden" id="descriptionError" role="alert" aria-live="polite"></div>
                 </div>
                 
                 <div class="form-group">
                     <label for="agentPrompt">Prompt</label>
-                    <textarea id="agentPrompt" name="prompt" placeholder="Enter the system prompt for your agent..."></textarea>
-                    <div class="error hidden" id="promptError"></div>
+                    <textarea id="agentPrompt" name="prompt" 
+                              placeholder="Enter the system prompt for your agent..."
+                              aria-describedby="promptError"></textarea>
+                    <div class="error hidden" id="promptError" role="alert" aria-live="polite"></div>
                 </div>
             </div>
             
@@ -466,18 +480,18 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
                     Select which tools your agent can use. Tools in "Allowed Tools" are pre-approved and don't require user confirmation.
                 </p>
                 
-                <div class="tools-container">
+                <div class="tools-container" role="group" aria-labelledby="tools-heading">
                     <div class="tool-column">
-                        <h3>Available Tools</h3>
-                        <div id="availableTools"></div>
+                        <h3 id="available-tools-heading">Available Tools</h3>
+                        <div id="availableTools" role="group" aria-labelledby="available-tools-heading"></div>
                     </div>
                     
                     <div class="tool-column">
-                        <h3>Allowed Tools</h3>
-                        <div id="allowedTools"></div>
+                        <h3 id="allowed-tools-heading">Allowed Tools</h3>
+                        <div id="allowedTools" role="group" aria-labelledby="allowed-tools-heading"></div>
                     </div>
                 </div>
-                <div class="error hidden" id="toolsError"></div>
+                <div class="error hidden" id="toolsError" role="alert" aria-live="polite"></div>
             </div>
             
             <!-- Resources Section -->
@@ -627,13 +641,14 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
             item.innerHTML = \`
                 <input type="checkbox" id="\${type}_\${tool.name}" 
                        \${checked ? 'checked' : ''} 
-                       onchange="toggleTool('\${tool.name}', '\${type}', this.checked)">
+                       onchange="toggleTool('\${tool.name}', '\${type}', this.checked)"
+                       aria-describedby="\${type}_\${tool.name}_desc">
                 <div class="tool-info">
                     <div class="tool-name">
                         \${tool.displayName}
                         <span class="tool-category category-\${tool.category}">\${tool.category}</span>
                     </div>
-                    <div class="tool-description">\${tool.description}</div>
+                    <div class="tool-description" id="\${type}_\${tool.name}_desc">\${tool.description}</div>
                 </div>
             \`;
             
