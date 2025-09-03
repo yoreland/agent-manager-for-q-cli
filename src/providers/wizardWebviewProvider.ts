@@ -919,29 +919,24 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     
                     /* Step Content Animations */
                     .step-content {
-                        animation: fadeInUp 0.4s ease;
+                        animation: none;
                     }
                     
                     .step-transition-out {
-                        opacity: 0;
-                        transform: translateX(-30px);
-                        transition: all 0.3s ease;
+                        opacity: 1;
+                        transform: none;
+                        transition: none;
                     }
                     
                     .step-transition-in {
-                        animation: fadeInRight 0.4s ease;
+                        animation: none;
                     }
                     
                     /* Form Animation Enhancements */
                     .form-group {
-                        animation: fadeInUp 0.3s ease;
-                        animation-fill-mode: both;
+                        animation: none;
+                        animation-fill-mode: none;
                     }
-                    
-                    .form-group:nth-child(1) { animation-delay: 0.1s; }
-                    .form-group:nth-child(2) { animation-delay: 0.2s; }
-                    .form-group:nth-child(3) { animation-delay: 0.3s; }
-                    .form-group:nth-child(4) { animation-delay: 0.4s; }
                     
                     .form-input:focus {
                         animation: none;
@@ -2252,17 +2247,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         console.log('Current step:', currentStep);
                         
                         updateProgressBar();
-                        
-                        // Add transition animation for step changes
-                        if (previousStep !== currentStep) {
-                            const content = document.getElementById('stepContent');
-                            content.classList.add('step-transition-in');
-                            
-                            setTimeout(() => {
-                                content.classList.remove('step-transition-in', 'step-transition-out');
-                            }, 300);
-                        }
-                        
                         updateStepContent();
                         updateNavigation();
                         
@@ -2387,16 +2371,10 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         if (currentStep > 1) {
                             setNavigationLoading(true);
                             
-                            // Add transition animation
-                            const content = document.getElementById('stepContent');
-                            content.classList.add('step-transition-out');
-                            
-                            setTimeout(() => {
-                                vscode.postMessage({
-                                    type: 'stepChanged',
-                                    step: currentStep - 1
-                                });
-                            }, 150);
+                            vscode.postMessage({
+                                type: 'stepChanged',
+                                step: currentStep - 1
+                            });
                         }
                     }
                     
@@ -2424,15 +2402,10 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     }
                     
                     function proceedToNextStep() {
-                        const content = document.getElementById('stepContent');
-                        content.classList.add('step-transition-out');
-                        
-                        setTimeout(() => {
-                            vscode.postMessage({
-                                type: 'stepChanged',
-                                step: currentStep + 1
-                            });
-                        }, 150);
+                        vscode.postMessage({
+                            type: 'stepChanged',
+                            step: currentStep + 1
+                        });
                     }
                     
                     function cancelWizard() {
