@@ -441,7 +441,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         font-size: var(--wizard-font-size-xs);
                         font-weight: 500;
                         color: var(--vscode-descriptionForeground);
-                        transition: all 0.2s ease;
                         cursor: pointer;
                         position: relative;
                         white-space: nowrap;
@@ -509,7 +508,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         font-family: var(--vscode-font-family);
                         font-size: var(--wizard-font-size-sm);
                         box-sizing: border-box;
-                        transition: border-color 0.2s ease, box-shadow 0.2s ease;
                     }
                     
                     .form-input:focus {
@@ -634,7 +632,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         font-family: var(--vscode-font-family);
                         font-size: var(--wizard-font-size-md);
                         font-weight: 500;
-                        transition: all 0.2s ease;
                         position: relative;
                         min-width: 80px;
                         display: inline-flex;
@@ -755,7 +752,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         margin-top: var(--wizard-spacing-xl);
                         opacity: 0;
                         transform: translateY(-10px);
-                        transition: all 0.3s ease;
                         box-shadow: var(--wizard-shadow-md);
                     }
                     
@@ -1003,7 +999,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         border-radius: var(--wizard-border-radius-xl);
                         padding: var(--wizard-spacing-lg);
                         cursor: pointer;
-                        transition: all 0.3s ease;
                         background: var(--vscode-input-background);
                         text-align: center;
                         position: relative;
@@ -1112,9 +1107,8 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         padding: var(--wizard-spacing-xxxl) var(--wizard-spacing-xl);
                         text-align: center;
                         cursor: pointer;
-                        transition: all 0.3s ease;
                         background: var(--vscode-input-background);
-                        animation: fadeInUp 0.4s ease;
+                    }
                     }
                     
                     .drop-zone:hover,
@@ -1436,7 +1430,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     
                     /* Step Transition Animations */
                     .step-content {
-                        transition: opacity 0.3s ease, transform 0.3s ease;
                     }
                     
                     .step-transition-out {
@@ -1469,7 +1462,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         margin-top: 20px;
                         opacity: 0;
                         transform: translateY(-10px);
-                        transition: all 0.3s ease;
                     }
                     
                     .error-summary.show {
@@ -1515,7 +1507,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         cursor: pointer;
                         color: var(--vscode-descriptionForeground);
                         border-bottom: 2px solid transparent;
-                        transition: all 0.2s ease;
                         display: flex;
                         align-items: center;
                         gap: 8px;
@@ -1592,7 +1583,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         border-radius: 6px;
                         padding: var(--wizard-spacing-sm);
                         cursor: pointer;
-                        transition: all 0.2s ease;
                         background: var(--vscode-input-background);
                     }
                     
@@ -1664,7 +1654,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     .tool-details {
                         max-height: 0;
                         overflow: hidden;
-                        transition: max-height 0.3s ease, padding-top 0.3s ease;
                         font-size: var(--wizard-font-size-xs);
                         color: var(--vscode-descriptionForeground);
                         line-height: 1.5;
@@ -1697,7 +1686,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         padding: var(--wizard-spacing-lg) var(--wizard-spacing-md);
                         text-align: center;
                         cursor: pointer;
-                        transition: all 0.2s ease;
                         background: var(--vscode-input-background);
                     }
                     
@@ -1758,7 +1746,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         margin-top: 4px;
                         opacity: 0;
                         transform: translateY(-5px);
-                        transition: all 0.2s ease;
                     }
                     
                     .resource-error.show {
@@ -1814,7 +1801,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         border: 1px solid var(--vscode-input-border);
                         border-radius: 4px;
                         background: var(--vscode-input-background);
-                        transition: all 0.2s ease;
                     }
                     
                     .resource-item:hover {
@@ -1856,7 +1842,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         border-radius: 2px;
                         font-size: 14px;
                         opacity: 0.7;
-                        transition: all 0.2s ease;
                         flex-shrink: 0;
                     }
                     
@@ -1904,7 +1889,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         cursor: pointer;
                         font-size: 12px;
                         font-family: var(--vscode-font-family);
-                        transition: all 0.2s ease;
                     }
                     
                     .edit-btn:hover {
