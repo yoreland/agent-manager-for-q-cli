@@ -523,7 +523,7 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     
                     .form-input:hover:not(:focus) {
                         border-color: var(--vscode-input-border);
-                        background: var(--vscode-list-hoverBackground);
+                        background: var(--vscode-input-background);
                     }
                     
                     .form-textarea {
@@ -986,7 +986,7 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         display: grid;
                         grid-template-columns: 1fr 1fr;
                         gap: var(--wizard-spacing-xl);
-                        margin: var(--wizard-spacing-xxxl) 0;
+                        margin: var(--wizard-spacing-lg) 0;
                     }
                     
                     @media (max-width: 768px) {
@@ -1633,7 +1633,7 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     
                     .tool-name {
                         font-weight: 600;
-                        font-size: 16px;
+                        font-size: var(--wizard-font-size-sm);
                         margin-bottom: 4px;
                         display: flex;
                         align-items: center;
@@ -1643,7 +1643,7 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     .experimental-tag {
                         background: var(--vscode-notificationsWarningIcon-foreground);
                         color: white;
-                        font-size: 10px;
+                        font-size: 9px;
                         padding: 2px 6px;
                         border-radius: 8px;
                         font-weight: bold;
@@ -1651,7 +1651,7 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     
                     .tool-description {
                         color: var(--vscode-descriptionForeground);
-                        font-size: 14px;
+                        font-size: var(--wizard-font-size-xs);
                         margin-bottom: 8px;
                     }
                     
@@ -1664,7 +1664,7 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         max-height: 0;
                         overflow: hidden;
                         transition: max-height 0.3s ease, padding-top 0.3s ease;
-                        font-size: 13px;
+                        font-size: var(--wizard-font-size-xs);
                         color: var(--vscode-descriptionForeground);
                         line-height: 1.5;
                     }
