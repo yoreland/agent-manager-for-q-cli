@@ -1,6 +1,7 @@
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import * as os from 'os';
+import * as vscode from 'vscode';
 
 export enum AgentLocation {
     Local = 'local',
@@ -28,7 +29,13 @@ export class AgentLocationService implements IAgentLocationService {
     private readonly GLOBAL_AGENTS_DIR = path.join('.aws', 'amazonq', 'cli-agents');
 
     getLocalAgentsPath(): string {
-        return path.join(process.cwd(), this.LOCAL_AGENTS_DIR);
+        // Use VS Code workspace path instead of process.cwd()
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        if (!workspaceFolders || workspaceFolders.length === 0) {
+            throw new Error('No workspace folder found. Agent management requires an open workspace.');
+        }
+        
+        return path.join(workspaceFolders[0].uri.fsPath, this.LOCAL_AGENTS_DIR);
     }
 
     getGlobalAgentsPath(): string {
