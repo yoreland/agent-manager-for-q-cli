@@ -598,6 +598,597 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     .error-text li {
                         margin-bottom: 4px;
                     }
+                    
+                    /* Tools Selection Styling */
+                    .tools-tabs {
+                        display: flex;
+                        border-bottom: 1px solid var(--vscode-input-border);
+                        margin-bottom: 20px;
+                    }
+                    
+                    .tab-button {
+                        background: transparent;
+                        border: none;
+                        padding: 12px 20px;
+                        cursor: pointer;
+                        color: var(--vscode-descriptionForeground);
+                        border-bottom: 2px solid transparent;
+                        transition: all 0.2s ease;
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        font-family: var(--vscode-font-family);
+                        font-size: 14px;
+                    }
+                    
+                    .tab-button:hover {
+                        color: var(--vscode-foreground);
+                        background: var(--vscode-list-hoverBackground);
+                    }
+                    
+                    .tab-button.active {
+                        color: var(--vscode-focusBorder);
+                        border-bottom-color: var(--vscode-focusBorder);
+                        font-weight: 600;
+                    }
+                    
+                    .experimental-badge {
+                        background: var(--vscode-notificationsWarningIcon-foreground);
+                        color: white;
+                        font-size: 10px;
+                        padding: 2px 6px;
+                        border-radius: 8px;
+                        font-weight: bold;
+                    }
+                    
+                    .tab-content {
+                        position: relative;
+                    }
+                    
+                    .tab-panel {
+                        display: none;
+                    }
+                    
+                    .tab-panel.active {
+                        display: block;
+                        animation: fadeIn 0.3s ease;
+                    }
+                    
+                    @keyframes fadeIn {
+                        from { opacity: 0; transform: translateY(10px); }
+                        to { opacity: 1; transform: translateY(0); }
+                    }
+                    
+                    .experimental-warning {
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                        background: var(--vscode-inputValidation-warningBackground);
+                        border: 1px solid var(--vscode-inputValidation-warningBorder);
+                        border-radius: 6px;
+                        padding: 16px;
+                        margin-bottom: 20px;
+                    }
+                    
+                    .warning-icon {
+                        font-size: 20px;
+                        flex-shrink: 0;
+                    }
+                    
+                    .warning-text {
+                        color: var(--vscode-inputValidation-warningForeground);
+                        font-size: 14px;
+                    }
+                    
+                    .tools-grid {
+                        display: grid;
+                        gap: 16px;
+                    }
+                    
+                    .tool-card {
+                        border: 1px solid var(--vscode-input-border);
+                        border-radius: 6px;
+                        padding: 16px;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                        background: var(--vscode-input-background);
+                    }
+                    
+                    .tool-card:hover {
+                        border-color: var(--vscode-focusBorder);
+                        background: var(--vscode-list-hoverBackground);
+                    }
+                    
+                    .tool-card.selected {
+                        border-color: var(--vscode-focusBorder);
+                        background: var(--vscode-list-activeSelectionBackground);
+                        color: var(--vscode-list-activeSelectionForeground);
+                    }
+                    
+                    .tool-card.experimental {
+                        border-left: 4px solid var(--vscode-notificationsWarningIcon-foreground);
+                    }
+                    
+                    .tool-header {
+                        display: flex;
+                        align-items: flex-start;
+                        gap: 12px;
+                    }
+                    
+                    .tool-checkbox {
+                        flex-shrink: 0;
+                        margin-top: 2px;
+                    }
+                    
+                    .tool-checkbox input[type="checkbox"] {
+                        width: 16px;
+                        height: 16px;
+                        cursor: pointer;
+                    }
+                    
+                    .tool-info {
+                        flex: 1;
+                    }
+                    
+                    .tool-name {
+                        font-weight: 600;
+                        font-size: 16px;
+                        margin-bottom: 4px;
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                    }
+                    
+                    .experimental-tag {
+                        background: var(--vscode-notificationsWarningIcon-foreground);
+                        color: white;
+                        font-size: 10px;
+                        padding: 2px 6px;
+                        border-radius: 8px;
+                        font-weight: bold;
+                    }
+                    
+                    .tool-description {
+                        color: var(--vscode-descriptionForeground);
+                        font-size: 14px;
+                        margin-bottom: 8px;
+                    }
+                    
+                    .tool-card.selected .tool-description {
+                        color: var(--vscode-list-activeSelectionForeground);
+                        opacity: 0.9;
+                    }
+                    
+                    .tool-details {
+                        max-height: 0;
+                        overflow: hidden;
+                        transition: max-height 0.3s ease, padding-top 0.3s ease;
+                        font-size: 13px;
+                        color: var(--vscode-descriptionForeground);
+                        line-height: 1.5;
+                    }
+                    
+                    .tool-details.expanded {
+                        max-height: 100px;
+                        padding-top: 8px;
+                        border-top: 1px solid var(--vscode-input-border);
+                    }
+                    
+                    .tool-card.selected .tool-details {
+                        color: var(--vscode-list-activeSelectionForeground);
+                        opacity: 0.8;
+                        border-top-color: rgba(255, 255, 255, 0.2);
+                    }
+                    
+                    /* Resources Section Styling */
+                    .resources-section {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 24px;
+                    }
+                    
+                    .drop-zone {
+                        border: 2px dashed var(--vscode-input-border);
+                        border-radius: 8px;
+                        padding: 40px 20px;
+                        text-align: center;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                        background: var(--vscode-input-background);
+                    }
+                    
+                    .drop-zone:hover,
+                    .drop-zone.drag-over {
+                        border-color: var(--vscode-focusBorder);
+                        background: var(--vscode-list-hoverBackground);
+                    }
+                    
+                    .drop-zone-content {
+                        pointer-events: none;
+                    }
+                    
+                    .drop-icon {
+                        font-size: 48px;
+                        margin-bottom: 16px;
+                    }
+                    
+                    .drop-text {
+                        color: var(--vscode-foreground);
+                        font-size: 16px;
+                        line-height: 1.5;
+                    }
+                    
+                    .manual-input-section {
+                        position: relative;
+                    }
+                    
+                    .input-group {
+                        display: flex;
+                        gap: 8px;
+                        align-items: flex-start;
+                    }
+                    
+                    .input-group .form-input {
+                        flex: 1;
+                    }
+                    
+                    .add-btn {
+                        padding: 8px 16px;
+                        background: var(--vscode-button-background);
+                        color: var(--vscode-button-foreground);
+                        border: 1px solid var(--vscode-button-border);
+                        border-radius: 2px;
+                        cursor: pointer;
+                        font-family: var(--vscode-font-family);
+                        font-size: 14px;
+                        white-space: nowrap;
+                    }
+                    
+                    .add-btn:hover {
+                        background: var(--vscode-button-hoverBackground);
+                    }
+                    
+                    .resource-error {
+                        color: var(--vscode-errorForeground);
+                        font-size: 12px;
+                        margin-top: 4px;
+                        opacity: 0;
+                        transform: translateY(-5px);
+                        transition: all 0.2s ease;
+                    }
+                    
+                    .resource-error.show {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                    
+                    .resources-list {
+                        min-height: 100px;
+                    }
+                    
+                    .empty-resources {
+                        text-align: center;
+                        padding: 40px 20px;
+                        color: var(--vscode-descriptionForeground);
+                    }
+                    
+                    .empty-icon {
+                        font-size: 48px;
+                        margin-bottom: 12px;
+                        opacity: 0.5;
+                    }
+                    
+                    .empty-text {
+                        font-size: 16px;
+                    }
+                    
+                    .resources-header {
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        margin-bottom: 16px;
+                    }
+                    
+                    .resources-header h3 {
+                        margin: 0;
+                        font-size: 16px;
+                        font-weight: 600;
+                        color: var(--vscode-foreground);
+                    }
+                    
+                    .resources-grid {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 8px;
+                    }
+                    
+                    .resource-item {
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                        padding: 12px;
+                        border: 1px solid var(--vscode-input-border);
+                        border-radius: 4px;
+                        background: var(--vscode-input-background);
+                        transition: all 0.2s ease;
+                    }
+                    
+                    .resource-item:hover {
+                        background: var(--vscode-list-hoverBackground);
+                        border-color: var(--vscode-focusBorder);
+                    }
+                    
+                    .resource-icon {
+                        font-size: 20px;
+                        flex-shrink: 0;
+                    }
+                    
+                    .resource-info {
+                        flex: 1;
+                        min-width: 0;
+                    }
+                    
+                    .resource-path {
+                        font-family: var(--vscode-editor-font-family);
+                        font-size: 13px;
+                        color: var(--vscode-foreground);
+                        word-break: break-all;
+                        margin-bottom: 2px;
+                    }
+                    
+                    .resource-type {
+                        font-size: 11px;
+                        color: var(--vscode-descriptionForeground);
+                        text-transform: uppercase;
+                        font-weight: 500;
+                    }
+                    
+                    .remove-btn {
+                        background: transparent;
+                        border: none;
+                        color: var(--vscode-errorForeground);
+                        cursor: pointer;
+                        padding: 4px;
+                        border-radius: 2px;
+                        font-size: 14px;
+                        opacity: 0.7;
+                        transition: all 0.2s ease;
+                        flex-shrink: 0;
+                    }
+                    
+                    .remove-btn:hover {
+                        opacity: 1;
+                        background: var(--vscode-inputValidation-errorBackground);
+                    }
+                    
+                    /* Summary Page Styling */
+                    .summary-sections {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 24px;
+                        margin-bottom: 24px;
+                    }
+                    
+                    .summary-section {
+                        border: 1px solid var(--vscode-input-border);
+                        border-radius: 6px;
+                        background: var(--vscode-input-background);
+                    }
+                    
+                    .summary-header {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        padding: 16px 20px;
+                        border-bottom: 1px solid var(--vscode-input-border);
+                        background: var(--vscode-editor-background);
+                    }
+                    
+                    .summary-header h3 {
+                        margin: 0;
+                        font-size: 16px;
+                        font-weight: 600;
+                        color: var(--vscode-foreground);
+                    }
+                    
+                    .edit-btn {
+                        background: transparent;
+                        border: 1px solid var(--vscode-button-border);
+                        color: var(--vscode-button-foreground);
+                        padding: 6px 12px;
+                        border-radius: 2px;
+                        cursor: pointer;
+                        font-size: 12px;
+                        font-family: var(--vscode-font-family);
+                        transition: all 0.2s ease;
+                    }
+                    
+                    .edit-btn:hover {
+                        background: var(--vscode-button-hoverBackground);
+                    }
+                    
+                    .summary-content {
+                        padding: 20px;
+                    }
+                    
+                    .summary-item {
+                        display: flex;
+                        margin-bottom: 12px;
+                        align-items: flex-start;
+                        gap: 12px;
+                    }
+                    
+                    .summary-label {
+                        font-weight: 600;
+                        color: var(--vscode-foreground);
+                        min-width: 80px;
+                        flex-shrink: 0;
+                    }
+                    
+                    .summary-value {
+                        color: var(--vscode-foreground);
+                        flex: 1;
+                    }
+                    
+                    .summary-prompt {
+                        background: var(--vscode-textCodeBlock-background);
+                        border: 1px solid var(--vscode-input-border);
+                        border-radius: 4px;
+                        padding: 12px;
+                        font-family: var(--vscode-editor-font-family);
+                        font-size: 13px;
+                        line-height: 1.4;
+                        color: var(--vscode-textPreformat-foreground);
+                        white-space: pre-wrap;
+                        max-height: 120px;
+                        overflow-y: auto;
+                        flex: 1;
+                    }
+                    
+                    .location-summary {
+                        display: flex;
+                        align-items: center;
+                        gap: 16px;
+                    }
+                    
+                    .location-icon {
+                        font-size: 32px;
+                    }
+                    
+                    .location-info {
+                        flex: 1;
+                    }
+                    
+                    .location-name {
+                        font-weight: 600;
+                        font-size: 16px;
+                        color: var(--vscode-foreground);
+                        margin-bottom: 4px;
+                    }
+                    
+                    .location-desc {
+                        color: var(--vscode-descriptionForeground);
+                        font-size: 14px;
+                    }
+                    
+                    .tools-summary {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 16px;
+                    }
+                    
+                    .tools-group-title {
+                        font-weight: 600;
+                        color: var(--vscode-foreground);
+                        margin-bottom: 8px;
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                    }
+                    
+                    .tools-list {
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 6px;
+                    }
+                    
+                    .tool-tag {
+                        background: var(--vscode-badge-background);
+                        color: var(--vscode-badge-foreground);
+                        padding: 4px 8px;
+                        border-radius: 12px;
+                        font-size: 11px;
+                        font-weight: 500;
+                        text-transform: uppercase;
+                    }
+                    
+                    .tool-tag.experimental {
+                        background: var(--vscode-notificationsWarningIcon-foreground);
+                        color: white;
+                    }
+                    
+                    .resources-summary {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 12px;
+                    }
+                    
+                    .resources-count {
+                        font-weight: 600;
+                        color: var(--vscode-foreground);
+                    }
+                    
+                    .resources-preview {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 6px;
+                    }
+                    
+                    .resource-preview-item {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        font-size: 13px;
+                    }
+                    
+                    .resource-preview-icon {
+                        font-size: 14px;
+                    }
+                    
+                    .resource-preview-path {
+                        font-family: var(--vscode-editor-font-family);
+                        color: var(--vscode-textPreformat-foreground);
+                        word-break: break-all;
+                    }
+                    
+                    .resource-preview-more {
+                        color: var(--vscode-descriptionForeground);
+                        font-style: italic;
+                        font-size: 12px;
+                        margin-left: 22px;
+                    }
+                    
+                    .empty-summary {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        color: var(--vscode-descriptionForeground);
+                        font-style: italic;
+                    }
+                    
+                    .empty-icon {
+                        font-size: 16px;
+                        opacity: 0.7;
+                    }
+                    
+                    .creation-info {
+                        display: flex;
+                        align-items: flex-start;
+                        gap: 12px;
+                        background: var(--vscode-inputValidation-infoBackground);
+                        border: 1px solid var(--vscode-inputValidation-infoBorder);
+                        border-radius: 6px;
+                        padding: 16px;
+                        margin-top: 24px;
+                    }
+                    
+                    .info-icon {
+                        font-size: 20px;
+                        flex-shrink: 0;
+                    }
+                    
+                    .info-text {
+                        color: var(--vscode-inputValidation-infoForeground);
+                        font-size: 14px;
+                        line-height: 1.5;
+                    }
+                    
+                    .info-text code {
+                        background: rgba(255, 255, 255, 0.1);
+                        padding: 2px 4px;
+                        border-radius: 2px;
+                        font-family: var(--vscode-editor-font-family);
+                    }
                 </style>
             </head>
             <body>
@@ -696,9 +1287,11 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                                 break;
                             case 3:
                                 content.innerHTML = getToolsSelectionHTML();
+                                setupToolsSelectionHandlers();
                                 break;
                             case 4:
                                 content.innerHTML = getResourcesHTML();
+                                setupResourcesHandlers();
                                 break;
                             case 5:
                                 content.innerHTML = getSummaryHTML();
@@ -983,6 +1576,90 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         });
                     }
                     
+                    function setupToolsSelectionHandlers() {
+                        // Add keyboard navigation for tool cards
+                        document.querySelectorAll('.tool-card').forEach(card => {
+                            card.setAttribute('tabindex', '0');
+                            card.setAttribute('role', 'checkbox');
+                            card.setAttribute('aria-checked', card.classList.contains('selected'));
+                            
+                            card.addEventListener('keydown', (e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    const toolId = card.getAttribute('data-tool-id');
+                                    const toolType = card.getAttribute('data-tool-type');
+                                    toggleTool(toolId, toolType);
+                                }
+                            });
+                        });
+                        
+                        // Add keyboard navigation for tabs
+                        document.querySelectorAll('.tab-button').forEach(tab => {
+                            tab.addEventListener('keydown', (e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    const tabName = tab.getAttribute('data-tab');
+                                    switchTab(tabName);
+                                }
+                            });
+                        });
+                    }
+                    
+                    function setupResourcesHandlers() {
+                        const dropZone = document.getElementById('dropZone');
+                        const fileInput = document.getElementById('fileInput');
+                        
+                        // Click to browse files
+                        dropZone.addEventListener('click', () => {
+                            fileInput.click();
+                        });
+                        
+                        // File input change handler
+                        fileInput.addEventListener('change', (e) => {
+                            const files = Array.from(e.target.files);
+                            files.forEach(file => {
+                                const path = \`file://\${file.webkitRelativePath || file.name}\`;
+                                if (validateResourcePath(path)) {
+                                    addResource(path);
+                                }
+                            });
+                            fileInput.value = ''; // Reset input
+                        });
+                        
+                        // Drag and drop handlers
+                        dropZone.addEventListener('dragover', (e) => {
+                            e.preventDefault();
+                            dropZone.classList.add('drag-over');
+                        });
+                        
+                        dropZone.addEventListener('dragleave', (e) => {
+                            e.preventDefault();
+                            dropZone.classList.remove('drag-over');
+                        });
+                        
+                        dropZone.addEventListener('drop', (e) => {
+                            e.preventDefault();
+                            dropZone.classList.remove('drag-over');
+                            
+                            const files = Array.from(e.dataTransfer.files);
+                            files.forEach(file => {
+                                const path = \`file://\${file.webkitRelativePath || file.name}\`;
+                                if (validateResourcePath(path)) {
+                                    addResource(path);
+                                }
+                            });
+                        });
+                        
+                        // Keyboard support for manual input
+                        const manualInput = document.getElementById('manualPath');
+                        manualInput.addEventListener('keydown', (e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                addManualPath();
+                            }
+                        });
+                    }
+                    
                     function setupAgentLocationHandlers() {
                         // Add keyboard navigation support
                         document.querySelectorAll('.location-card').forEach(card => {
@@ -1145,15 +1822,510 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     }
                     
                     function getToolsSelectionHTML() {
-                        return '<h2>Tools Selection</h2><p>Standard and Experimental tools tabs will go here.</p>';
+                        const data = wizardState?.stepData?.toolsSelection || { standardTools: [], experimentalTools: [] };
+                        return \`
+                            <h2>Tools Selection</h2>
+                            <p>Choose the tools your agent will have access to.</p>
+                            
+                            <div class="tools-tabs">
+                                <button class="tab-button active" onclick="switchTab('standard')" data-tab="standard">
+                                    Standard Tools
+                                </button>
+                                <button class="tab-button" onclick="switchTab('experimental')" data-tab="experimental">
+                                    Experimental Tools
+                                    <span class="experimental-badge">BETA</span>
+                                </button>
+                            </div>
+                            
+                            <div class="tab-content">
+                                <div class="tab-panel active" id="standardTab">
+                                    <div class="tools-grid">
+                                        \${getStandardToolsHTML(data.standardTools)}
+                                    </div>
+                                </div>
+                                
+                                <div class="tab-panel" id="experimentalTab">
+                                    <div class="experimental-warning">
+                                        <div class="warning-icon">⚠️</div>
+                                        <div class="warning-text">
+                                            <strong>Experimental Features</strong><br>
+                                            These tools are in active development and may change or be removed at any time.
+                                        </div>
+                                    </div>
+                                    <div class="tools-grid">
+                                        \${getExperimentalToolsHTML(data.experimentalTools)}
+                                    </div>
+                                </div>
+                            </div>
+                        \`;
+                    }
+                    
+                    function getStandardToolsHTML(selectedTools) {
+                        const standardTools = [
+                            {
+                                id: 'fs_read',
+                                name: 'File System Read',
+                                description: 'Read files, directories, and images',
+                                details: 'Allows the agent to read file contents, list directory structures, and process images for analysis.'
+                            },
+                            {
+                                id: 'fs_write', 
+                                name: 'File System Write',
+                                description: 'Create and edit files',
+                                details: 'Enables the agent to create new files, modify existing files, and manage file operations.'
+                            },
+                            {
+                                id: 'execute_bash',
+                                name: 'Execute Bash',
+                                description: 'Execute shell commands',
+                                details: 'Run bash commands and scripts. Use with caution as this provides system access.'
+                            },
+                            {
+                                id: 'use_aws',
+                                name: 'AWS CLI',
+                                description: 'Make AWS CLI API calls',
+                                details: 'Interact with AWS services through CLI commands. Requires proper AWS credentials.'
+                            },
+                            {
+                                id: 'introspect',
+                                name: 'Introspect',
+                                description: 'Q CLI capabilities information',
+                                details: 'Provides information about Q CLI features, commands, and documentation.'
+                            }
+                        ];
+                        
+                        return standardTools.map(tool => \`
+                            <div class="tool-card \${selectedTools.includes(tool.id) ? 'selected' : ''}" 
+                                 data-tool-id="\${tool.id}" 
+                                 data-tool-type="standard"
+                                 onclick="toggleTool('\${tool.id}', 'standard')">
+                                <div class="tool-header">
+                                    <div class="tool-checkbox">
+                                        <input type="checkbox" \${selectedTools.includes(tool.id) ? 'checked' : ''} 
+                                               onchange="event.stopPropagation(); toggleTool('\${tool.id}', 'standard')">
+                                    </div>
+                                    <div class="tool-info">
+                                        <div class="tool-name">\${tool.name}</div>
+                                        <div class="tool-description">\${tool.description}</div>
+                                    </div>
+                                </div>
+                                <div class="tool-details \${selectedTools.includes(tool.id) ? 'expanded' : ''}">
+                                    \${tool.details}
+                                </div>
+                            </div>
+                        \`).join('');
+                    }
+                    
+                    function getExperimentalToolsHTML(selectedTools) {
+                        const experimentalTools = [
+                            {
+                                id: 'knowledge',
+                                name: 'Knowledge Base',
+                                description: 'Store and retrieve information across sessions',
+                                details: 'Persistent context storage with semantic search capabilities. Maintains information between chat sessions.'
+                            },
+                            {
+                                id: 'thinking',
+                                name: 'Thinking Process',
+                                description: 'Complex reasoning with step-by-step processes',
+                                details: 'Shows AI reasoning process for complex problems. Helps understand how conclusions are reached.'
+                            },
+                            {
+                                id: 'todo_list',
+                                name: 'TODO List',
+                                description: 'Task management and tracking',
+                                details: 'Create and manage TODO lists for tracking multi-step tasks. Lists are stored locally.'
+                            }
+                        ];
+                        
+                        return experimentalTools.map(tool => \`
+                            <div class="tool-card experimental \${selectedTools.includes(tool.id) ? 'selected' : ''}" 
+                                 data-tool-id="\${tool.id}" 
+                                 data-tool-type="experimental"
+                                 onclick="toggleTool('\${tool.id}', 'experimental')">
+                                <div class="tool-header">
+                                    <div class="tool-checkbox">
+                                        <input type="checkbox" \${selectedTools.includes(tool.id) ? 'checked' : ''} 
+                                               onchange="event.stopPropagation(); toggleTool('\${tool.id}', 'experimental')">
+                                    </div>
+                                    <div class="tool-info">
+                                        <div class="tool-name">
+                                            \${tool.name}
+                                            <span class="experimental-tag">BETA</span>
+                                        </div>
+                                        <div class="tool-description">\${tool.description}</div>
+                                    </div>
+                                </div>
+                                <div class="tool-details \${selectedTools.includes(tool.id) ? 'expanded' : ''}">
+                                    \${tool.details}
+                                </div>
+                            </div>
+                        \`).join('');
+                    }
+                    
+                    function switchTab(tabName) {
+                        // Update tab buttons
+                        document.querySelectorAll('.tab-button').forEach(btn => {
+                            btn.classList.remove('active');
+                        });
+                        document.querySelector(\`[data-tab="\${tabName}"]\`).classList.add('active');
+                        
+                        // Update tab panels
+                        document.querySelectorAll('.tab-panel').forEach(panel => {
+                            panel.classList.remove('active');
+                        });
+                        document.getElementById(\`\${tabName}Tab\`).classList.add('active');
+                    }
+                    
+                    function toggleTool(toolId, toolType) {
+                        const card = document.querySelector(\`[data-tool-id="\${toolId}"]\`);
+                        const checkbox = card.querySelector('input[type="checkbox"]');
+                        const details = card.querySelector('.tool-details');
+                        
+                        // Toggle selection
+                        checkbox.checked = !checkbox.checked;
+                        card.classList.toggle('selected');
+                        details.classList.toggle('expanded');
+                        
+                        // Update wizard state
+                        updateToolsSelection();
+                    }
+                    
+                    function updateToolsSelection() {
+                        const standardTools = Array.from(document.querySelectorAll('[data-tool-type="standard"] input:checked'))
+                            .map(input => input.closest('[data-tool-id]').dataset.toolId);
+                        
+                        const experimentalTools = Array.from(document.querySelectorAll('[data-tool-type="experimental"] input:checked'))
+                            .map(input => input.closest('[data-tool-id]').dataset.toolId);
+                        
+                        vscode.postMessage({
+                            type: 'dataUpdated',
+                            data: {
+                                toolsSelection: { standardTools, experimentalTools }
+                            }
+                        });
                     }
                     
                     function getResourcesHTML() {
-                        return '<h2>Resources</h2><p>Drag & drop file selection will go here.</p>';
+                        const data = wizardState?.stepData?.resources || { resources: [] };
+                        return \`
+                            <h2>Resources</h2>
+                            <p>Add files and directories that your agent can access.</p>
+                            
+                            <div class="resources-section">
+                                <div class="drop-zone" id="dropZone">
+                                    <div class="drop-zone-content">
+                                        <div class="drop-icon">📁</div>
+                                        <div class="drop-text">
+                                            <strong>Drag & drop files here</strong><br>
+                                            or click to browse files
+                                        </div>
+                                        <input type="file" id="fileInput" multiple style="display: none;">
+                                    </div>
+                                </div>
+                                
+                                <div class="manual-input-section">
+                                    <div class="input-group">
+                                        <input type="text" 
+                                               id="manualPath" 
+                                               class="form-input" 
+                                               placeholder="file://path/to/file or file://path/to/directory/**"
+                                               onkeypress="handleManualPathKeypress(event)">
+                                        <button onclick="addManualPath()" class="add-btn">Add</button>
+                                    </div>
+                                    <div class="form-help">
+                                        Use <code>file://</code> prefix. Add <code>/**</code> for directories.
+                                    </div>
+                                </div>
+                                
+                                <div class="resources-list" id="resourcesList">
+                                    \${getResourcesListHTML(data.resources)}
+                                </div>
+                            </div>
+                        \`;
+                    }
+                    
+                    function getResourcesListHTML(resources) {
+                        if (resources.length === 0) {
+                            return \`
+                                <div class="empty-resources">
+                                    <div class="empty-icon">📄</div>
+                                    <div class="empty-text">No resources added yet</div>
+                                </div>
+                            \`;
+                        }
+                        
+                        return \`
+                            <div class="resources-header">
+                                <h3>Added Resources (\${resources.length})</h3>
+                            </div>
+                            <div class="resources-grid">
+                                \${resources.map((resource, index) => \`
+                                    <div class="resource-item" data-index="\${index}">
+                                        <div class="resource-icon">
+                                            \${resource.includes('/**') ? '📁' : '📄'}
+                                        </div>
+                                        <div class="resource-info">
+                                            <div class="resource-path">\${resource}</div>
+                                            <div class="resource-type">
+                                                \${resource.includes('/**') ? 'Directory pattern' : 'File'}
+                                            </div>
+                                        </div>
+                                        <button class="remove-btn" onclick="removeResource(\${index})" 
+                                                aria-label="Remove resource">
+                                            ✕
+                                        </button>
+                                    </div>
+                                \`).join('')}
+                            </div>
+                        \`;
+                    }
+                    
+                    function addManualPath() {
+                        const input = document.getElementById('manualPath');
+                        const path = input.value.trim();
+                        
+                        if (path) {
+                            if (validateResourcePath(path)) {
+                                addResource(path);
+                                input.value = '';
+                            }
+                        }
+                    }
+                    
+                    function handleManualPathKeypress(event) {
+                        if (event.key === 'Enter') {
+                            event.preventDefault();
+                            addManualPath();
+                        }
+                    }
+                    
+                    function validateResourcePath(path) {
+                        if (!path.startsWith('file://')) {
+                            showResourceError('Resource path must start with "file://"');
+                            return false;
+                        }
+                        
+                        if (/[<>"|?*]/.test(path)) {
+                            showResourceError('Resource path contains invalid characters');
+                            return false;
+                        }
+                        
+                        // Check for duplicates
+                        const currentResources = wizardState?.stepData?.resources?.resources || [];
+                        if (currentResources.includes(path)) {
+                            showResourceError('This resource has already been added');
+                            return false;
+                        }
+                        
+                        return true;
+                    }
+                    
+                    function showResourceError(message) {
+                        // Create or update error message
+                        let errorEl = document.getElementById('resourceError');
+                        if (!errorEl) {
+                            errorEl = document.createElement('div');
+                            errorEl.id = 'resourceError';
+                            errorEl.className = 'resource-error';
+                            document.querySelector('.manual-input-section').appendChild(errorEl);
+                        }
+                        
+                        errorEl.textContent = message;
+                        errorEl.classList.add('show');
+                        
+                        setTimeout(() => {
+                            errorEl.classList.remove('show');
+                        }, 3000);
+                    }
+                    
+                    function addResource(path) {
+                        const currentResources = wizardState?.stepData?.resources?.resources || [];
+                        const newResources = [...currentResources, path];
+                        
+                        vscode.postMessage({
+                            type: 'dataUpdated',
+                            data: {
+                                resources: { resources: newResources }
+                            }
+                        });
+                    }
+                    
+                    function removeResource(index) {
+                        const currentResources = wizardState?.stepData?.resources?.resources || [];
+                        const newResources = currentResources.filter((_, i) => i !== index);
+                        
+                        vscode.postMessage({
+                            type: 'dataUpdated',
+                            data: {
+                                resources: { resources: newResources }
+                            }
+                        });
                     }
                     
                     function getSummaryHTML() {
-                        return '<h2>Summary</h2><p>Configuration summary will go here.</p>';
+                        const data = wizardState?.stepData || {};
+                        const { basicProperties, agentLocation, toolsSelection, resources } = data;
+                        
+                        return \`
+                            <h2>Summary</h2>
+                            <p>Review your agent configuration before creating.</p>
+                            
+                            <div class="summary-sections">
+                                <div class="summary-section">
+                                    <div class="summary-header">
+                                        <h3>Basic Properties</h3>
+                                        <button class="edit-btn" onclick="goToStep(1)">Edit</button>
+                                    </div>
+                                    <div class="summary-content">
+                                        <div class="summary-item">
+                                            <span class="summary-label">Name:</span>
+                                            <span class="summary-value">\${basicProperties?.name || 'Not set'}</span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <span class="summary-label">Description:</span>
+                                            <span class="summary-value">\${basicProperties?.description || 'None'}</span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <span class="summary-label">Prompt:</span>
+                                            <div class="summary-prompt">\${basicProperties?.prompt || 'Not set'}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="summary-section">
+                                    <div class="summary-header">
+                                        <h3>Agent Location</h3>
+                                        <button class="edit-btn" onclick="goToStep(2)">Edit</button>
+                                    </div>
+                                    <div class="summary-content">
+                                        <div class="location-summary">
+                                            <div class="location-icon">
+                                                \${agentLocation?.location === 'global' ? '🌍' : '💻'}
+                                            </div>
+                                            <div class="location-info">
+                                                <div class="location-name">
+                                                    \${agentLocation?.location === 'global' ? 'Global Agent' : 'Local Agent'}
+                                                </div>
+                                                <div class="location-desc">
+                                                    \${agentLocation?.location === 'global' 
+                                                        ? 'Available in all workspaces' 
+                                                        : 'Available only in this workspace'}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="summary-section">
+                                    <div class="summary-header">
+                                        <h3>Tools</h3>
+                                        <button class="edit-btn" onclick="goToStep(3)">Edit</button>
+                                    </div>
+                                    <div class="summary-content">
+                                        \${getToolsSummaryHTML(toolsSelection)}
+                                    </div>
+                                </div>
+                                
+                                <div class="summary-section">
+                                    <div class="summary-header">
+                                        <h3>Resources</h3>
+                                        <button class="edit-btn" onclick="goToStep(4)">Edit</button>
+                                    </div>
+                                    <div class="summary-content">
+                                        \${getResourcesSummaryHTML(resources)}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="creation-info">
+                                <div class="info-icon">ℹ️</div>
+                                <div class="info-text">
+                                    Your agent will be created as <code>\${basicProperties?.name || 'agent'}.json</code> 
+                                    in the \${agentLocation?.location === 'global' ? 'global' : 'local'} agents directory.
+                                </div>
+                            </div>
+                        \`;
+                    }
+                    
+                    function getToolsSummaryHTML(toolsSelection) {
+                        const standardTools = toolsSelection?.standardTools || [];
+                        const experimentalTools = toolsSelection?.experimentalTools || [];
+                        const totalTools = standardTools.length + experimentalTools.length;
+                        
+                        if (totalTools === 0) {
+                            return \`
+                                <div class="empty-summary">
+                                    <span class="empty-icon">🔧</span>
+                                    <span>No tools selected</span>
+                                </div>
+                            \`;
+                        }
+                        
+                        return \`
+                            <div class="tools-summary">
+                                \${standardTools.length > 0 ? \`
+                                    <div class="tools-group">
+                                        <div class="tools-group-title">Standard Tools (\${standardTools.length})</div>
+                                        <div class="tools-list">
+                                            \${standardTools.map(tool => \`<span class="tool-tag">\${tool}</span>\`).join('')}
+                                        </div>
+                                    </div>
+                                \` : ''}
+                                \${experimentalTools.length > 0 ? \`
+                                    <div class="tools-group">
+                                        <div class="tools-group-title">
+                                            Experimental Tools (\${experimentalTools.length})
+                                            <span class="experimental-badge">BETA</span>
+                                        </div>
+                                        <div class="tools-list">
+                                            \${experimentalTools.map(tool => \`<span class="tool-tag experimental">\${tool}</span>\`).join('')}
+                                        </div>
+                                    </div>
+                                \` : ''}
+                            </div>
+                        \`;
+                    }
+                    
+                    function getResourcesSummaryHTML(resources) {
+                        const resourceList = resources?.resources || [];
+                        
+                        if (resourceList.length === 0) {
+                            return \`
+                                <div class="empty-summary">
+                                    <span class="empty-icon">📄</span>
+                                    <span>No resources added</span>
+                                </div>
+                            \`;
+                        }
+                        
+                        return \`
+                            <div class="resources-summary">
+                                <div class="resources-count">\${resourceList.length} resource(s) added</div>
+                                <div class="resources-preview">
+                                    \${resourceList.slice(0, 3).map(resource => \`
+                                        <div class="resource-preview-item">
+                                            <span class="resource-preview-icon">
+                                                \${resource.includes('/**') ? '📁' : '📄'}
+                                            </span>
+                                            <span class="resource-preview-path">\${resource}</span>
+                                        </div>
+                                    \`).join('')}
+                                    \${resourceList.length > 3 ? \`
+                                        <div class="resource-preview-more">
+                                            ... and \${resourceList.length - 3} more
+                                        </div>
+                                    \` : ''}
+                                </div>
+                            </div>
+                        \`;
+                    }
+                    
+                    function goToStep(stepNumber) {
+                        vscode.postMessage({
+                            type: 'stepChanged',
+                            step: stepNumber
+                        });
                     }
                     
                     // Initialize
