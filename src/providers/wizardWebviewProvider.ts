@@ -1583,13 +1583,13 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     
                     .tools-grid {
                         display: grid;
-                        gap: 16px;
+                        gap: 8px;
                     }
                     
                     .tool-card {
                         border: 1px solid var(--vscode-input-border);
                         border-radius: 6px;
-                        padding: var(--wizard-spacing-md);
+                        padding: var(--wizard-spacing-sm);
                         cursor: pointer;
                         transition: all 0.2s ease;
                         background: var(--vscode-input-background);
@@ -1807,7 +1807,7 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         display: flex;
                         align-items: center;
                         gap: 12px;
-                        padding: 12px;
+                        padding: var(--wizard-spacing-sm);
                         border: 1px solid var(--vscode-input-border);
                         border-radius: 4px;
                         background: var(--vscode-input-background);
