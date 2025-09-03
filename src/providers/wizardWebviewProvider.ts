@@ -1009,8 +1009,8 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         animation: none;
                     }
                     
-                    .location-card:nth-child(1) { animation-delay: 0.1s; }
-                    .location-card:nth-child(2) { animation-delay: 0.2s; }
+                    .location-card:nth-child(1) { animation: none; }
+                    .location-card:nth-child(2) { animation: none; }
                     
                     .location-card:hover {
                         border-color: var(--vscode-focusBorder);
@@ -1148,10 +1148,10 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         animation-fill-mode: both;
                     }
                     
-                    .resource-item:nth-child(1) { animation-delay: 0.1s; }
-                    .resource-item:nth-child(2) { animation-delay: 0.2s; }
-                    .resource-item:nth-child(3) { animation-delay: 0.3s; }
-                    .resource-item:nth-child(4) { animation-delay: 0.4s; }
+                    .resource-item:nth-child(1) { animation: none; }
+                    .resource-item:nth-child(2) { animation: none; }
+                    .resource-item:nth-child(3) { animation: none; }
+                    .resource-item:nth-child(4) { animation: none; }
                     
                     .resource-item:hover {
                         transform: translateX(4px);
@@ -1667,12 +1667,14 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         font-size: var(--wizard-font-size-xs);
                         color: var(--vscode-descriptionForeground);
                         line-height: 1.5;
+                        margin: 0;
                     }
                     
                     .tool-details.expanded {
                         max-height: 100px;
                         padding-top: 8px;
                         border-top: 1px solid var(--vscode-input-border);
+                        margin: 0;
                     }
                     
                     .tool-card.selected .tool-details {

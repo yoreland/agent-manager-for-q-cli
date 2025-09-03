@@ -152,8 +152,8 @@ export class WizardValidationService implements IWizardValidationService {
                 errors.push(`Resource path must start with 'file://': ${resource}`);
             }
 
-            // Check for invalid characters
-            if (/[<>"|?*]/.test(resource)) {
+            // Check for invalid characters (excluding * for glob patterns)
+            if (/[<>"|?]/.test(resource)) {
                 errors.push(`Resource path contains invalid characters: ${resource}`);
             }
         }
