@@ -81,7 +81,13 @@ export class WizardStateService implements IWizardStateService {
                     standardTools: ['fs_read', 'fs_write', 'execute_bash', 'use_aws', 'introspect'], 
                     experimentalTools: [] 
                 },
-                resources: { resources: [] }
+                resources: { 
+                    resources: [
+                        'file://AmazonQ.md',
+                        'file://README.md', 
+                        'file://.amazonq/rules/**/*.md'
+                    ] 
+                }
             },
             validation: {},
             isComplete: false

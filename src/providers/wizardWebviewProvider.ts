@@ -999,13 +999,13 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     .location-card {
                         border: 2px solid var(--vscode-input-border);
                         border-radius: var(--wizard-border-radius-xl);
-                        padding: var(--wizard-spacing-xxl);
+                        padding: var(--wizard-spacing-lg);
                         cursor: pointer;
                         transition: all 0.3s ease;
                         background: var(--vscode-input-background);
                         text-align: center;
                         position: relative;
-                        animation: fadeInUp 0.4s ease;
+                        animation: none;
                     }
                     
                     .location-card:nth-child(1) { animation-delay: 0.1s; }
@@ -1088,13 +1088,13 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     .tool-card:nth-child(5) { animation-delay: 0.5s; }
                     
                     .tool-card:hover {
-                        transform: translateY(-2px);
-                        box-shadow: var(--wizard-shadow-md);
+                        transform: none;
+                        box-shadow: none;
                     }
                     
                     .tool-card.selected {
-                        transform: scale(1.02);
-                        animation: pulse 0.4s ease;
+                        transform: none;
+                        animation: none;
                     }
                     
                     /* Resources Section Responsive Enhancement */
