@@ -40,7 +40,7 @@ VS Code Extension that simplifies Amazon Q Developer CLI agent management throug
 - **Error Reduction**: Minimize configuration errors through visual interface and validation
 - **Team Consistency**: Standardize agent management practices across development teams
 
-## Success Metrics
+## Success Metrics       
 - Time to create new agents reduced by 90%
 - Reduction in Q CLI agent configuration errors
 - Increased Q CLI agent adoption within development teams

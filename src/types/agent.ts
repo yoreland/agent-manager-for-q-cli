@@ -1,6 +1,24 @@
 import * as vscode from 'vscode';
 
 /**
+ * Agent location types for local vs global agents
+ */
+export enum AgentLocation {
+    Local = 'local',
+    Global = 'global'
+}
+
+/**
+ * Information about agent name conflicts between local and global
+ */
+export interface AgentConflictInfo {
+    hasConflict: boolean;
+    localExists: boolean;
+    globalExists: boolean;
+    recommendedAction: 'use_local' | 'use_global' | 'rename';
+}
+
+/**
  * Q CLI Agent configuration schema interface
  * Based on the official Q CLI agent schema
  */
@@ -72,6 +90,57 @@ export interface AgentItem {
     
     /** Command to execute when the item is clicked */
     command?: vscode.Command;
+}
+
+/**
+ * Extended agent item with location information
+ */
+export interface AgentItemWithLocation extends AgentItem {
+    /** Location of the agent (local or global) */
+    location: AgentLocation;
+    
+    /** Whether this agent has a name conflict */
+    hasConflict: boolean;
+    
+    /** Conflict information if applicable */
+    conflictInfo?: AgentConflictInfo;
+}
+
+/**
+ * Location separator item for tree view organization
+ */
+export interface LocationSeparatorItem {
+    /** Display label (e.g., "Local Agents", "Global Agents") */
+    label: string;
+    
+    /** Context value for command enablement */
+    contextValue: 'locationSeparator';
+    
+    /** Always expanded to show children */
+    collapsibleState: vscode.TreeItemCollapsibleState.Expanded;
+    
+    /** Child agent items */
+    children: AgentItemWithLocation[];
+}
+
+/**
+ * Conflict warning item for tree view
+ */
+export interface ConflictWarningItem {
+    /** Warning message label */
+    label: string;
+    
+    /** Detailed description */
+    description: string;
+    
+    /** Warning icon */
+    iconPath: vscode.ThemeIcon;
+    
+    /** Context value for command enablement */
+    contextValue: 'conflictWarning';
+    
+    /** Tooltip with detailed information */
+    tooltip: string;
 }
 
 /**
@@ -162,6 +231,9 @@ export const AGENT_CONSTANTS = {
     /** Default agent directory path relative to workspace root */
     AGENT_DIRECTORY: '.amazonq/cli-agents',
     
+    /** Global agent directory path relative to home directory */
+    GLOBAL_AGENT_DIRECTORY: '.aws/amazonq/cli-agents',
+    
     /** Agent file extension */
     AGENT_FILE_EXTENSION: '.json',
     
@@ -183,11 +255,19 @@ export const AGENT_CONSTANTS = {
     /** Create new agent button icon */
     CREATE_ICON: new vscode.ThemeIcon('add'),
     
+    /** Global agent icon overlay */
+    GLOBAL_ICON: new vscode.ThemeIcon('globe'),
+    
+    /** Conflict warning icon */
+    CONFLICT_ICON: new vscode.ThemeIcon('warning'),
+    
     /** Agent context values for commands */
     CONTEXT_VALUES: {
         AGENT_ITEM: 'agentItem',
         CREATE_BUTTON: 'createAgentButton',
-        EMPTY_STATE: 'emptyAgentState'
+        EMPTY_STATE: 'emptyAgentState',
+        LOCATION_SEPARATOR: 'locationSeparator',
+        CONFLICT_WARNING: 'conflictWarning'
     },
     
     /** Template-related constants */
