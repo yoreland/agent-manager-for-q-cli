@@ -351,6 +351,137 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         background: var(--vscode-button-secondaryBackground);
                         color: var(--vscode-button-secondaryForeground);
                     }
+                    
+                    /* Location Cards Styling */
+                    .location-cards {
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 20px;
+                        margin: 30px 0;
+                    }
+                    
+                    .location-card {
+                        border: 2px solid var(--vscode-input-border);
+                        border-radius: 8px;
+                        padding: 24px;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                        background: var(--vscode-input-background);
+                        text-align: center;
+                        position: relative;
+                    }
+                    
+                    .location-card:hover {
+                        border-color: var(--vscode-focusBorder);
+                        background: var(--vscode-list-hoverBackground);
+                        transform: translateY(-2px);
+                        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                    }
+                    
+                    .location-card.selected {
+                        border-color: var(--vscode-focusBorder);
+                        background: var(--vscode-list-activeSelectionBackground);
+                        color: var(--vscode-list-activeSelectionForeground);
+                    }
+                    
+                    .location-card.selected::before {
+                        content: '✓';
+                        position: absolute;
+                        top: 12px;
+                        right: 12px;
+                        width: 20px;
+                        height: 20px;
+                        background: var(--vscode-focusBorder);
+                        color: white;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 12px;
+                        font-weight: bold;
+                    }
+                    
+                    .card-icon {
+                        font-size: 48px;
+                        margin-bottom: 16px;
+                        line-height: 1;
+                    }
+                    
+                    .card-title {
+                        font-size: 18px;
+                        font-weight: 600;
+                        margin-bottom: 8px;
+                        color: var(--vscode-foreground);
+                    }
+                    
+                    .location-card.selected .card-title {
+                        color: var(--vscode-list-activeSelectionForeground);
+                    }
+                    
+                    .card-description {
+                        font-size: 14px;
+                        color: var(--vscode-descriptionForeground);
+                        margin-bottom: 16px;
+                        font-weight: 500;
+                    }
+                    
+                    .location-card.selected .card-description {
+                        color: var(--vscode-list-activeSelectionForeground);
+                        opacity: 0.9;
+                    }
+                    
+                    .card-details {
+                        font-size: 12px;
+                        color: var(--vscode-descriptionForeground);
+                        text-align: left;
+                        line-height: 1.5;
+                        background: var(--vscode-editor-background);
+                        padding: 12px;
+                        border-radius: 4px;
+                        border: 1px solid var(--vscode-input-border);
+                    }
+                    
+                    .location-card.selected .card-details {
+                        background: rgba(255, 255, 255, 0.1);
+                        border-color: rgba(255, 255, 255, 0.2);
+                        color: var(--vscode-list-activeSelectionForeground);
+                        opacity: 0.9;
+                    }
+                    
+                    .card-details code {
+                        background: var(--vscode-textCodeBlock-background);
+                        color: var(--vscode-textPreformat-foreground);
+                        padding: 2px 4px;
+                        border-radius: 2px;
+                        font-family: var(--vscode-editor-font-family);
+                        font-size: 11px;
+                    }
+                    
+                    .location-card.selected .card-details code {
+                        background: rgba(255, 255, 255, 0.2);
+                        color: var(--vscode-list-activeSelectionForeground);
+                    }
+                    
+                    /* Responsive design */
+                    @media (max-width: 600px) {
+                        .location-cards {
+                            grid-template-columns: 1fr;
+                            gap: 16px;
+                        }
+                        
+                        .location-card {
+                            padding: 20px;
+                        }
+                        
+                        .card-icon {
+                            font-size: 40px;
+                            margin-bottom: 12px;
+                        }
+                        
+                        .card-title {
+                            font-size: 16px;
+                        }
+                    }
                 </style>
             </head>
             <body>
@@ -429,6 +560,7 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                                 break;
                             case 2:
                                 content.innerHTML = getAgentLocationHTML();
+                                setupAgentLocationHandlers();
                                 break;
                             case 3:
                                 content.innerHTML = getToolsSelectionHTML();
@@ -580,6 +712,24 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         });
                     }
                     
+                    function setupAgentLocationHandlers() {
+                        // Add keyboard navigation support
+                        document.querySelectorAll('.location-card').forEach(card => {
+                            card.setAttribute('tabindex', '0');
+                            card.setAttribute('role', 'button');
+                            card.setAttribute('aria-pressed', card.classList.contains('selected'));
+                            
+                            // Keyboard support
+                            card.addEventListener('keydown', (e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    const location = card.getAttribute('data-location');
+                                    selectLocation(location);
+                                }
+                            });
+                        });
+                    }
+                    
                     function updateBasicPropertiesData() {
                         const name = document.getElementById('agentName').value;
                         const description = document.getElementById('agentDescription').value;
@@ -664,7 +814,63 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     
                     // Placeholder functions for other steps
                     function getAgentLocationHTML() {
-                        return '<h2>Agent Location</h2><p>Local vs Global selection cards will go here.</p>';
+                        const data = wizardState?.stepData?.agentLocation || { location: 'local' };
+                        return \`
+                            <h2>Agent Location</h2>
+                            <p>Choose where your agent will be stored and available.</p>
+                            
+                            <div class="location-cards">
+                                <div class="location-card \${data.location === 'local' ? 'selected' : ''}" 
+                                     onclick="selectLocation('local')" 
+                                     data-location="local">
+                                    <div class="card-icon">💻</div>
+                                    <div class="card-title">Local Agent</div>
+                                    <div class="card-description">
+                                        Available only in this workspace
+                                    </div>
+                                    <div class="card-details">
+                                        • Stored in <code>.amazonq/cli-agents/</code><br>
+                                        • Project-specific configuration<br>
+                                        • Can be shared via version control
+                                    </div>
+                                </div>
+                                
+                                <div class="location-card \${data.location === 'global' ? 'selected' : ''}" 
+                                     onclick="selectLocation('global')" 
+                                     data-location="global">
+                                    <div class="card-icon">🌍</div>
+                                    <div class="card-title">Global Agent</div>
+                                    <div class="card-description">
+                                        Available in all workspaces
+                                    </div>
+                                    <div class="card-details">
+                                        • Stored in <code>~/.aws/amazonq/cli-agents/</code><br>
+                                        • User-wide configuration<br>
+                                        • Available across all projects
+                                    </div>
+                                </div>
+                            </div>
+                        \`;
+                    }
+                    
+                    function selectLocation(location) {
+                        // Update visual selection
+                        document.querySelectorAll('.location-card').forEach(card => {
+                            card.classList.remove('selected');
+                            card.setAttribute('aria-pressed', 'false');
+                        });
+                        
+                        const selectedCard = document.querySelector(\`[data-location="\${location}"]\`);
+                        selectedCard.classList.add('selected');
+                        selectedCard.setAttribute('aria-pressed', 'true');
+                        
+                        // Update wizard state
+                        vscode.postMessage({
+                            type: 'dataUpdated',
+                            data: {
+                                agentLocation: { location }
+                            }
+                        });
                     }
                     
                     function getToolsSelectionHTML() {
