@@ -217,11 +217,8 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                 break;
         }
 
-        // Send updated state
-        this.sendResponse({
-            type: 'stateUpdate',
-            state: this.stateService.getState()
-        });
+        // Don't send stateUpdate - just store the data silently
+        // UI will only update on step changes, not data input changes
     }
 
     private async validateCurrentStep(): Promise<void> {
