@@ -488,9 +488,13 @@ async function initializeAgentTreeView(context: vscode.ExtensionContext, logger:
         const { AgentTreeProvider } = await import('./providers/agentTreeProvider');
         const { AgentManagementService } = await import('./services/agentManagementService');
         const { AgentConfigService } = await import('./services/agentConfigService');
+        const { AgentLocationService } = await import('./core/agent/AgentLocationService');
         
-        // Create the agent config service with error handler
-        const agentConfigService = new AgentConfigService(logger, errorHandler!);
+        // Create the agent location service
+        const locationService = new AgentLocationService();
+        
+        // Create the agent config service with error handler and location service
+        const agentConfigService = new AgentConfigService(logger, errorHandler!, locationService);
         
         // Ensure agent directory exists during initialization
         await agentConfigService.ensureAgentDirectory();

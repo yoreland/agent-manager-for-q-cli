@@ -10,6 +10,7 @@ import {
 } from '../types/agent';
 import { ExtensionLogger } from './logger';
 import { IErrorHandler } from './errorHandler';
+import { AgentLocationService, AgentLocation, IAgentLocationService } from '../core/agent/AgentLocationService';
 
 /**
  * Interface for Agent Configuration Service
@@ -22,8 +23,8 @@ export interface IAgentConfigService {
     // Agent file management
     scanAgentFiles(): Promise<string[]>;
     readAgentConfig(filePath: string): Promise<AgentConfig>;
-    writeAgentConfig(name: string, config: AgentConfig): Promise<void>;
-    deleteAgentConfig(name: string): Promise<void>;
+    writeAgentConfig(name: string, config: AgentConfig, location?: AgentLocation): Promise<void>;
+    deleteAgentConfig(name: string, location?: AgentLocation): Promise<void>;
     
     // Validation
     validateAgentConfig(config: AgentConfig): ValidationResult;
@@ -53,12 +54,14 @@ export interface IAgentConfigService {
 export class AgentConfigService implements IAgentConfigService {
     private readonly logger: ExtensionLogger;
     private readonly errorHandler: IErrorHandler;
+    private readonly locationService: IAgentLocationService;
     private readonly workspaceRoot: string;
     private readonly agentDirectoryPath: string;
 
-    constructor(logger: ExtensionLogger, errorHandler: IErrorHandler) {
+    constructor(logger: ExtensionLogger, errorHandler: IErrorHandler, locationService?: IAgentLocationService) {
         this.logger = logger;
         this.errorHandler = errorHandler;
+        this.locationService = locationService || new AgentLocationService();
         
         // Get workspace root
         const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -111,24 +114,37 @@ export class AgentConfigService implements IAgentConfigService {
     }
 
     /**
-     * Scan for agent configuration files in the agent directory
+     * Scan for agent configuration files in both local and global directories
      */
     async scanAgentFiles(): Promise<string[]> {
         try {
+            // Ensure both directories exist
             await this.ensureAgentDirectory();
+            await this.locationService.ensureDirectoryExists(AgentLocation.Global);
             
-            const files = await fs.readdir(this.agentDirectoryPath);
-            const agentFiles = files
-                .filter(file => file.endsWith(AGENT_CONSTANTS.AGENT_FILE_EXTENSION))
-                .map(file => path.join(this.agentDirectoryPath, file));
+            // Get agent files from both locations
+            const { local: localAgents, global: globalAgents } = await this.locationService.listAgentsByLocation();
             
-            this.logger.debug('Scanned agent files', { 
-                directory: this.agentDirectoryPath,
-                fileCount: agentFiles.length,
-                files: agentFiles 
+            // Convert agent names to full file paths
+            const localPaths = localAgents.map(name => 
+                this.locationService.resolveAgentPath(name, AgentLocation.Local)
+            );
+            const globalPaths = globalAgents.map(name => 
+                this.locationService.resolveAgentPath(name, AgentLocation.Global)
+            );
+            
+            const allAgentFiles = [...localPaths, ...globalPaths];
+            
+            this.logger.debug('Scanned agent files from both locations', { 
+                localDirectory: this.locationService.getLocalAgentsPath(),
+                globalDirectory: this.locationService.getGlobalAgentsPath(),
+                localCount: localPaths.length,
+                globalCount: globalPaths.length,
+                totalCount: allAgentFiles.length,
+                files: allAgentFiles 
             });
             
-            return agentFiles;
+            return allAgentFiles;
         } catch (error) {
             const errorMessage = 'Failed to scan agent files';
             this.logger.error(errorMessage, error as Error);
@@ -137,7 +153,7 @@ export class AgentConfigService implements IAgentConfigService {
             await this.errorHandler.handleFileSystemError(
                 error as Error,
                 'scan agent files',
-                this.agentDirectoryPath
+                'agent directories'
             );
             
             throw new Error(`${errorMessage}: ${(error as Error).message}`);
@@ -200,7 +216,7 @@ export class AgentConfigService implements IAgentConfigService {
     /**
      * Write an agent configuration file
      */
-    async writeAgentConfig(name: string, config: AgentConfig): Promise<void> {
+    async writeAgentConfig(name: string, config: AgentConfig, location: AgentLocation = AgentLocation.Local): Promise<void> {
         try {
             // Validate agent name
             const nameValidation = this.validateAgentName(name);
@@ -208,10 +224,10 @@ export class AgentConfigService implements IAgentConfigService {
                 throw new Error(`Invalid agent name: ${nameValidation.errors.join(', ')}`);
             }
             
-            // Check if agent already exists
-            const exists = await this.isAgentNameExists(name);
-            if (exists) {
-                throw new Error(`Agent with name '${name}' already exists`);
+            // Check for name conflicts
+            const conflictInfo = await this.locationService.detectNameConflicts(name);
+            if (conflictInfo.hasConflict) {
+                this.logger.warn(`Agent name conflict detected for '${name}'`, conflictInfo);
             }
             
             // Ensure the config name matches the provided name
@@ -223,12 +239,13 @@ export class AgentConfigService implements IAgentConfigService {
                 throw new Error(`Invalid agent configuration: ${configValidation.errors.join(', ')}`);
             }
             
-            await this.ensureAgentDirectory();
+            // Ensure target directory exists
+            await this.locationService.ensureDirectoryExists(location);
             
-            const filePath = path.join(this.agentDirectoryPath, `${name}${AGENT_CONSTANTS.AGENT_FILE_EXTENSION}`);
+            const filePath = this.locationService.resolveAgentPath(name, location);
             const jsonContent = JSON.stringify(config, null, 2);
             
-            this.logger.debug('Writing agent config file', { filePath, agentName: name });
+            this.logger.debug('Writing agent config file', { filePath, agentName: name, location });
             
             await fs.writeFile(filePath, jsonContent, 'utf-8');
             

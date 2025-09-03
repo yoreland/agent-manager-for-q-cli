@@ -12,7 +12,6 @@ import {
 import { IAgentConfigService } from './agentConfigService';
 import { ExtensionLogger } from './logger';
 import { IErrorHandler } from './errorHandler';
-import { AgentLocation } from '../core/agent/AgentLocationService';
 
 /**
  * Interface for Agent Management Service
@@ -23,7 +22,7 @@ export interface IAgentManagementService {
     refreshAgentList(): Promise<void>;
     
     // Agent creation
-    createNewAgent(name: string, location?: AgentLocation): Promise<AgentCreationResult>;
+    createNewAgent(name: string): Promise<AgentCreationResult>;
     createNewAgentInteractive(): Promise<void>;
     validateAgentName(name: string): ValidationResult;
     
@@ -83,39 +82,13 @@ export class AgentManagementService implements IAgentManagementService {
             const agentFiles = await this.agentConfigService.scanAgentFiles();
             this.logger.debug(`Found ${agentFiles.length} agent files`);
             
-            // Convert files to agent items with location and conflict information
+            // Convert files to agent items
             const agentItems: AgentItem[] = [];
-            const agentNames = new Set<string>();
-            const conflictingNames = new Set<string>();
             
-            // First pass: identify conflicts
             for (const filePath of agentFiles) {
                 try {
                     const config = await this.agentConfigService.readAgentConfig(filePath);
-                    if (agentNames.has(config.name)) {
-                        conflictingNames.add(config.name);
-                    }
-                    agentNames.add(config.name);
-                } catch (error) {
-                    // Skip invalid configs for conflict detection
-                }
-            }
-            
-            // Second pass: create agent items with conflict information
-            for (const filePath of agentFiles) {
-                try {
-                    const config = await this.agentConfigService.readAgentConfig(filePath);
-                    const isRunning = this.isAgentRunning(config.name);
-                    const location = this.determineLocationFromPath(filePath);
-                    const hasConflict = conflictingNames.has(config.name);
-                    
-                    const agentItem = this.createAgentItemFromConfig(
-                        config, 
-                        filePath, 
-                        isRunning, 
-                        location, 
-                        hasConflict
-                    );
+                    const agentItem = this.createAgentItemFromConfig(config, filePath);
                     agentItems.push(agentItem);
                 } catch (error) {
                     this.logger.warn(`Failed to load agent config from ${filePath}`, error as Error);
@@ -126,16 +99,8 @@ export class AgentManagementService implements IAgentManagementService {
                 }
             }
             
-            // Sort agents by location first, then by name
-            agentItems.sort((a, b) => {
-                const aLocation = (a as any).location || AgentLocation.Local;
-                const bLocation = (b as any).location || AgentLocation.Local;
-                
-                if (aLocation !== bLocation) {
-                    return aLocation === AgentLocation.Local ? -1 : 1;
-                }
-                return a.label.localeCompare(b.label);
-            });
+            // Sort agents by name
+            agentItems.sort((a, b) => a.label.localeCompare(b.label));
             
             // Update internal state
             this.agentItems = agentItems;
@@ -187,11 +152,11 @@ export class AgentManagementService implements IAgentManagementService {
     }
 
     /**
-     * Create a new agent with the given name and location
+     * Create a new agent with the given name
      */
-    async createNewAgent(name: string, location: AgentLocation = AgentLocation.Local): Promise<AgentCreationResult> {
+    async createNewAgent(name: string): Promise<AgentCreationResult> {
         try {
-            this.logger.logUserAction('createNewAgent', { name, location });
+            this.logger.logUserAction('createNewAgent', { name });
             const startTime = Date.now();
             
             // Validate the agent name
@@ -208,48 +173,51 @@ export class AgentManagementService implements IAgentManagementService {
                 return result;
             }
             
+            // Check if agent already exists
+            const exists = await this.agentConfigService.isAgentNameExists(name);
+            if (exists) {
+                const error = new Error(`Agent '${name}' already exists`);
+                await this.errorHandler.handleAgentCreationError(error, name);
+                
+                const result: AgentCreationResult = {
+                    success: false,
+                    message: `Agent '${name}' already exists`
+                };
+                this.logger.warn('Agent creation failed - already exists', { name });
+                return result;
+            }
+            
             // Create default configuration
             const config = this.agentConfigService.createDefaultAgentConfig(name);
             
-            // Write the agent configuration file with location
-            await this.agentConfigService.writeAgentConfig(name, config, location);
+            // Write the agent configuration file
+            await this.agentConfigService.writeAgentConfig(name, config);
             
-            // Create agent item with location information
-            const filePath = location === AgentLocation.Local 
-                ? this.agentConfigService.getAgentFilePath(name)
-                : path.join(process.env.HOME || '~', '.aws', 'amazonq', 'cli-agents', `${name}.json`);
-            const isRunning = this.isAgentRunning(name);
-            const agentItem = this.createAgentItemFromConfig(config, filePath, isRunning, location, false);
+            // Create agent item
+            const filePath = this.agentConfigService.getAgentFilePath(name);
+            const agentItem = this.createAgentItemFromConfig(config, filePath);
             
             // Add to internal list
             this.agentItems.push(agentItem);
-            this.agentItems.sort((a, b) => {
-                const aLocation = (a as any).location || AgentLocation.Local;
-                const bLocation = (b as any).location || AgentLocation.Local;
-                
-                if (aLocation !== bLocation) {
-                    return aLocation === AgentLocation.Local ? -1 : 1;
-                }
-                return a.label.localeCompare(b.label);
-            });
+            this.agentItems.sort((a, b) => a.label.localeCompare(b.label));
             
             // Notify listeners
             this._onAgentListChanged.fire(this.agentItems);
             
             // Show success message with helpful actions
             await this.errorHandler.showSuccessMessage(
-                `Agent '${name}' created successfully in ${location} location!`,
+                `Agent '${name}' created successfully!`,
                 ['Open File', 'Create Another']
             );
             
             const result: AgentCreationResult = {
                 success: true,
-                message: `Agent '${name}' created successfully in ${location} location`,
+                message: `Agent '${name}' created successfully`,
                 agentItem
             };
             
             this.logger.logTiming('createNewAgent', startTime);
-            this.logger.info('Agent created successfully', { name, location, filePath });
+            this.logger.info('Agent created successfully', { name, filePath });
             
             return result;
         } catch (error) {
@@ -449,23 +417,12 @@ export class AgentManagementService implements IAgentManagementService {
     }
 
     /**
-     * Create an AgentItemWithLocation from an AgentConfig
+     * Create an AgentItem from an AgentConfig
      */
-    private createAgentItemFromConfig(
-        config: AgentConfig, 
-        filePath: string, 
-        isRunning?: boolean, 
-        location?: AgentLocation,
-        hasConflict?: boolean
-    ): AgentItem {
-        // Determine location from file path if not provided
-        const agentLocation = location || this.determineLocationFromPath(filePath);
-        
+    private createAgentItemFromConfig(config: AgentConfig, filePath: string): AgentItem {
         return {
             label: config.name,
-            iconPath: isRunning ? 
-                new vscode.ThemeIcon('robot', new vscode.ThemeColor('charts.green')) : 
-                AGENT_CONSTANTS.DEFAULT_ICON,
+            iconPath: this.getAgentIcon(config.name),
             contextValue: AGENT_CONSTANTS.CONTEXT_VALUES.AGENT_ITEM,
             filePath,
             config,
@@ -474,22 +431,8 @@ export class AgentManagementService implements IAgentManagementService {
                 command: AGENT_COMMANDS.OPEN_AGENT,
                 title: 'Open Agent Configuration',
                 arguments: [{ label: config.name, filePath, config }]
-            },
-            // Add location information
-            location: agentLocation,
-            hasConflict: hasConflict || false
-        } as AgentItem & { location: AgentLocation; hasConflict: boolean };
-    }
-
-    /**
-     * Determine agent location from file path
-     */
-    private determineLocationFromPath(filePath: string): AgentLocation {
-        // Check if path contains global directory pattern
-        if (filePath.includes('.aws/amazonq/cli-agents')) {
-            return AgentLocation.Global;
-        }
-        return AgentLocation.Local;
+            }
+        };
     }
 
     /**

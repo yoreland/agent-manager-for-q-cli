@@ -1,6 +1,9 @@
 import * as vscode from 'vscode';
 import { 
     AgentItem, 
+    AgentLocation,
+    LocationSeparatorItem,
+    AgentItemWithLocation,
     AGENT_CONSTANTS, 
     AGENT_COMMANDS 
 } from '../types/agent';
@@ -12,10 +15,10 @@ import { ExtensionLogger } from '../services/logger';
  * Implements VS Code's TreeDataProvider interface to display agent items
  * Handles agent list display, creation button, and empty states
  */
-export class AgentTreeProvider implements vscode.TreeDataProvider<AgentItem | CreateAgentItem | EmptyStateItem> {
-    private _onDidChangeTreeData: vscode.EventEmitter<AgentItem | CreateAgentItem | EmptyStateItem | undefined | null | void> = 
-        new vscode.EventEmitter<AgentItem | CreateAgentItem | EmptyStateItem | undefined | null | void>();
-    readonly onDidChangeTreeData: vscode.Event<AgentItem | CreateAgentItem | EmptyStateItem | undefined | null | void> = 
+export class AgentTreeProvider implements vscode.TreeDataProvider<AgentItem | LocationSeparatorItem | CreateAgentItem | EmptyStateItem> {
+    private _onDidChangeTreeData: vscode.EventEmitter<AgentItem | LocationSeparatorItem | CreateAgentItem | EmptyStateItem | undefined | null | void> = 
+        new vscode.EventEmitter<AgentItem | LocationSeparatorItem | CreateAgentItem | EmptyStateItem | undefined | null | void>();
+    readonly onDidChangeTreeData: vscode.Event<AgentItem | LocationSeparatorItem | CreateAgentItem | EmptyStateItem | undefined | null | void> = 
         this._onDidChangeTreeData.event;
 
     private agentItems: AgentItem[] = [];
@@ -103,9 +106,14 @@ export class AgentTreeProvider implements vscode.TreeDataProvider<AgentItem | Cr
     /**
      * Get tree item representation for display
      */
-    getTreeItem(element: AgentItem | CreateAgentItem | EmptyStateItem): vscode.TreeItem {
+    getTreeItem(element: AgentItem | LocationSeparatorItem | CreateAgentItem | EmptyStateItem): vscode.TreeItem {
         if (this._disposed) {
             return new vscode.TreeItem('Disposed');
+        }
+        
+        // Handle location separator item
+        if (this.isLocationSeparatorItem(element)) {
+            return this.createTreeItemForLocationSeparator(element);
         }
         
         // Handle create agent button
@@ -168,14 +176,18 @@ export class AgentTreeProvider implements vscode.TreeDataProvider<AgentItem | Cr
     /**
      * Get children of a tree item
      */
-    getChildren(element?: AgentItem | CreateAgentItem | EmptyStateItem): Thenable<(AgentItem | CreateAgentItem | EmptyStateItem)[]> {
+    getChildren(element?: AgentItem | LocationSeparatorItem | CreateAgentItem | EmptyStateItem): Thenable<(AgentItem | LocationSeparatorItem | CreateAgentItem | EmptyStateItem)[]> {
         if (this._disposed) {
             return Promise.resolve([]);
         }
         
         if (!element) {
-            // Return root items
+            // Return root items (location separators or empty state)
             return Promise.resolve(this.getRootItems());
+        } else if (this.isLocationSeparatorItem(element)) {
+            // Return children of location separator (agents in that location)
+            const separator = element as LocationSeparatorItem;
+            return Promise.resolve(separator.children);
         } else if (!this.isCreateAgentItem(element) && !this.isEmptyStateItem(element)) {
             // Return children of agent item
             const agentItem = element as AgentItem;
@@ -189,18 +201,71 @@ export class AgentTreeProvider implements vscode.TreeDataProvider<AgentItem | Cr
     /**
      * Get root items to display in the tree
      */
-    private getRootItems(): (AgentItem | CreateAgentItem | EmptyStateItem)[] {
-        const items: (AgentItem | CreateAgentItem | EmptyStateItem)[] = [];
+    private getRootItems(): (LocationSeparatorItem | EmptyStateItem)[] {
+        if (this.agentItems.length === 0) {
+            return [this.createEmptyStateItem()];
+        }
         
-        // Add agent items
-        if (this.agentItems.length > 0) {
-            items.push(...this.agentItems);
-        } else {
-            // Add empty state item
-            items.push(this.createEmptyStateItem());
+        // Group agents by location
+        const localAgents: AgentItemWithLocation[] = [];
+        const globalAgents: AgentItemWithLocation[] = [];
+        
+        for (const agent of this.agentItems) {
+            const agentWithLocation = agent as AgentItem & { location?: AgentLocation; hasConflict?: boolean };
+            const location = agentWithLocation.location || AgentLocation.Local;
+            
+            // Add conflict warning icon if needed
+            if (agentWithLocation.hasConflict) {
+                const conflictAgent = {
+                    ...agentWithLocation,
+                    iconPath: new vscode.ThemeIcon('warning', new vscode.ThemeColor('problemsWarningIcon.foreground')),
+                    description: `${agentWithLocation.description || ''} (Conflict)`.trim()
+                } as AgentItemWithLocation;
+                
+                if (location === AgentLocation.Local) {
+                    localAgents.push(conflictAgent);
+                } else {
+                    globalAgents.push(conflictAgent);
+                }
+            } else {
+                if (location === AgentLocation.Local) {
+                    localAgents.push(agentWithLocation as AgentItemWithLocation);
+                } else {
+                    globalAgents.push(agentWithLocation as AgentItemWithLocation);
+                }
+            }
+        }
+        
+        const items: LocationSeparatorItem[] = [];
+        
+        // Add Local Agents section
+        if (localAgents.length > 0) {
+            items.push(this.createLocationSeparator('Local Agents', localAgents));
+        }
+        
+        // Add Global Agents section
+        if (globalAgents.length > 0) {
+            items.push(this.createLocationSeparator('Global Agents', globalAgents));
+        }
+        
+        // If no agents in either location, show empty state
+        if (items.length === 0) {
+            return [this.createEmptyStateItem()];
         }
         
         return items;
+    }
+
+    /**
+     * Create a location separator item
+     */
+    private createLocationSeparator(label: string, children: AgentItemWithLocation[]): LocationSeparatorItem {
+        return {
+            label: `${label} (${children.length})`,
+            contextValue: 'locationSeparator',
+            collapsibleState: vscode.TreeItemCollapsibleState.Expanded,
+            children
+        };
     }
 
     /**
@@ -341,17 +406,37 @@ export class AgentTreeProvider implements vscode.TreeDataProvider<AgentItem | Cr
     }
 
     /**
+     * Type guard to check if item is a location separator item
+     */
+    private isLocationSeparatorItem(item: AgentItem | LocationSeparatorItem | CreateAgentItem | EmptyStateItem): item is LocationSeparatorItem {
+        return item.contextValue === 'locationSeparator';
+    }
+
+    /**
      * Type guard to check if item is a create agent item
      */
-    private isCreateAgentItem(item: AgentItem | CreateAgentItem | EmptyStateItem): item is CreateAgentItem {
+    private isCreateAgentItem(item: AgentItem | LocationSeparatorItem | CreateAgentItem | EmptyStateItem): item is CreateAgentItem {
         return 'command' in item && item.contextValue === AGENT_CONSTANTS.CONTEXT_VALUES.CREATE_BUTTON;
     }
 
     /**
      * Type guard to check if item is an empty state item
      */
-    private isEmptyStateItem(item: AgentItem | CreateAgentItem | EmptyStateItem): item is EmptyStateItem {
+    private isEmptyStateItem(item: AgentItem | LocationSeparatorItem | CreateAgentItem | EmptyStateItem): item is EmptyStateItem {
         return item.contextValue === AGENT_CONSTANTS.CONTEXT_VALUES.EMPTY_STATE;
+    }
+
+    /**
+     * Create tree item for location separator
+     */
+    private createTreeItemForLocationSeparator(element: LocationSeparatorItem): vscode.TreeItem {
+        const treeItem = new vscode.TreeItem(element.label, element.collapsibleState);
+        
+        treeItem.contextValue = element.contextValue;
+        treeItem.iconPath = new vscode.ThemeIcon('folder');
+        treeItem.tooltip = `${element.children.length} agents in this location`;
+        
+        return treeItem;
     }
 
     /**

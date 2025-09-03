@@ -1,5 +1,7 @@
-import { AgentFormData, BuiltInTool, FormValidationResult, AgentCreationResult } from '../types/agentCreation';
+import { AgentFormData, BuiltInTool, FormValidationResult, AgentCreationResult, ToolSection } from '../types/agentCreation';
+import { AgentLocation } from '../types/agent';
 import { ExtensionLogger } from './logger';
+import { ExperimentalToolsService, IExperimentalToolsService } from '../core/agent/ExperimentalToolsService';
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -9,6 +11,7 @@ export interface IAgentCreationFormService {
     validateFormData(data: AgentFormData): FormValidationResult;
     createAgentFromFormData(data: AgentFormData): Promise<AgentCreationResult>;
     getAvailableTools(): BuiltInTool[];
+    getToolSections(): ToolSection[];
 }
 
 const BUILT_IN_TOOLS: BuiltInTool[] = [
@@ -44,22 +47,25 @@ const BUILT_IN_TOOLS: BuiltInTool[] = [
         name: 'knowledge',
         displayName: 'Knowledge Base',
         description: 'Store and retrieve information across sessions',
-        category: 'utility',
-        defaultAllowed: false
+        category: 'experimental',
+        defaultAllowed: false,
+        isExperimental: true
     },
     {
         name: 'thinking',
         displayName: 'Thinking',
         description: 'Internal reasoning mechanism',
-        category: 'development',
-        defaultAllowed: false
+        category: 'experimental',
+        defaultAllowed: false,
+        isExperimental: true
     },
     {
         name: 'todo_list',
         displayName: 'TODO List',
         description: 'Create and manage TODO lists',
-        category: 'utility',
-        defaultAllowed: false
+        category: 'experimental',
+        defaultAllowed: false,
+        isExperimental: true
     },
     {
         name: 'introspect',
@@ -78,16 +84,22 @@ const BUILT_IN_TOOLS: BuiltInTool[] = [
 ];
 
 export class AgentCreationFormService implements IAgentCreationFormService {
-    constructor(private readonly logger: ExtensionLogger) {}
+    private experimentalToolsService: IExperimentalToolsService;
+    
+    constructor(private readonly logger: ExtensionLogger) {
+        this.experimentalToolsService = new ExperimentalToolsService();
+    }
 
     getDefaultFormData(): AgentFormData {
         return {
             name: '',
             description: '',
             prompt: '',
+            location: 'local' as AgentLocation,
             tools: {
                 available: BUILT_IN_TOOLS.map(tool => tool.name),
-                allowed: BUILT_IN_TOOLS.filter(tool => tool.defaultAllowed).map(tool => tool.name)
+                allowed: BUILT_IN_TOOLS.filter(tool => tool.defaultAllowed).map(tool => tool.name),
+                experimental: []
             },
             resources: [
                 'file://AmazonQ.md',
@@ -206,5 +218,24 @@ export class AgentCreationFormService implements IAgentCreationFormService {
 
     getAvailableTools(): BuiltInTool[] {
         return [...BUILT_IN_TOOLS];
+    }
+
+    getToolSections(): ToolSection[] {
+        const standardTools = BUILT_IN_TOOLS.filter(tool => !tool.isExperimental);
+        const experimentalTools = BUILT_IN_TOOLS.filter(tool => tool.isExperimental);
+
+        return [
+            {
+                title: 'Standard Tools',
+                tools: standardTools,
+                isExperimental: false
+            },
+            {
+                title: 'Experimental Tools',
+                tools: experimentalTools,
+                isExperimental: true,
+                warningMessage: this.experimentalToolsService.getWarningMessage()
+            }
+        ];
     }
 }

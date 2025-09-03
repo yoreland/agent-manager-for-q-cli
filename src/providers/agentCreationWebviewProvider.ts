@@ -64,10 +64,12 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
                     this.logger.info('Webview ready, sending initial data');
                     const defaultData = this.formService.getDefaultFormData();
                     const tools = this.formService.getAvailableTools();
+                    const toolSections = this.formService.getToolSections();
                     this.sendMessage({
                         type: 'initialData',
                         data: defaultData,
-                        tools
+                        tools,
+                        toolSections
                     });
                     break;
                 
@@ -301,6 +303,69 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
             display: block;
         }
         
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .radio-option {
+            border: 1px solid var(--vscode-panel-border);
+            border-radius: 6px;
+            padding: 0;
+            transition: border-color 0.2s, background-color 0.2s;
+        }
+        
+        .radio-option:hover {
+            border-color: var(--vscode-focusBorder);
+            background-color: var(--vscode-list-hoverBackground);
+        }
+        
+        .radio-label {
+            display: flex;
+            align-items: flex-start;
+            padding: 16px;
+            cursor: pointer;
+            margin: 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .radio-label input[type="radio"] {
+            margin-right: 12px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+        
+        .radio-label input[type="radio"]:focus {
+            outline: 2px solid var(--vscode-focusBorder);
+            outline-offset: 2px;
+        }
+        
+        .radio-text {
+            flex: 1;
+        }
+        
+        .radio-text strong {
+            display: block;
+            margin-bottom: 4px;
+            color: var(--vscode-foreground);
+        }
+        
+        .radio-description {
+            font-size: 12px;
+            color: var(--vscode-descriptionForeground);
+            line-height: 1.4;
+        }
+        
+        .radio-description code {
+            background-color: var(--vscode-textCodeBlock-background);
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: var(--vscode-editor-font-family);
+            font-size: 11px;
+        }
+        
         input[type="checkbox"]:focus {
             outline: 2px solid var(--vscode-focusBorder);
             outline-offset: 2px;
@@ -316,6 +381,20 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
             resize: vertical;
         }
         
+        .tool-section {
+            margin-bottom: 25px;
+        }
+        
+        .tool-section-title {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 18px;
+            color: var(--vscode-titleBar-activeForeground);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
         .tools-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -329,11 +408,110 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
             background-color: var(--vscode-editor-background);
         }
         
+        .tool-column h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: var(--vscode-titleBar-activeForeground);
+            font-weight: 600;
+        }
+        
         .tool-column h3 {
             margin-top: 0;
             margin-bottom: 10px;
             font-size: 16px;
             color: var(--vscode-titleBar-activeForeground);
+        }
+        
+        /* Experimental Tools Styling */
+        .experimental-section {
+            border: 2px solid #FF9800;
+            border-radius: 8px;
+            padding: 20px;
+            background-color: rgba(255, 152, 0, 0.05);
+            margin-top: 20px;
+        }
+        
+        .experimental-header {
+            margin-bottom: 20px;
+        }
+        
+        .warning-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            background-color: #FF9800;
+            color: white;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .experimental-warning {
+            background-color: rgba(255, 152, 0, 0.1);
+            border: 1px solid #FF9800;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+        
+        .experimental-warning p {
+            margin: 0 0 10px 0;
+            color: var(--vscode-foreground);
+            font-size: 14px;
+        }
+        
+        .experimental-details {
+            margin-top: 10px;
+        }
+        
+        .experimental-details summary {
+            cursor: pointer;
+            color: var(--vscode-textLink-foreground);
+            font-weight: 500;
+            padding: 5px 0;
+        }
+        
+        .experimental-details summary:hover {
+            color: var(--vscode-textLink-activeForeground);
+        }
+        
+        .experimental-details ul {
+            margin: 10px 0 0 20px;
+            padding: 0;
+        }
+        
+        .experimental-details li {
+            margin-bottom: 5px;
+            color: var(--vscode-descriptionForeground);
+            font-size: 13px;
+        }
+        
+        .experimental-details li strong {
+            color: var(--vscode-foreground);
+        }
+        
+        .experimental-section .tool-column {
+            border-color: #FF9800;
+            background-color: rgba(255, 152, 0, 0.02);
+        }
+        
+        .experimental-tool-item {
+            position: relative;
+            border-left: 3px solid #FF9800;
+            background-color: rgba(255, 152, 0, 0.05);
+        }
+        
+        .experimental-indicator {
+            font-size: 12px;
+            margin-right: 5px;
+            opacity: 0.8;
+        }
+        
+        .experimental-tool-item:hover {
+            background-color: rgba(255, 152, 0, 0.1);
         }
         
         .tool-item {
@@ -595,6 +773,45 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
                 </div>
             </div>
             
+            <!-- Agent Location Section -->
+            <div class="form-section">
+                <h2>Agent Location</h2>
+                <p style="margin-bottom: 15px; color: var(--vscode-descriptionForeground);">
+                    Choose where to store your agent configuration.
+                </p>
+                
+                <div class="radio-group" role="radiogroup" aria-labelledby="location-heading">
+                    <div class="radio-option">
+                        <label class="radio-label">
+                            <input type="radio" name="location" value="local" id="locationLocal" 
+                                   checked onchange="handleLocationChange('local')"
+                                   aria-describedby="localLocationHelp">
+                            <span class="radio-text">
+                                <strong>Local Agent</strong>
+                                <div class="radio-description" id="localLocationHelp">
+                                    Available only in this workspace. Stored in <code>.amazonq/cli-agents/</code>
+                                </div>
+                            </span>
+                        </label>
+                    </div>
+                    
+                    <div class="radio-option">
+                        <label class="radio-label">
+                            <input type="radio" name="location" value="global" id="locationGlobal" 
+                                   onchange="handleLocationChange('global')"
+                                   aria-describedby="globalLocationHelp">
+                            <span class="radio-text">
+                                <strong>Global Agent</strong>
+                                <div class="radio-description" id="globalLocationHelp">
+                                    Available across all workspaces. Stored in <code>~/.aws/amazonq/cli-agents/</code>
+                                </div>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                <div class="error hidden" id="locationError" role="alert" aria-live="polite"></div>
+            </div>
+            
             <!-- Tools Selection Section -->
             <div class="form-section">
                 <h2>Tools Selection</h2>
@@ -602,17 +819,55 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
                     Select which tools your agent can use. Tools in "Allowed Tools" are pre-approved and don't require user confirmation.
                 </p>
                 
-                <div class="tools-container" role="group" aria-labelledby="tools-heading">
-                    <div class="tool-column">
-                        <h3 id="available-tools-heading">Available Tools</h3>
-                        <div id="availableTools" role="group" aria-labelledby="available-tools-heading"></div>
-                    </div>
-                    
-                    <div class="tool-column">
-                        <h3 id="allowed-tools-heading">Allowed Tools</h3>
-                        <div id="allowedTools" role="group" aria-labelledby="allowed-tools-heading"></div>
+                <!-- Standard Tools Section -->
+                <div class="tool-section">
+                    <h3 class="tool-section-title">Standard Tools</h3>
+                    <div class="tools-container" role="group" aria-labelledby="standard-tools-heading">
+                        <div class="tool-column">
+                            <h4 id="standard-available-tools-heading">Available Tools</h4>
+                            <div id="standardAvailableTools" role="group" aria-labelledby="standard-available-tools-heading"></div>
+                        </div>
+                        
+                        <div class="tool-column">
+                            <h4 id="standard-allowed-tools-heading">Allowed Tools</h4>
+                            <div id="standardAllowedTools" role="group" aria-labelledby="standard-allowed-tools-heading"></div>
+                        </div>
                     </div>
                 </div>
+                
+                <!-- Experimental Tools Section -->
+                <div class="tool-section experimental-section">
+                    <div class="experimental-header">
+                        <h3 class="tool-section-title">
+                            Experimental Tools
+                            <span class="warning-badge" title="These features are in active development">⚠️ Experimental</span>
+                        </h3>
+                        <div class="experimental-warning">
+                            <p><strong>⚠️ Important:</strong> These features are in active development and may change or be removed at any time. Use with caution in production workflows.</p>
+                            <details class="experimental-details">
+                                <summary>Learn more about experimental features</summary>
+                                <ul>
+                                    <li><strong>Knowledge:</strong> Persistent context storage with semantic search</li>
+                                    <li><strong>Thinking:</strong> Shows AI reasoning process for complex problems</li>
+                                    <li><strong>TODO List:</strong> Task management and progress tracking</li>
+                                </ul>
+                            </details>
+                        </div>
+                    </div>
+                    
+                    <div class="tools-container" role="group" aria-labelledby="experimental-tools-heading">
+                        <div class="tool-column">
+                            <h4 id="experimental-available-tools-heading">Available Tools</h4>
+                            <div id="experimentalAvailableTools" role="group" aria-labelledby="experimental-available-tools-heading"></div>
+                        </div>
+                        
+                        <div class="tool-column">
+                            <h4 id="experimental-allowed-tools-heading">Allowed Tools</h4>
+                            <div id="experimentalAllowedTools" role="group" aria-labelledby="experimental-allowed-tools-heading"></div>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="error hidden" id="toolsError" role="alert" aria-live="polite"></div>
             </div>
             
@@ -646,6 +901,7 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
         const vscode = acquireVsCodeApi();
         let formData = {};
         let availableToolsList = [];
+        let toolSections = [];
         let formState = {
             isSubmitting: false,
             hasUnsavedChanges: false,
@@ -663,6 +919,7 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
                 case 'initialData':
                     formData = message.data;
                     availableToolsList = message.tools;
+                    toolSections = message.toolSections || [];
                     populateForm();
                     formState.hasUnsavedChanges = false;
                     updateProgressIndicator(100);
@@ -697,6 +954,17 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
             document.getElementById('agentName').value = formData.name || '';
             document.getElementById('agentDescription').value = formData.description || '';
             document.getElementById('agentPrompt').value = formData.prompt || '';
+            
+            // Set location radio buttons
+            const locationLocal = document.getElementById('locationLocal');
+            const locationGlobal = document.getElementById('locationGlobal');
+            if (formData.location === 'global') {
+                locationGlobal.checked = true;
+                locationLocal.checked = false;
+            } else {
+                locationLocal.checked = true;
+                locationGlobal.checked = false;
+            }
             
             renderTools();
             renderResources();
@@ -741,40 +1009,92 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
             formData.name = document.getElementById('agentName').value;
             formData.description = document.getElementById('agentDescription').value;
             formData.prompt = document.getElementById('agentPrompt').value;
+            
+            // Update location from radio buttons
+            const locationRadios = document.getElementsByName('location');
+            for (const radio of locationRadios) {
+                if (radio.checked) {
+                    formData.location = radio.value;
+                    break;
+                }
+            }
         }
         
         function renderTools() {
-            const availableContainer = document.getElementById('availableTools');
-            const allowedContainer = document.getElementById('allowedTools');
+            // Render standard tools
+            const standardAvailableContainer = document.getElementById('standardAvailableTools');
+            const standardAllowedContainer = document.getElementById('standardAllowedTools');
             
-            availableContainer.innerHTML = '';
-            allowedContainer.innerHTML = '';
+            // Render experimental tools
+            const experimentalAvailableContainer = document.getElementById('experimentalAvailableTools');
+            const experimentalAllowedContainer = document.getElementById('experimentalAllowedTools');
             
-            availableToolsList.forEach(tool => {
-                const availableChecked = formData.tools.available.includes(tool.name);
-                const allowedChecked = formData.tools.allowed.includes(tool.name);
-                
-                // Available tools
-                const availableItem = createToolItem(tool, availableChecked, 'available');
-                availableContainer.appendChild(availableItem);
-                
-                // Allowed tools
-                const allowedItem = createToolItem(tool, allowedChecked, 'allowed');
-                allowedContainer.appendChild(allowedItem);
-            });
+            // Clear all containers
+            if (standardAvailableContainer) standardAvailableContainer.innerHTML = '';
+            if (standardAllowedContainer) standardAllowedContainer.innerHTML = '';
+            if (experimentalAvailableContainer) experimentalAvailableContainer.innerHTML = '';
+            if (experimentalAllowedContainer) experimentalAllowedContainer.innerHTML = '';
+            
+            // Use tool sections if available, otherwise fall back to legacy method
+            if (toolSections && toolSections.length > 0) {
+                toolSections.forEach(section => {
+                    const isExperimental = section.isExperimental;
+                    const availableContainer = isExperimental ? experimentalAvailableContainer : standardAvailableContainer;
+                    const allowedContainer = isExperimental ? experimentalAllowedContainer : standardAllowedContainer;
+                    
+                    if (availableContainer && allowedContainer) {
+                        section.tools.forEach(tool => {
+                            const availableChecked = formData.tools.available.includes(tool.name);
+                            const allowedChecked = formData.tools.allowed.includes(tool.name);
+                            
+                            // Available tools
+                            const availableItem = createToolItem(tool, availableChecked, 'available', isExperimental);
+                            availableContainer.appendChild(availableItem);
+                            
+                            // Allowed tools
+                            const allowedItem = createToolItem(tool, allowedChecked, 'allowed', isExperimental);
+                            allowedContainer.appendChild(allowedItem);
+                        });
+                    }
+                });
+            } else {
+                // Legacy fallback - render all tools in standard section
+                availableToolsList.forEach(tool => {
+                    const availableChecked = formData.tools.available.includes(tool.name);
+                    const allowedChecked = formData.tools.allowed.includes(tool.name);
+                    const isExperimental = tool.isExperimental || false;
+                    
+                    const availableContainer = isExperimental ? experimentalAvailableContainer : standardAvailableContainer;
+                    const allowedContainer = isExperimental ? experimentalAllowedContainer : standardAllowedContainer;
+                    
+                    if (availableContainer && allowedContainer) {
+                        // Available tools
+                        const availableItem = createToolItem(tool, availableChecked, 'available', isExperimental);
+                        availableContainer.appendChild(availableItem);
+                        
+                        // Allowed tools
+                        const allowedItem = createToolItem(tool, allowedChecked, 'allowed', isExperimental);
+                        allowedContainer.appendChild(allowedItem);
+                    }
+                });
+            }
         }
         
-        function createToolItem(tool, checked, type) {
+        function createToolItem(tool, checked, type, isExperimental = false) {
             const item = document.createElement('div');
-            item.className = 'tool-item';
+            item.className = isExperimental ? 'tool-item experimental-tool-item' : 'tool-item';
+            
+            const experimentalWarning = isExperimental ? 
+                \`<span class="experimental-indicator" title="Experimental feature">⚠️</span>\` : '';
             
             item.innerHTML = \`
                 <input type="checkbox" id="\${type}_\${tool.name}" 
                        \${checked ? 'checked' : ''} 
-                       onchange="toggleTool('\${tool.name}', '\${type}', this.checked)"
+                       onchange="toggleTool('\${tool.name}', '\${type}', this.checked, \${isExperimental})"
                        aria-describedby="\${type}_\${tool.name}_desc">
                 <div class="tool-info">
                     <div class="tool-name">
+                        \${experimentalWarning}
                         \${tool.displayName}
                         <span class="tool-category category-\${tool.category}">\${tool.category}</span>
                     </div>
@@ -785,16 +1105,53 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
             return item;
         }
         
-        function toggleTool(toolName, type, checked) {
+        function handleLocationChange(location) {
+            // Update form data
+            formData.location = location;
+            
+            // Mark form as changed
+            markFormChanged();
+            
+            // Send location change message to extension
+            vscode.postMessage({ 
+                type: 'locationChanged', 
+                location: location 
+            });
+            
+            // Clear any previous location errors
+            const locationError = document.getElementById('locationError');
+            if (locationError) {
+                locationError.textContent = '';
+                locationError.classList.add('hidden');
+            }
+        }
+        
+        function toggleTool(toolName, type, checked, isExperimental = false) {
+            // Show confirmation dialog for experimental tools
+            if (isExperimental && checked) {
+                const confirmed = showExperimentalToolConfirmation(toolName);
+                if (!confirmed) {
+                    // Revert the checkbox state
+                    document.getElementById(type + '_' + toolName).checked = false;
+                    return;
+                }
+            }
+            
             if (type === 'available') {
                 if (checked) {
                     if (!formData.tools.available.includes(toolName)) {
                         formData.tools.available.push(toolName);
                     }
+                    // Track experimental tools separately
+                    if (isExperimental && !formData.tools.experimental.includes(toolName)) {
+                        formData.tools.experimental.push(toolName);
+                    }
                 } else {
                     formData.tools.available = formData.tools.available.filter(t => t !== toolName);
                     formData.tools.allowed = formData.tools.allowed.filter(t => t !== toolName);
-                    document.getElementById('allowed_' + toolName).checked = false;
+                    formData.tools.experimental = formData.tools.experimental.filter(t => t !== toolName);
+                    const allowedCheckbox = document.getElementById('allowed_' + toolName);
+                    if (allowedCheckbox) allowedCheckbox.checked = false;
                 }
             } else if (type === 'allowed') {
                 if (checked) {
@@ -803,13 +1160,32 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
                     }
                     if (!formData.tools.available.includes(toolName)) {
                         formData.tools.available.push(toolName);
-                        document.getElementById('available_' + toolName).checked = true;
+                        const availableCheckbox = document.getElementById('available_' + toolName);
+                        if (availableCheckbox) availableCheckbox.checked = true;
+                    }
+                    // Track experimental tools separately
+                    if (isExperimental && !formData.tools.experimental.includes(toolName)) {
+                        formData.tools.experimental.push(toolName);
                     }
                 } else {
                     formData.tools.allowed = formData.tools.allowed.filter(t => t !== toolName);
                 }
             }
             markFormChanged();
+        }
+        
+        function showExperimentalToolConfirmation(toolName) {
+            const toolInfo = getExperimentalToolInfo(toolName);
+            const message = toolInfo ? 
+                \`Are you sure you want to enable the experimental tool "\${toolInfo.displayName}"?\\n\\n\${toolInfo.description}\\n\\nWarning: \${toolInfo.stabilityNote || 'This feature is in active development and may change.'}\` :
+                \`Are you sure you want to enable the experimental tool "\${toolName}"?\\n\\nThis feature is in active development and may change or be removed at any time.\`;
+            
+            return confirm(message);
+        }
+        
+        function getExperimentalToolInfo(toolName) {
+            // Find tool info from available tools list
+            return availableToolsList.find(tool => tool.name === toolName && tool.isExperimental);
         }
         
         function renderResources() {
@@ -1132,6 +1508,19 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
             }
         });
         
+        // Location radio button change listeners
+        document.getElementById('locationLocal').addEventListener('change', (e) => {
+            if (e.target.checked) {
+                handleLocationChange('local');
+            }
+        });
+        
+        document.getElementById('locationGlobal').addEventListener('change', (e) => {
+            if (e.target.checked) {
+                handleLocationChange('global');
+            }
+        });
+        
         // Allow Enter key to add resources
         document.getElementById('newResource').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
@@ -1164,6 +1553,27 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
             if ((e.ctrlKey || e.metaKey) && e.key === 'n' && document.querySelector('.post-creation-actions')) {
                 e.preventDefault();
                 createAnotherAgent();
+            }
+            
+            // Arrow key navigation for location radio buttons
+            if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                const focusedElement = document.activeElement;
+                if (focusedElement && focusedElement.name === 'location') {
+                    e.preventDefault();
+                    const locationRadios = document.getElementsByName('location');
+                    const currentIndex = Array.from(locationRadios).indexOf(focusedElement);
+                    let nextIndex;
+                    
+                    if (e.key === 'ArrowUp') {
+                        nextIndex = currentIndex > 0 ? currentIndex - 1 : locationRadios.length - 1;
+                    } else {
+                        nextIndex = currentIndex < locationRadios.length - 1 ? currentIndex + 1 : 0;
+                    }
+                    
+                    locationRadios[nextIndex].focus();
+                    locationRadios[nextIndex].checked = true;
+                    handleLocationChange(locationRadios[nextIndex].value);
+                }
             }
         });
     </script>
