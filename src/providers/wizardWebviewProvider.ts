@@ -374,35 +374,36 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     /* Base Typography */
                     body { 
                         font-family: var(--vscode-font-family);
-                        font-size: var(--wizard-font-size-md);
+                        font-size: var(--wizard-font-size-sm);
                         line-height: var(--wizard-line-height-normal);
                         color: var(--vscode-foreground);
                         background: var(--vscode-editor-background);
                         margin: 0;
-                        padding: var(--wizard-spacing-xl);
+                        padding: var(--wizard-spacing-lg);
                     }
                     
                     h1, h2, h3, h4, h5, h6 {
                         font-family: var(--vscode-font-family);
                         font-weight: 600;
                         line-height: var(--wizard-line-height-tight);
-                        margin: 0 0 var(--wizard-spacing-lg) 0;
+                        margin: 0 0 var(--wizard-spacing-md) 0;
                         color: var(--vscode-foreground);
                     }
                     
                     h2 {
-                        font-size: var(--wizard-font-size-xxl);
-                        margin-bottom: var(--wizard-spacing-md);
+                        font-size: var(--wizard-font-size-lg);
+                        margin-bottom: var(--wizard-spacing-sm);
                     }
                     
                     h3 {
-                        font-size: var(--wizard-font-size-lg);
+                        font-size: var(--wizard-font-size-md);
                     }
                     
                     p {
-                        margin: 0 0 var(--wizard-spacing-lg) 0;
+                        margin: 0 0 var(--wizard-spacing-md) 0;
                         color: var(--vscode-descriptionForeground);
                         line-height: var(--wizard-line-height-relaxed);
+                        font-size: var(--wizard-font-size-sm);
                     }
                     
                     code {
@@ -424,7 +425,7 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     /* Progress Bar Enhancement */
                     .progress-bar {
                         display: flex;
-                        margin-bottom: var(--wizard-spacing-xxxl);
+                        margin-bottom: var(--wizard-spacing-lg);
                         background: var(--vscode-editor-background);
                         border-radius: var(--wizard-border-radius-lg);
                         padding: var(--wizard-spacing-xs);
@@ -437,9 +438,9 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         flex: 1;
                         min-width: 120px;
                         text-align: center;
-                        padding: var(--wizard-spacing-md) var(--wizard-spacing-sm);
+                        padding: var(--wizard-spacing-sm) var(--wizard-spacing-xs);
                         border-radius: var(--wizard-border-radius-md);
-                        font-size: var(--wizard-font-size-sm);
+                        font-size: var(--wizard-font-size-xs);
                         font-weight: 500;
                         color: var(--vscode-descriptionForeground);
                         transition: all 0.2s ease;
@@ -478,20 +479,20 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     /* Step Content Enhancement */
                     .step-content {
                         min-height: 400px;
-                        padding: var(--wizard-spacing-xxl) 0;
+                        padding: var(--wizard-spacing-lg) 0;
                         transition: opacity 0.3s ease, transform 0.3s ease;
                     }
                     
                     /* Form Elements Enhancement */
                     .form-group {
-                        margin-bottom: var(--wizard-spacing-xxl);
+                        margin-bottom: var(--wizard-spacing-lg);
                     }
                     
                     .form-label {
                         display: block;
-                        margin-bottom: var(--wizard-spacing-sm);
+                        margin-bottom: var(--wizard-spacing-xs);
                         font-weight: 500;
-                        font-size: var(--wizard-font-size-md);
+                        font-size: var(--wizard-font-size-sm);
                         color: var(--vscode-foreground);
                     }
                     
@@ -502,13 +503,13 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     
                     .form-input {
                         width: 100%;
-                        padding: var(--wizard-spacing-md);
+                        padding: var(--wizard-spacing-sm) var(--wizard-spacing-md);
                         border: 1px solid var(--vscode-input-border);
                         background: var(--vscode-input-background);
                         color: var(--vscode-input-foreground);
                         border-radius: var(--wizard-border-radius-md);
                         font-family: var(--vscode-font-family);
-                        font-size: var(--wizard-font-size-md);
+                        font-size: var(--wizard-font-size-sm);
                         box-sizing: border-box;
                         transition: border-color 0.2s ease, box-shadow 0.2s ease;
                     }
@@ -525,22 +526,22 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     }
                     
                     .form-textarea {
-                        min-height: 100px;
+                        min-height: 80px;
                         resize: vertical;
-                        font-family: var(--vscode-editor-font-family);
+                        font-family: var(--vscode-font-family);
                         line-height: var(--wizard-line-height-normal);
                     }
                     
                     .form-textarea.code-style {
-                        min-height: 120px;
+                        min-height: 100px;
                         font-family: var(--vscode-editor-font-family);
-                        font-size: var(--vscode-editor-font-size, var(--wizard-font-size-sm));
+                        font-size: var(--wizard-font-size-sm);
                         line-height: var(--wizard-line-height-normal);
-                        background: var(--vscode-textCodeBlock-background);
+                        background: var(--vscode-input-background);
                     }
                     
                     .form-help {
-                        font-size: var(--wizard-font-size-sm);
+                        font-size: var(--wizard-font-size-xs);
                         color: var(--vscode-descriptionForeground);
                         margin-top: var(--wizard-spacing-xs);
                         line-height: var(--wizard-line-height-normal);
@@ -602,8 +603,8 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         display: flex;
                         justify-content: space-between;
                         align-items: center;
-                        margin-top: var(--wizard-spacing-xxxl);
-                        padding-top: var(--wizard-spacing-xl);
+                        margin-top: var(--wizard-spacing-lg);
+                        padding-top: var(--wizard-spacing-md);
                         border-top: 1px solid var(--vscode-input-border);
                         position: relative;
                     }
