@@ -607,6 +607,10 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         position: relative;
                     }
                     
+                    .navigation #nextBtn {
+                        margin-left: auto;
+                    }
+                    
                     .step-counter {
                         position: absolute;
                         left: 50%;
