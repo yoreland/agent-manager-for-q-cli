@@ -1,13 +1,21 @@
 import { WizardStep, ValidationResult, WizardState } from '../types/wizard';
 import { ExtensionLogger } from './logger';
+import { IAgentConfigService } from './agentConfigService';
 
 export interface IWizardValidationService {
     validateStep(step: WizardStep, stepData: WizardState['stepData']): Promise<ValidationResult>;
     validateField(step: WizardStep, field: string, value: any): ValidationResult;
+    setAgentConfigService(service: IAgentConfigService): void;
 }
 
 export class WizardValidationService implements IWizardValidationService {
+    private agentConfigService?: IAgentConfigService;
+
     constructor(private readonly logger: ExtensionLogger) {}
+
+    setAgentConfigService(service: IAgentConfigService): void {
+        this.agentConfigService = service;
+    }
 
     async validateStep(step: WizardStep, stepData: WizardState['stepData']): Promise<ValidationResult> {
         const errors: string[] = [];
@@ -15,7 +23,7 @@ export class WizardValidationService implements IWizardValidationService {
 
         switch (step) {
             case WizardStep.BasicProperties:
-                const basicValidation = this.validateBasicProperties(stepData.basicProperties);
+                const basicValidation = await this.validateBasicProperties(stepData.basicProperties);
                 errors.push(...basicValidation.errors);
                 warnings.push(...(basicValidation.warnings || []));
                 break;
@@ -78,13 +86,26 @@ export class WizardValidationService implements IWizardValidationService {
         return { isValid: errors.length === 0, errors };
     }
 
-    private validateBasicProperties(data: WizardState['stepData']['basicProperties']): ValidationResult {
+    private async validateBasicProperties(data: WizardState['stepData']['basicProperties']): Promise<ValidationResult> {
         const errors: string[] = [];
         const warnings: string[] = [];
 
         // Name validation
         const nameValidation = this.validateField(WizardStep.BasicProperties, 'name', data.name);
         errors.push(...nameValidation.errors);
+
+        // Check for duplicate agent names if service is available
+        if (this.agentConfigService && data.name.trim()) {
+            try {
+                const exists = await this.agentConfigService.isAgentNameExists(data.name.trim());
+                if (exists) {
+                    errors.push(`Agent name '${data.name}' already exists. Please choose a different name.`);
+                }
+            } catch (error) {
+                this.logger.warn('Failed to check agent name uniqueness', error as Error);
+                warnings.push('Could not verify agent name uniqueness');
+            }
+        }
 
         // Prompt validation
         const promptValidation = this.validateField(WizardStep.BasicProperties, 'prompt', data.prompt);

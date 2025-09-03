@@ -22,6 +22,20 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
     ) {
         this.stateService = new WizardStateService(logger);
         this.validationService = new WizardValidationService(logger);
+        
+        // Initialize agent config service for validation
+        this.initializeServices();
+    }
+
+    private async initializeServices(): Promise<void> {
+        try {
+            // Import and initialize agent config service
+            const { AgentConfigService } = await import('../services/agentConfigService');
+            const agentConfigService = new AgentConfigService(this.logger);
+            this.validationService.setAgentConfigService(agentConfigService);
+        } catch (error) {
+            this.logger.warn('Failed to initialize agent config service for validation', error as Error);
+        }
     }
 
     async showWizard(): Promise<void> {
@@ -225,10 +239,12 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         text-align: center;
                         padding: 10px;
                         border-bottom: 2px solid var(--vscode-input-border);
+                        font-size: 12px;
                     }
                     .step.active {
                         border-bottom-color: var(--vscode-focusBorder);
                         color: var(--vscode-focusBorder);
+                        font-weight: bold;
                     }
                     .step.completed {
                         border-bottom-color: var(--vscode-charts-green);
@@ -238,10 +254,79 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         min-height: 400px;
                         padding: 20px 0;
                     }
+                    .form-group {
+                        margin-bottom: 20px;
+                    }
+                    .form-label {
+                        display: block;
+                        margin-bottom: 8px;
+                        font-weight: 500;
+                        color: var(--vscode-foreground);
+                    }
+                    .required {
+                        color: var(--vscode-errorForeground);
+                    }
+                    .form-input {
+                        width: 100%;
+                        padding: 8px 12px;
+                        border: 1px solid var(--vscode-input-border);
+                        background: var(--vscode-input-background);
+                        color: var(--vscode-input-foreground);
+                        border-radius: 2px;
+                        font-family: var(--vscode-font-family);
+                        font-size: 14px;
+                        box-sizing: border-box;
+                    }
+                    .form-input:focus {
+                        outline: none;
+                        border-color: var(--vscode-focusBorder);
+                    }
+                    .form-textarea {
+                        min-height: 100px;
+                        resize: vertical;
+                        font-family: var(--vscode-editor-font-family);
+                    }
+                    .form-textarea.code-style {
+                        min-height: 120px;
+                        font-family: var(--vscode-editor-font-family);
+                        font-size: var(--vscode-editor-font-size);
+                        line-height: 1.4;
+                    }
+                    .form-help {
+                        font-size: 12px;
+                        color: var(--vscode-descriptionForeground);
+                        margin-top: 4px;
+                    }
+                    .validation-error {
+                        color: var(--vscode-errorForeground);
+                        font-size: 12px;
+                        margin-top: 4px;
+                        display: none;
+                    }
+                    .validation-error.show {
+                        display: block;
+                    }
+                    .validation-warning {
+                        color: var(--vscode-notificationsWarningIcon-foreground);
+                        font-size: 12px;
+                        margin-top: 4px;
+                        display: none;
+                    }
+                    .validation-warning.show {
+                        display: block;
+                    }
+                    .char-counter {
+                        font-size: 11px;
+                        color: var(--vscode-descriptionForeground);
+                        text-align: right;
+                        margin-top: 4px;
+                    }
                     .navigation {
                         display: flex;
                         justify-content: space-between;
                         margin-top: 30px;
+                        padding-top: 20px;
+                        border-top: 1px solid var(--vscode-input-border);
                     }
                     button {
                         padding: 10px 20px;
@@ -249,6 +334,8 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         background: var(--vscode-button-background);
                         color: var(--vscode-button-foreground);
                         cursor: pointer;
+                        border-radius: 2px;
+                        font-family: var(--vscode-font-family);
                     }
                     button:hover {
                         background: var(--vscode-button-hoverBackground);
@@ -259,6 +346,10 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     }
                     .primary {
                         background: var(--vscode-button-background);
+                    }
+                    .secondary {
+                        background: var(--vscode-button-secondaryBackground);
+                        color: var(--vscode-button-secondaryForeground);
                     }
                 </style>
             </head>
@@ -277,9 +368,9 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     </div>
                     
                     <div class="navigation">
-                        <button id="prevBtn" onclick="previousStep()" disabled>Previous</button>
+                        <button id="prevBtn" onclick="previousStep()" disabled class="secondary">Previous</button>
                         <div>
-                            <button id="cancelBtn" onclick="cancelWizard()">Cancel</button>
+                            <button id="cancelBtn" onclick="cancelWizard()" class="secondary">Cancel</button>
                             <button id="nextBtn" onclick="nextStep()" class="primary">Next</button>
                         </div>
                     </div>
@@ -289,6 +380,7 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     const vscode = acquireVsCodeApi();
                     let currentStep = 1;
                     let wizardState = null;
+                    let validationTimeout = null;
                     
                     // Initialize wizard
                     window.addEventListener('message', event => {
@@ -333,6 +425,7 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         switch (currentStep) {
                             case 1:
                                 content.innerHTML = getBasicPropertiesHTML();
+                                setupBasicPropertiesHandlers();
                                 break;
                             case 2:
                                 content.innerHTML = getAgentLocationHTML();
@@ -388,15 +481,188 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     }
                     
                     function handleValidation(validation, canProceed) {
-                        // TODO: Display validation errors
-                        console.log('Validation:', validation, 'Can proceed:', canProceed);
+                        if (currentStep === 1) {
+                            displayBasicPropertiesValidation(validation);
+                        }
+                        
+                        // Update next button state
+                        document.getElementById('nextBtn').disabled = !canProceed;
                     }
                     
-                    // Step content generators (placeholder)
+                    // Basic Properties Step Implementation
                     function getBasicPropertiesHTML() {
-                        return '<h2>Basic Properties</h2><p>Agent name, description, and prompt fields will go here.</p>';
+                        const data = wizardState?.stepData?.basicProperties || { name: '', description: '', prompt: '' };
+                        return \`
+                            <h2>Basic Properties</h2>
+                            <p>Define the basic information for your agent.</p>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="agentName">
+                                    Agent Name <span class="required">*</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="agentName" 
+                                    class="form-input" 
+                                    value="\${data.name}"
+                                    placeholder="Enter a unique name for your agent"
+                                    maxlength="50"
+                                />
+                                <div class="form-help">
+                                    Use letters, numbers, hyphens, and underscores only. This will be used as the filename.
+                                </div>
+                                <div class="validation-error" id="nameError"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="agentDescription">
+                                    Description
+                                </label>
+                                <textarea 
+                                    id="agentDescription" 
+                                    class="form-input form-textarea" 
+                                    placeholder="Brief description of what this agent does (optional)"
+                                    maxlength="500"
+                                >\${data.description || ''}</textarea>
+                                <div class="char-counter">
+                                    <span id="descCounter">\${(data.description || '').length}</span>/500 characters
+                                </div>
+                                <div class="validation-warning" id="descWarning"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="agentPrompt">
+                                    System Prompt <span class="required">*</span>
+                                </label>
+                                <textarea 
+                                    id="agentPrompt" 
+                                    class="form-input form-textarea code-style" 
+                                    placeholder="Define the agent's behavior, role, and instructions..."
+                                    rows="6"
+                                >\${data.prompt}</textarea>
+                                <div class="form-help">
+                                    This defines how your agent will behave and respond. Be specific about the agent's role and capabilities.
+                                </div>
+                                <div class="validation-error" id="promptError"></div>
+                            </div>
+                        \`;
                     }
                     
+                    function setupBasicPropertiesHandlers() {
+                        const nameInput = document.getElementById('agentName');
+                        const descInput = document.getElementById('agentDescription');
+                        const promptInput = document.getElementById('agentPrompt');
+                        const descCounter = document.getElementById('descCounter');
+                        
+                        // Real-time validation with debouncing
+                        nameInput.addEventListener('input', () => {
+                            clearTimeout(validationTimeout);
+                            validationTimeout = setTimeout(() => {
+                                updateBasicPropertiesData();
+                                validateField('name', nameInput.value);
+                            }, 300);
+                        });
+                        
+                        descInput.addEventListener('input', () => {
+                            descCounter.textContent = descInput.value.length;
+                            clearTimeout(validationTimeout);
+                            validationTimeout = setTimeout(() => {
+                                updateBasicPropertiesData();
+                            }, 300);
+                        });
+                        
+                        promptInput.addEventListener('input', () => {
+                            clearTimeout(validationTimeout);
+                            validationTimeout = setTimeout(() => {
+                                updateBasicPropertiesData();
+                                validateField('prompt', promptInput.value);
+                            }, 300);
+                        });
+                    }
+                    
+                    function updateBasicPropertiesData() {
+                        const name = document.getElementById('agentName').value;
+                        const description = document.getElementById('agentDescription').value;
+                        const prompt = document.getElementById('agentPrompt').value;
+                        
+                        vscode.postMessage({
+                            type: 'dataUpdated',
+                            data: {
+                                basicProperties: { name, description, prompt }
+                            }
+                        });
+                    }
+                    
+                    function validateField(field, value) {
+                        // Client-side validation for immediate feedback
+                        if (field === 'name') {
+                            const errorEl = document.getElementById('nameError');
+                            let error = '';
+                            
+                            if (!value.trim()) {
+                                error = 'Agent name is required';
+                            } else if (value.length < 2) {
+                                error = 'Agent name must be at least 2 characters';
+                            } else if (!/^[a-zA-Z0-9_-]+$/.test(value)) {
+                                error = 'Agent name can only contain letters, numbers, hyphens, and underscores';
+                            }
+                            
+                            if (error) {
+                                errorEl.textContent = error;
+                                errorEl.classList.add('show');
+                            } else {
+                                errorEl.classList.remove('show');
+                            }
+                        } else if (field === 'prompt') {
+                            const errorEl = document.getElementById('promptError');
+                            let error = '';
+                            
+                            if (!value.trim()) {
+                                error = 'System prompt is required';
+                            } else if (value.length < 10) {
+                                error = 'System prompt must be at least 10 characters';
+                            }
+                            
+                            if (error) {
+                                errorEl.textContent = error;
+                                errorEl.classList.add('show');
+                            } else {
+                                errorEl.classList.remove('show');
+                            }
+                        }
+                    }
+                    
+                    function displayBasicPropertiesValidation(validation) {
+                        // Clear all previous errors
+                        document.querySelectorAll('.validation-error').forEach(el => el.classList.remove('show'));
+                        document.querySelectorAll('.validation-warning').forEach(el => el.classList.remove('show'));
+                        
+                        // Display errors
+                        validation.errors.forEach(error => {
+                            if (error.includes('name')) {
+                                const errorEl = document.getElementById('nameError');
+                                errorEl.textContent = error;
+                                errorEl.classList.add('show');
+                            } else if (error.includes('prompt') || error.includes('Prompt')) {
+                                const errorEl = document.getElementById('promptError');
+                                errorEl.textContent = error;
+                                errorEl.classList.add('show');
+                            }
+                        });
+                        
+                        // Display warnings
+                        if (validation.warnings) {
+                            validation.warnings.forEach(warning => {
+                                if (warning.includes('Description')) {
+                                    const warningEl = document.getElementById('descWarning');
+                                    warningEl.textContent = warning;
+                                    warningEl.classList.add('show');
+                                }
+                            });
+                        }
+                    }
+                    
+                    // Placeholder functions for other steps
                     function getAgentLocationHTML() {
                         return '<h2>Agent Location</h2><p>Local vs Global selection cards will go here.</p>';
                     }
