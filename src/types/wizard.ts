@@ -51,15 +51,18 @@ export interface ValidationResult {
 }
 
 export interface WizardMessage {
-    type: 'stepChanged' | 'dataUpdated' | 'validationRequested' | 'wizardCompleted';
+    type: 'stepChanged' | 'dataUpdated' | 'validationRequested' | 'wizardCompleted' | 'openAgentConfig' | 'createAnother';
     step?: WizardStep;
     data?: Partial<WizardState['stepData']>;
     validation?: ValidationResult;
+    agentName?: string;
 }
 
 export interface WizardResponse {
-    type: 'stateUpdate' | 'validationResult' | 'navigationUpdate';
+    type: 'stateUpdate' | 'validationResult' | 'navigationUpdate' | 'agentCreated';
     state?: WizardState;
     validation?: ValidationResult;
     canProceed?: boolean;
+    agentName?: string;
+    location?: string;
 }

@@ -90,9 +90,49 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                 case 'wizardCompleted':
                     await this.completeWizard();
                     break;
+                
+                case 'openAgentConfig':
+                    await this.openAgentConfig(message.agentName);
+                    break;
+                
+                case 'createAnother':
+                    await this.createAnother();
+                    break;
             }
         } catch (error) {
             this.logger.error('Error handling wizard message', error as Error);
+        }
+    }
+
+    private async openAgentConfig(agentName?: string): Promise<void> {
+        if (!agentName) return;
+        
+        try {
+            // Import and use agent config service to open the config file
+            const { AgentConfigService } = await import('../services/agentConfigService');
+            const agentConfigService = new AgentConfigService(this.logger);
+            
+            // Get the agent file path and open it
+            const agentPath = await agentConfigService.getAgentPath(agentName);
+            if (agentPath) {
+                const document = await vscode.workspace.openTextDocument(agentPath);
+                await vscode.window.showTextDocument(document);
+            }
+            
+            this.panel?.dispose();
+        } catch (error) {
+            this.logger.error('Failed to open agent config', error as Error);
+            vscode.window.showErrorMessage(`Failed to open agent configuration: ${(error as Error).message}`);
+        }
+    }
+
+    private async createAnother(): Promise<void> {
+        // Reset the wizard state and start over
+        this.stateService.reset();
+        
+        // Refresh the webview content
+        if (this.panel) {
+            this.panel.webview.html = this.getWebviewContent();
         }
     }
 
@@ -188,22 +228,88 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
     private async completeWizard(): Promise<void> {
         const finalState = this.stateService.getState();
         
-        // Final validation of all steps
-        for (let step = WizardStep.BasicProperties; step < WizardStep.Summary; step++) {
-            const validation = await this.validationService.validateStep(step, finalState.stepData);
-            if (!validation.isValid) {
-                this.sendResponse({
-                    type: 'validationResult',
-                    validation,
-                    canProceed: false
-                });
-                return;
+        try {
+            // Final validation of all steps
+            for (let step = WizardStep.BasicProperties; step < WizardStep.Summary; step++) {
+                const validation = await this.validationService.validateStep(step, finalState.stepData);
+                if (!validation.isValid) {
+                    this.sendResponse({
+                        type: 'validationResult',
+                        validation,
+                        canProceed: false
+                    });
+                    return;
+                }
             }
+
+            // Create agent configuration
+            const agentConfig = this.buildAgentConfig(finalState.stepData);
+            
+            // Import and use agent creation service
+            const { AgentConfigService } = await import('../services/agentConfigService');
+            const agentConfigService = new AgentConfigService(this.logger);
+            
+            // Determine agent location
+            const isGlobal = finalState.stepData.agentLocation.location === 'global';
+            
+            // Create the agent
+            await agentConfigService.createAgent(
+                finalState.stepData.basicProperties.name,
+                agentConfig,
+                isGlobal
+            );
+
+            this.logger.info('Agent created successfully', { 
+                name: finalState.stepData.basicProperties.name,
+                location: finalState.stepData.agentLocation.location 
+            });
+
+            // Send success response
+            this.sendResponse({
+                type: 'agentCreated',
+                agentName: finalState.stepData.basicProperties.name,
+                location: finalState.stepData.agentLocation.location
+            });
+
+            // Close the wizard after a short delay
+            setTimeout(() => {
+                this.panel?.dispose();
+            }, 2000);
+
+        } catch (error) {
+            this.logger.error('Failed to create agent', error as Error);
+            
+            this.sendResponse({
+                type: 'validationResult',
+                validation: {
+                    isValid: false,
+                    errors: [`Failed to create agent: ${(error as Error).message}`]
+                },
+                canProceed: false
+            });
+        }
+    }
+
+    private buildAgentConfig(stepData: WizardState['stepData']): any {
+        const { basicProperties, toolsSelection, resources } = stepData;
+        
+        const config: any = {
+            description: basicProperties.description || undefined,
+            prompt: basicProperties.prompt
+        };
+
+        // Add tools if any are selected
+        const allTools = [...toolsSelection.standardTools, ...toolsSelection.experimentalTools];
+        if (allTools.length > 0) {
+            config.tools = allTools;
         }
 
-        // TODO: Integrate with existing agent creation service
-        this.logger.info('Wizard completed', finalState);
-        this.panel?.dispose();
+        // Add resources if any are provided
+        if (resources.resources.length > 0) {
+            config.resources = resources.resources;
+        }
+
+        return config;
     }
 
     private sendResponse(response: WizardResponse): void {
@@ -1078,6 +1184,87 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         animation: fadeInUp 0.5s ease 0.5s both;
                     }
                     
+                    /* Success Page Styling */
+                    .success-container {
+                        text-align: center;
+                        padding: var(--wizard-spacing-xxxl) var(--wizard-spacing-xl);
+                        animation: fadeInUp 0.6s ease;
+                    }
+                    
+                    .success-icon {
+                        font-size: 80px;
+                        margin-bottom: var(--wizard-spacing-xl);
+                        animation: pulse 1s ease infinite alternate;
+                    }
+                    
+                    .success-container h2 {
+                        color: var(--vscode-charts-green);
+                        margin-bottom: var(--wizard-spacing-xxl);
+                        font-size: var(--wizard-font-size-xxl);
+                    }
+                    
+                    .success-details {
+                        background: var(--vscode-inputValidation-infoBackground);
+                        border: 1px solid var(--vscode-inputValidation-infoBorder);
+                        border-radius: var(--wizard-border-radius-lg);
+                        padding: var(--wizard-spacing-xl);
+                        margin: var(--wizard-spacing-xxl) 0;
+                        display: inline-block;
+                        text-align: left;
+                        min-width: 300px;
+                    }
+                    
+                    .success-item {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        margin-bottom: var(--wizard-spacing-md);
+                        padding: var(--wizard-spacing-sm) 0;
+                        border-bottom: 1px solid var(--vscode-input-border);
+                    }
+                    
+                    .success-item:last-child {
+                        margin-bottom: 0;
+                        border-bottom: none;
+                    }
+                    
+                    .success-label {
+                        font-weight: 600;
+                        color: var(--vscode-foreground);
+                    }
+                    
+                    .success-value {
+                        color: var(--vscode-inputValidation-infoForeground);
+                        font-family: var(--vscode-editor-font-family);
+                        font-size: var(--wizard-font-size-sm);
+                    }
+                    
+                    .success-actions {
+                        display: flex;
+                        gap: var(--wizard-spacing-lg);
+                        justify-content: center;
+                        margin-top: var(--wizard-spacing-xxl);
+                    }
+                    
+                    @media (max-width: 480px) {
+                        .success-container {
+                            padding: var(--wizard-spacing-xl) var(--wizard-spacing-md);
+                        }
+                        
+                        .success-icon {
+                            font-size: 60px;
+                        }
+                        
+                        .success-details {
+                            min-width: auto;
+                            width: 100%;
+                        }
+                        
+                        .success-actions {
+                            flex-direction: column;
+                        }
+                    }
+                    
                     .location-card.selected::before {
                         content: '✓';
                         position: absolute;
@@ -1929,7 +2116,67 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                             case 'validationResult':
                                 handleValidation(response.validation, response.canProceed);
                                 break;
+                            case 'agentCreated':
+                                handleAgentCreated(response.agentName, response.location);
+                                break;
                         }
+                    }
+                    
+                    function handleAgentCreated(agentName, location) {
+                        setNavigationLoading(false);
+                        
+                        // Show success message
+                        const content = document.getElementById('stepContent');
+                        content.innerHTML = \`
+                            <div class="success-container">
+                                <div class="success-icon">🎉</div>
+                                <h2>Agent Created Successfully!</h2>
+                                <div class="success-details">
+                                    <div class="success-item">
+                                        <span class="success-label">Name:</span>
+                                        <span class="success-value">\${agentName}</span>
+                                    </div>
+                                    <div class="success-item">
+                                        <span class="success-label">Location:</span>
+                                        <span class="success-value">\${location === 'global' ? 'Global Agent' : 'Local Agent'}</span>
+                                    </div>
+                                    <div class="success-item">
+                                        <span class="success-label">File:</span>
+                                        <span class="success-value">\${agentName}.json</span>
+                                    </div>
+                                </div>
+                                <div class="success-actions">
+                                    <button onclick="openAgentConfig('\${agentName}')" class="primary">
+                                        Open Configuration
+                                    </button>
+                                    <button onclick="createAnother()" class="secondary">
+                                        Create Another
+                                    </button>
+                                </div>
+                            </div>
+                        \`;
+                        
+                        // Update progress bar to show completion
+                        document.querySelectorAll('.step').forEach(step => {
+                            step.classList.remove('active');
+                            step.classList.add('completed');
+                        });
+                        
+                        // Hide navigation
+                        document.querySelector('.navigation').style.display = 'none';
+                    }
+                    
+                    function openAgentConfig(agentName) {
+                        vscode.postMessage({
+                            type: 'openAgentConfig',
+                            agentName: agentName
+                        });
+                    }
+                    
+                    function createAnother() {
+                        vscode.postMessage({
+                            type: 'createAnother'
+                        });
                     }
                     
                     function updateUI() {
