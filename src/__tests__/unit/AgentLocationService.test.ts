@@ -11,6 +11,10 @@ const mockFs = fs as jest.Mocked<typeof fs>;
 jest.mock('os');
 const mockOs = os as jest.Mocked<typeof os>;
 
+// Mock path module
+jest.mock('path');
+const mockPath = path as jest.Mocked<typeof path>;
+
 describe('AgentLocationService', () => {
     let service: AgentLocationService;
     const mockHomedir = '/mock/home';
@@ -20,6 +24,18 @@ describe('AgentLocationService', () => {
         service = new AgentLocationService();
         mockOs.homedir.mockReturnValue(mockHomedir);
         jest.spyOn(process, 'cwd').mockReturnValue(mockCwd);
+        
+        // Mock path.join to return predictable paths
+        mockPath.join.mockImplementation((...args) => args.join('/'));
+        // Mock path.basename to properly remove .json extension
+        mockPath.basename.mockImplementation((filePath, ext) => {
+            const fileName = filePath.split('/').pop() || filePath;
+            if (ext && fileName.endsWith(ext)) {
+                return fileName.slice(0, -ext.length);
+            }
+            return fileName;
+        });
+        
         jest.clearAllMocks();
     });
 
@@ -30,14 +46,14 @@ describe('AgentLocationService', () => {
     describe('getLocalAgentsPath', () => {
         it('should return correct local agents path', () => {
             const result = service.getLocalAgentsPath();
-            expect(result).toBe(path.join(mockCwd, '.amazonq/cli-agents'));
+            expect(result).toBe('/mock/workspace/.amazonq/cli-agents');
         });
     });
 
     describe('getGlobalAgentsPath', () => {
         it('should return correct global agents path', () => {
             const result = service.getGlobalAgentsPath();
-            expect(result).toBe(path.join(mockHomedir, '.aws/amazonq/cli-agents'));
+            expect(result).toBe('/mock/home/.aws/amazonq/cli-agents');
         });
     });
 
@@ -47,7 +63,7 @@ describe('AgentLocationService', () => {
 
             await service.ensureDirectoryExists(AgentLocation.Local);
 
-            expect(mockFs.access).toHaveBeenCalledWith(path.join(mockCwd, '.amazonq/cli-agents'));
+            expect(mockFs.access).toHaveBeenCalledWith('/mock/workspace/.amazonq/cli-agents');
             expect(mockFs.mkdir).not.toHaveBeenCalled();
         });
 
@@ -58,7 +74,7 @@ describe('AgentLocationService', () => {
             await service.ensureDirectoryExists(AgentLocation.Local);
 
             expect(mockFs.mkdir).toHaveBeenCalledWith(
-                path.join(mockCwd, '.amazonq/cli-agents'),
+                '/mock/workspace/.amazonq/cli-agents',
                 { recursive: true }
             );
         });
@@ -70,7 +86,7 @@ describe('AgentLocationService', () => {
             await service.ensureDirectoryExists(AgentLocation.Global);
 
             expect(mockFs.mkdir).toHaveBeenCalledWith(
-                path.join(mockHomedir, '.aws/amazonq/cli-agents'),
+                '/mock/home/.aws/amazonq/cli-agents',
                 { recursive: true }
             );
         });
@@ -79,12 +95,12 @@ describe('AgentLocationService', () => {
     describe('resolveAgentPath', () => {
         it('should resolve local agent path correctly', () => {
             const result = service.resolveAgentPath('test-agent', AgentLocation.Local);
-            expect(result).toBe(path.join(mockCwd, '.amazonq/cli-agents/test-agent.json'));
+            expect(result).toBe('/mock/workspace/.amazonq/cli-agents/test-agent.json');
         });
 
         it('should resolve global agent path correctly', () => {
             const result = service.resolveAgentPath('test-agent', AgentLocation.Global);
-            expect(result).toBe(path.join(mockHomedir, '.aws/amazonq/cli-agents/test-agent.json'));
+            expect(result).toBe('/mock/home/.aws/amazonq/cli-agents/test-agent.json');
         });
     });
 
