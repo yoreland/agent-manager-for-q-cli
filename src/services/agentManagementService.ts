@@ -718,6 +718,9 @@ export class AgentManagementService implements IAgentManagementService {
             // Delete the agent configuration file
             await this.agentConfigService.deleteAgentConfig(agentName, location);
             
+            // Refresh the agent list to update the tree view
+            await this.refreshAgentList();
+            
             this.logger.info('Agent deleted successfully', { 
                 agentName, 
                 location,

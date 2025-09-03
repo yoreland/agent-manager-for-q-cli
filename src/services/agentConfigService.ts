@@ -272,9 +272,25 @@ export class AgentConfigService implements IAgentConfigService {
     /**
      * Delete an agent configuration file
      */
-    async deleteAgentConfig(name: string): Promise<void> {
+    async deleteAgentConfig(name: string, location?: AgentLocation): Promise<void> {
         try {
-            const filePath = path.join(this.agentDirectoryPath, `${name}${AGENT_CONSTANTS.AGENT_FILE_EXTENSION}`);
+            let filePath: string;
+            
+            if (location) {
+                filePath = this.locationService.resolveAgentPath(name, location);
+            } else {
+                // Try local first, then global
+                const localPath = this.locationService.resolveAgentPath(name, 'local');
+                const globalPath = this.locationService.resolveAgentPath(name, 'global');
+                
+                if (await this.fileExists(localPath)) {
+                    filePath = localPath;
+                } else if (await this.fileExists(globalPath)) {
+                    filePath = globalPath;
+                } else {
+                    throw new Error(`Agent configuration file not found: ${name}`);
+                }
+            }
             
             this.logger.debug('Deleting agent config file', { filePath, agentName: name });
             
@@ -285,8 +301,6 @@ export class AgentConfigService implements IAgentConfigService {
                 agentName: name 
             });
         } catch (error) {
-            const filePath = path.join(this.agentDirectoryPath, `${name}${AGENT_CONSTANTS.AGENT_FILE_EXTENSION}`);
-            
             if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
                 const errorMessage = `Agent configuration file not found: ${name}`;
                 this.logger.warn(errorMessage);

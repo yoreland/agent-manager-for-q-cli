@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/aws/amazon-q-developer-cli/refs/heads/main/schemas/agent-v1.json",
-  "name": "local-agent",
-  "description": "local-agent",
+  "name": "code-reviewer",
+  "description": "Custom Q CLI Agent",
   "prompt": "",
   "mcpServers": {},
   "tools": [
@@ -9,22 +9,19 @@
     "fs_write",
     "execute_bash",
     "use_aws",
-    "knowledge",
-    "thinking",
-    "todo_list",
-    "introspect",
-    "report_issue"
+    "introspect"
   ],
   "toolAliases": {},
   "allowedTools": [
     "fs_read"
   ],
-  "toolsSettings": {},
   "resources": [
     "file://AmazonQ.md",
     "file://README.md",
-    "file://.amazonq/rules/**/*.md"
+    "file://.amazonq/rules/**/*.md",
+    "file:///Users/jungseob/workspace/context-manager-for-q-cli/.kiro/steering"
   ],
   "hooks": {},
+  "toolsSettings": {},
   "useLegacyMcpJson": true
 }

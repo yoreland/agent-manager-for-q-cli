@@ -60,6 +60,11 @@ A VS Code Extension that simplifies Amazon Q Developer CLI agent management with
 
 > **Note**: When both local and global agents have the same name, the local agent takes precedence.
 
+## What's New in v0.0.3
+
+- ✅ **Step-by-Step Agent Creation Wizard**: Intuitive multi-step interface replacing single-page form
+- ✅ **Drag & Drop Resource Support**: Easily add files and directories to agent resources
+
 ## What's New in v0.0.2
 
 - ✅ **Global Agent Support**: Manage agents across all workspaces

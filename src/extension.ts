@@ -303,11 +303,17 @@ function registerCoreCommands(context: ISafeExtensionContext, logger: ExtensionL
                         return;
                     }
                     
+                    // Get agent management service from tree provider
+                    const agentManagementService = (extensionState.agentTreeProvider as any).agentManagementService;
+                    if (!agentManagementService) {
+                        throw new Error('Agent management service not available');
+                    }
+                    
                     // Delete the agent
                     await agentManagementService.deleteAgent(agentName);
                     
                     // Refresh the tree view
-                    agentTreeProvider.refresh();
+                    extensionState.agentTreeProvider.refresh();
                     
                     vscode.window.showInformationMessage(`Agent "${agentName}" deleted successfully`);
                     

@@ -259,16 +259,21 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
             
             // Import and use agent creation service
             const { AgentConfigService } = await import('../services/agentConfigService');
-            const agentConfigService = new AgentConfigService(this.logger);
+            const { AgentLocationService } = await import('../core/agent/AgentLocationService');
+            const { ErrorHandler } = await import('../shared/errors/errorHandler');
+            
+            const locationService = new AgentLocationService();
+            const errorHandler = new ErrorHandler(this.logger);
+            const agentConfigService = new AgentConfigService(this.logger, errorHandler, locationService);
             
             // Determine agent location
-            const isGlobal = finalState.stepData.agentLocation.location === 'global';
+            const location = finalState.stepData.agentLocation.location === 'global' ? 'global' : 'local';
             
-            // Create the agent
-            await agentConfigService.createAgent(
+            // Create the agent using writeAgentConfig
+            await agentConfigService.writeAgentConfig(
                 finalState.stepData.basicProperties.name,
                 agentConfig,
-                isGlobal
+                location
             );
 
             this.logger.info('Agent created successfully', { 
@@ -309,8 +314,18 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
         const { basicProperties, toolsSelection, resources } = stepData;
         
         const config: any = {
-            description: basicProperties.description || undefined,
-            prompt: basicProperties.prompt
+            $schema: "https://raw.githubusercontent.com/aws/amazon-q-developer-cli/refs/heads/main/schemas/agent-v1.json",
+            name: basicProperties.name,
+            description: basicProperties.description || "Custom Q CLI Agent",
+            prompt: basicProperties.prompt || "",
+            mcpServers: {},
+            tools: [],
+            toolAliases: {},
+            allowedTools: ["fs_read"],
+            resources: [],
+            hooks: {},
+            toolsSettings: {},
+            useLegacyMcpJson: true
         };
 
         // Add tools if any are selected
@@ -1654,27 +1669,7 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         opacity: 0.9;
                     }
                     
-                    .tool-details {
-                        max-height: 0;
-                        overflow: hidden;
-                        font-size: var(--wizard-font-size-xs);
-                        color: var(--vscode-descriptionForeground);
-                        line-height: 1.5;
-                        margin: 0;
-                    }
-                    
-                    .tool-details.expanded {
-                        max-height: 100px;
-                        padding-top: 8px;
-                        border-top: 1px solid var(--vscode-input-border);
-                        margin: 0;
-                    }
-                    
-                    .tool-card.selected .tool-details {
-                        color: var(--vscode-list-activeSelectionForeground);
-                        opacity: 0.8;
-                        border-top-color: rgba(255, 255, 255, 0.2);
-                    }
+
                     
                     /* Resources Section Styling */
                     .resources-section {
@@ -2111,16 +2106,13 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     // Initialize wizard
                     window.addEventListener('message', event => {
                         const message = event.data;
-                        console.log('Received message:', message);
                         handleWizardResponse(message);
                     });
                     
                     function handleWizardResponse(response) {
-                        console.log('Handling response:', response);
                         switch (response.type) {
                             case 'stateUpdate':
                                 wizardState = response.state;
-                                console.log('Updated wizard state:', wizardState);
                                 updateUI();
                                 break;
                             case 'validationResult':
@@ -2134,7 +2126,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     
                     // Request initial state when page loads
                     function requestInitialState() {
-                        console.log('Requesting initial state');
                         vscode.postMessage({
                             type: 'requestInitialState'
                         });
@@ -2220,9 +2211,7 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     }
                     
                     function updateUI() {
-                        console.log('updateUI called with wizardState:', wizardState);
                         if (!wizardState) {
-                            console.log('No wizard state available, showing loading...');
                             const content = document.getElementById('stepContent');
                             if (content) {
                                 content.innerHTML = '<div style="text-align: center; padding: 40px;">Loading wizard...</div>';
@@ -2232,7 +2221,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         
                         const previousStep = currentStep;
                         currentStep = wizardState.currentStep;
-                        console.log('Current step:', currentStep);
                         
                         updateProgressBar();
                         updateStepContent();
@@ -2595,13 +2583,112 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                             e.preventDefault();
                             dropZone.classList.remove('drag-over');
                             
-                            const files = Array.from(e.dataTransfer.files);
-                            files.forEach(file => {
-                                const path = \`file://\${file.webkitRelativePath || file.name}\`;
-                                if (validateResourcePath(path)) {
-                                    addResource(path);
-                                }
-                            });
+                            
+                            const items = Array.from(e.dataTransfer.items || []);
+                            
+                            const processedPaths = new Set(); // Track processed paths to avoid duplicates
+                            
+                            if (items.length > 0) {
+                                items.forEach(item => {
+                                    
+                                    if (item.kind === 'string') {
+                                        item.getAsString(text => {
+                                            
+                                            let paths = [];
+                                            
+                                            // Try to parse as JSON array first
+                                            try {
+                                                const parsed = JSON.parse(text);
+                                                if (Array.isArray(parsed)) {
+                                                    // Extract file paths from objects or use strings directly
+                                                    paths = parsed.map(item => {
+                                                        if (typeof item === 'string') {
+                                                            return item;
+                                                        } else if (item && typeof item === 'object') {
+                                                            // Handle complex VS Code objects
+                                                            if (item.resource && item.resource.fsPath) {
+                                                                return item.resource.fsPath;
+                                                            } else if (item.resource && item.resource.external) {
+                                                                return item.resource.external;
+                                                            } else if (item.fsPath) {
+                                                                return item.fsPath;
+                                                            } else if (item.path) {
+                                                                return item.path;
+                                                            } else if (item.external) {
+                                                                return item.external;
+                                                            }
+                                                        }
+                                                        return null; // Skip invalid items
+                                                    }).filter(path => path !== null);
+                                                } else if (typeof parsed === 'string') {
+                                                    paths = [parsed];
+                                                }
+                                            } catch {
+                                                // If not JSON, split by lines and filter
+                                                paths = text.split('\\n').filter(p => p.trim());
+                                            }
+                                            
+                                            paths.forEach(rawPath => {
+                                                let path = rawPath.trim();
+                                                
+                                                // Convert to file:// format if needed
+                                                if (!path.startsWith('file://')) {
+                                                    path = 'file://' + path;
+                                                }
+                                                
+                                                // Skip if already processed
+                                                if (processedPaths.has(path)) {
+                                                    return;
+                                                }
+                                                processedPaths.add(path);
+                                                
+                                                // Check if it's a directory (no file extension or ends with /)
+                                                const isDirectory = path.endsWith('/') || 
+                                                    (!path.includes('.') && !path.includes('*'));
+                                                
+                                                if (isDirectory) {
+                                                    // Convert directory to pattern
+                                                    path = path.endsWith('/') ? path + '**/*' : path + '/**/*';
+                                                }
+                                                
+                                                if (validateResourcePath(path)) {
+                                                    addResource(path);
+                                                }
+                                            });
+                                        });
+                                    } else if (item.kind === 'file') {
+                                        const file = item.getAsFile();
+                                        if (file) {
+                                            let path = file.path || file.name;
+                                            if (!path.startsWith('file://')) {
+                                                path = 'file://' + path;
+                                            }
+                                            
+                                            // Skip if already processed
+                                            if (!processedPaths.has(path)) {
+                                                processedPaths.add(path);
+                                                if (validateResourcePath(path)) {
+                                                    addResource(path);
+                                                }
+                                            }
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                        
+                        // Prevent default drag and drop behavior on the entire document except drop zone
+                        document.addEventListener('dragover', (e) => {
+                            if (!e.target.closest('#dropZone')) {
+                                e.preventDefault();
+                            }
+                        });
+                        
+                        document.addEventListener('drop', (e) => {
+                            if (!e.target.closest('#dropZone')) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                            }
                         });
                         
                         // Keyboard support for manual input
@@ -2774,32 +2861,27 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                             {
                                 id: 'fs_read',
                                 name: 'File System Read',
-                                description: 'Read files, directories, and images',
-                                details: 'Allows the agent to read file contents, list directory structures, and process images for analysis.'
+                                description: 'Read files, directories, and images'
                             },
                             {
                                 id: 'fs_write', 
                                 name: 'File System Write',
-                                description: 'Create and edit files',
-                                details: 'Enables the agent to create new files, modify existing files, and manage file operations.'
+                                description: 'Create and edit files'
                             },
                             {
                                 id: 'execute_bash',
                                 name: 'Execute Bash',
-                                description: 'Execute shell commands',
-                                details: 'Run bash commands and scripts. Use with caution as this provides system access.'
+                                description: 'Execute shell commands'
                             },
                             {
                                 id: 'use_aws',
                                 name: 'AWS CLI',
-                                description: 'Make AWS CLI API calls',
-                                details: 'Interact with AWS services through CLI commands. Requires proper AWS credentials.'
+                                description: 'Make AWS CLI API calls'
                             },
                             {
                                 id: 'introspect',
                                 name: 'Introspect',
-                                description: 'Q CLI capabilities information',
-                                details: 'Provides information about Q CLI features, commands, and documentation.'
+                                description: 'Q CLI capabilities information'
                             }
                         ];
                         
@@ -2818,9 +2900,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                                         <div class="tool-description">\${tool.description}</div>
                                     </div>
                                 </div>
-                                <div class="tool-details \${selectedTools.includes(tool.id) ? 'expanded' : ''}">
-                                    \${tool.details}
-                                </div>
                             </div>
                         \`).join('');
                     }
@@ -2830,20 +2909,17 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                             {
                                 id: 'knowledge',
                                 name: 'Knowledge Base',
-                                description: 'Store and retrieve information across sessions',
-                                details: 'Persistent context storage with semantic search capabilities. Maintains information between chat sessions.'
+                                description: 'Store and retrieve information across sessions'
                             },
                             {
                                 id: 'thinking',
                                 name: 'Thinking Process',
-                                description: 'Complex reasoning with step-by-step processes',
-                                details: 'Shows AI reasoning process for complex problems. Helps understand how conclusions are reached.'
+                                description: 'Complex reasoning with step-by-step processes'
                             },
                             {
                                 id: 'todo_list',
                                 name: 'TODO List',
-                                description: 'Task management and tracking',
-                                details: 'Create and manage TODO lists for tracking multi-step tasks. Lists are stored locally.'
+                                description: 'Task management and tracking'
                             }
                         ];
                         
@@ -2864,9 +2940,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                                         </div>
                                         <div class="tool-description">\${tool.description}</div>
                                     </div>
-                                </div>
-                                <div class="tool-details \${selectedTools.includes(tool.id) ? 'expanded' : ''}">
-                                    \${tool.details}
                                 </div>
                             </div>
                         \`).join('');
@@ -2889,12 +2962,10 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     function toggleTool(toolId, toolType) {
                         const card = document.querySelector(\`[data-tool-id="\${toolId}"]\`);
                         const checkbox = card.querySelector('input[type="checkbox"]');
-                        const details = card.querySelector('.tool-details');
                         
                         // Toggle selection
                         checkbox.checked = !checkbox.checked;
                         card.classList.toggle('selected');
-                        details.classList.toggle('expanded');
                         
                         // Update wizard state
                         updateToolsSelection();
@@ -2935,12 +3006,12 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                                         <input type="text" 
                                                id="manualPath" 
                                                class="form-input" 
-                                               placeholder="file://path/to/file or file://path/to/directory/**"
+                                               placeholder=""
                                                onkeypress="handleManualPathKeypress(event)">
                                         <button onclick="addManualPath()" class="add-btn">Add</button>
                                     </div>
                                     <div class="form-help">
-                                        Use <code>file://</code> prefix. Add <code>/**</code> for directories.
+                                        Use <code>file://</code> prefix.
                                     </div>
                                 </div>
                                 
@@ -3007,12 +3078,14 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     }
                     
                     function validateResourcePath(path) {
+                        
                         if (!path.startsWith('file://')) {
                             showResourceError('Resource path must start with "file://"');
                             return false;
                         }
                         
-                        if (/[<>"|?*]/.test(path)) {
+                        // Check for invalid characters but exclude common valid characters
+                        if (/[<>"|*]/.test(path)) {
                             showResourceError('Resource path contains invalid characters');
                             return false;
                         }
@@ -3024,6 +3097,8 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                             return false;
                         }
                         
+                        // Clear any existing error message on successful validation
+                        clearResourceError();
                         return true;
                     }
                     
@@ -3045,9 +3120,21 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         }, 3000);
                     }
                     
+                    function clearResourceError() {
+                        const errorEl = document.getElementById('resourceError');
+                        if (errorEl) {
+                            errorEl.classList.remove('show');
+                        }
+                    }
+                    
                     function addResource(path) {
                         const currentResources = wizardState?.stepData?.resources?.resources || [];
                         const newResources = [...currentResources, path];
+                        
+                        // Update local state
+                        if (wizardState?.stepData?.resources) {
+                            wizardState.stepData.resources.resources = newResources;
+                        }
                         
                         vscode.postMessage({
                             type: 'dataUpdated',
@@ -3055,18 +3142,29 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                                 resources: { resources: newResources }
                             }
                         });
+                        
+                        // Update UI immediately
+                        updateUI();
                     }
                     
                     function removeResource(index) {
                         const currentResources = wizardState?.stepData?.resources?.resources || [];
                         const newResources = currentResources.filter((_, i) => i !== index);
                         
+                        // Update local state
+                        if (wizardState?.stepData?.resources) {
+                            wizardState.stepData.resources.resources = newResources;
+                        }
+                        
                         vscode.postMessage({
                             type: 'dataUpdated',
                             data: {
                                 resources: { resources: newResources }
                             }
                         });
+                        
+                        // Update UI immediately
+                        updateUI();
                     }
                     
                     function getSummaryHTML() {
@@ -3206,7 +3304,7 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                             <div class="resources-summary">
                                 <div class="resources-count">\${resourceList.length} resource(s) added</div>
                                 <div class="resources-preview">
-                                    \${resourceList.slice(0, 3).map(resource => \`
+                                    \${resourceList.map(resource => \`
                                         <div class="resource-preview-item">
                                             <span class="resource-preview-icon">
                                                 \${resource.includes('/**') ? '📁' : '📄'}
@@ -3214,11 +3312,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                                             <span class="resource-preview-path">\${resource}</span>
                                         </div>
                                     \`).join('')}
-                                    \${resourceList.length > 3 ? \`
-                                        <div class="resource-preview-more">
-                                            ... and \${resourceList.length - 3} more
-                                        </div>
-                                    \` : ''}
                                 </div>
                             </div>
                         \`;
