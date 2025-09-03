@@ -77,7 +77,10 @@ export class WizardStateService implements IWizardStateService {
             stepData: {
                 basicProperties: { name: '', description: '', prompt: '' },
                 agentLocation: { location: 'local' },
-                toolsSelection: { standardTools: [], experimentalTools: [] },
+                toolsSelection: { 
+                    standardTools: ['fs_read', 'fs_write', 'execute_bash', 'use_aws', 'introspect'], 
+                    experimentalTools: [] 
+                },
                 resources: { resources: [] }
             },
             validation: {},

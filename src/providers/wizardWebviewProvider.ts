@@ -1588,7 +1588,7 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     .tool-card {
                         border: 1px solid var(--vscode-input-border);
                         border-radius: 6px;
-                        padding: 16px;
+                        padding: var(--wizard-spacing-md);
                         cursor: pointer;
                         transition: all 0.2s ease;
                         background: var(--vscode-input-background);
@@ -1612,7 +1612,7 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     .tool-header {
                         display: flex;
                         align-items: flex-start;
-                        gap: 12px;
+                        gap: var(--wizard-spacing-sm);
                     }
                     
                     .tool-checkbox {
