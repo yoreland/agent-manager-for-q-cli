@@ -1,34 +1,34 @@
 # 구현 계획
 
-- [ ] 1. 핵심 서비스 구현
+- [x] 1. 핵심 서비스 구현
   - AgentLocationService와 ExperimentalToolsService를 구현하여 새로운 기능의 기반을 마련
   - 로컬/글로벌 에이전트 위치 관리와 실험적 도구 식별 로직 구현
   - _요구사항: 2.2, 2.3, 2.4, 1.2, 1.3_
 
-- [ ] 1.1 AgentLocationService 구현
+- [x] 1.1 AgentLocationService 구현
   - 로컬과 글로벌 에이전트 디렉토리 경로 관리 기능 구현
   - 디렉토리 자동 생성 및 권한 검증 로직 작성
   - 에이전트 이름 충돌 감지 및 우선순위 처리 메서드 구현
   - _요구사항: 2.2, 2.3, 2.4, 2.6_
 
-- [ ] 1.2 ExperimentalToolsService 구현
+- [x] 1.2 ExperimentalToolsService 구현
   - Q CLI 실험적 기능 도구 목록 정의 (knowledge, thinking, todo_list)
   - 실험적 도구 식별 및 정보 제공 메서드 구현
   - 실험적 기능 경고 메시지 생성 로직 작성
   - _요구사항: 1.2, 1.3, 1.4_
 
-- [ ] 2. 타입 정의 확장
+- [x] 2. 타입 정의 확장
   - 기존 타입 시스템을 확장하여 새로운 기능을 지원하는 타입 정의 추가
   - 에이전트 위치 정보와 실험적 도구 관련 타입 구현
   - _요구사항: 2.1, 1.1_
 
-- [ ] 2.1 AgentLocation 및 관련 타입 정의
+- [x] 2.1 AgentLocation 및 관련 타입 정의
   - AgentLocation enum과 AgentConflictInfo 인터페이스 작성
   - AgentItemWithLocation 인터페이스로 기존 AgentItem 확장
   - 위치별 에이전트 관리를 위한 타입 정의 추가
   - _요구사항: 2.1, 2.5_
 
-- [ ] 2.2 실험적 도구 타입 정의
+- [x] 2.2 실험적 도구 타입 정의
   - ExperimentalTool 인터페이스와 관련 타입 정의 작성
   - ToolSection 인터페이스로 도구 섹션 구분 지원
   - EnhancedAgentFormData로 기존 폼 데이터 확장
