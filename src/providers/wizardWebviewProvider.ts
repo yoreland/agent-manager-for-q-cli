@@ -1691,7 +1691,7 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     .drop-zone {
                         border: 2px dashed var(--vscode-input-border);
                         border-radius: 8px;
-                        padding: 40px 20px;
+                        padding: var(--wizard-spacing-lg) var(--wizard-spacing-md);
                         text-align: center;
                         cursor: pointer;
                         transition: all 0.2s ease;
