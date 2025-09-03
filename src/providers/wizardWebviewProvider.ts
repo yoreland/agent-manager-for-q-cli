@@ -476,7 +476,7 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     
                     /* Step Content Enhancement */
                     .step-content {
-                        min-height: 400px;
+                        min-height: 300px;
                         padding: var(--wizard-spacing-lg) 0;
                         transition: none;
                     }
@@ -2107,10 +2107,7 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     
                     <div class="navigation">
                         <button id="prevBtn" onclick="previousStep()" disabled class="secondary">Previous</button>
-                        <div>
-                            <button id="cancelBtn" onclick="cancelWizard()" class="secondary">Cancel</button>
-                            <button id="nextBtn" onclick="nextStep()" class="primary">Next</button>
-                        </div>
+                        <button id="nextBtn" onclick="nextStep()" class="primary">Next</button>
                     </div>
                 </div>
                 
@@ -2293,7 +2290,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     function updateNavigation() {
                         const prevBtn = document.getElementById('prevBtn');
                         const nextBtn = document.getElementById('nextBtn');
-                        const cancelBtn = document.getElementById('cancelBtn');
                         
                         // Previous button state
                         prevBtn.disabled = currentStep === 1;
@@ -2405,12 +2401,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         vscode.postMessage({
                             type: 'stepChanged',
                             step: currentStep + 1
-                        });
-                    }
-                    
-                    function cancelWizard() {
-                        vscode.postMessage({
-                            type: 'wizardCancelled'
                         });
                     }
                     
