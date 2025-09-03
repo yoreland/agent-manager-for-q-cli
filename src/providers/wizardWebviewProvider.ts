@@ -478,7 +478,7 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     .step-content {
                         min-height: 400px;
                         padding: var(--wizard-spacing-lg) 0;
-                        transition: opacity 0.3s ease, transform 0.3s ease;
+                        transition: none;
                     }
                     
                     /* Form Elements Enhancement */
@@ -2469,9 +2469,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     function getBasicPropertiesHTML() {
                         const data = wizardState?.stepData?.basicProperties || { name: '', description: '', prompt: '' };
                         return \`
-                            <h2>Basic Properties</h2>
-                            <p>Define the basic information for your agent.</p>
-                            
                             <div class="form-group">
                                 <label class="form-label" for="agentName">
                                     Agent Name <span class="required">*</span>
@@ -2701,9 +2698,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     function getAgentLocationHTML() {
                         const data = wizardState?.stepData?.agentLocation || { location: 'local' };
                         return \`
-                            <h2>Agent Location</h2>
-                            <p>Choose where your agent will be stored and available.</p>
-                            
                             <div class="location-cards">
                                 <div class="location-card \${data.location === 'local' ? 'selected' : ''}" 
                                      onclick="selectLocation('local')" 
@@ -2761,9 +2755,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     function getToolsSelectionHTML() {
                         const data = wizardState?.stepData?.toolsSelection || { standardTools: [], experimentalTools: [] };
                         return \`
-                            <h2>Tools Selection</h2>
-                            <p>Choose the tools your agent will have access to.</p>
-                            
                             <div class="tools-tabs">
                                 <button class="tab-button active" onclick="switchTab('standard')" data-tab="standard">
                                     Standard Tools
@@ -2946,9 +2937,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     function getResourcesHTML() {
                         const data = wizardState?.stepData?.resources || { resources: [] };
                         return \`
-                            <h2>Resources</h2>
-                            <p>Add files and directories that your agent can access.</p>
-                            
                             <div class="resources-section">
                                 <div class="drop-zone" id="dropZone">
                                     <div class="drop-zone-content">
@@ -3105,9 +3093,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         const { basicProperties, agentLocation, toolsSelection, resources } = data;
                         
                         return \`
-                            <h2>Summary</h2>
-                            <p>Review your agent configuration before creating.</p>
-                            
                             <div class="summary-sections">
                                 <div class="summary-section">
                                     <div class="summary-header">
