@@ -663,36 +663,419 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         line-height: var(--wizard-line-height-normal);
                     }
                     
-                    /* Location Cards Styling */
+                    /* Responsive Layout System */
+                    @media (max-width: 768px) {
+                        body {
+                            padding: var(--wizard-spacing-md);
+                        }
+                        
+                        .wizard-container {
+                            max-width: 100%;
+                        }
+                        
+                        .progress-bar {
+                            flex-direction: column;
+                            gap: var(--wizard-spacing-xs);
+                            padding: var(--wizard-spacing-md);
+                        }
+                        
+                        .step {
+                            padding: var(--wizard-spacing-sm) var(--wizard-spacing-md);
+                            border-radius: var(--wizard-border-radius-md);
+                            border: 1px solid var(--vscode-input-border);
+                            margin-bottom: var(--wizard-spacing-xs);
+                        }
+                        
+                        .step:last-child {
+                            margin-bottom: 0;
+                        }
+                        
+                        .step-content {
+                            padding: var(--wizard-spacing-lg) 0;
+                            min-height: 300px;
+                        }
+                        
+                        .navigation {
+                            flex-direction: column;
+                            gap: var(--wizard-spacing-md);
+                            align-items: stretch;
+                        }
+                        
+                        .navigation > div {
+                            display: flex;
+                            gap: var(--wizard-spacing-md);
+                            justify-content: center;
+                        }
+                        
+                        .step-counter {
+                            position: static;
+                            transform: none;
+                            order: -1;
+                            text-align: center;
+                            background: transparent;
+                            padding: 0;
+                        }
+                        
+                        button {
+                            flex: 1;
+                            min-width: 0;
+                        }
+                    }
+                    
+                    @media (max-width: 480px) {
+                        .form-input, .form-textarea {
+                            font-size: var(--wizard-font-size-lg);
+                            padding: var(--wizard-spacing-lg);
+                        }
+                        
+                        .navigation > div {
+                            flex-direction: column;
+                        }
+                        
+                        button {
+                            padding: var(--wizard-spacing-lg) var(--wizard-spacing-xl);
+                            font-size: var(--wizard-font-size-lg);
+                        }
+                    }
+                    
+                    /* Enhanced Animations */
+                    @keyframes fadeInUp {
+                        from {
+                            opacity: 0;
+                            transform: translateY(20px);
+                        }
+                        to {
+                            opacity: 1;
+                            transform: translateY(0);
+                        }
+                    }
+                    
+                    @keyframes fadeInLeft {
+                        from {
+                            opacity: 0;
+                            transform: translateX(-20px);
+                        }
+                        to {
+                            opacity: 1;
+                            transform: translateX(0);
+                        }
+                    }
+                    
+                    @keyframes fadeInRight {
+                        from {
+                            opacity: 0;
+                            transform: translateX(20px);
+                        }
+                        to {
+                            opacity: 1;
+                            transform: translateX(0);
+                        }
+                    }
+                    
+                    @keyframes pulse {
+                        0%, 100% {
+                            transform: scale(1);
+                        }
+                        50% {
+                            transform: scale(1.05);
+                        }
+                    }
+                    
+                    @keyframes shake {
+                        0%, 100% { transform: translateX(0); }
+                        25% { transform: translateX(-4px); }
+                        75% { transform: translateX(4px); }
+                    }
+                    
+                    /* Step Content Animations */
+                    .step-content {
+                        animation: fadeInUp 0.4s ease;
+                    }
+                    
+                    .step-transition-out {
+                        opacity: 0;
+                        transform: translateX(-30px);
+                        transition: all 0.3s ease;
+                    }
+                    
+                    .step-transition-in {
+                        animation: fadeInRight 0.4s ease;
+                    }
+                    
+                    /* Form Animation Enhancements */
+                    .form-group {
+                        animation: fadeInUp 0.3s ease;
+                        animation-fill-mode: both;
+                    }
+                    
+                    .form-group:nth-child(1) { animation-delay: 0.1s; }
+                    .form-group:nth-child(2) { animation-delay: 0.2s; }
+                    .form-group:nth-child(3) { animation-delay: 0.3s; }
+                    .form-group:nth-child(4) { animation-delay: 0.4s; }
+                    
+                    .form-input:focus {
+                        animation: pulse 0.3s ease;
+                    }
+                    
+                    .validation-error.show {
+                        animation: shake 0.5s ease, slideIn 0.3s ease;
+                    }
+                    
+                    /* Button Animation Enhancements */
+                    button {
+                        transform-origin: center;
+                    }
+                    
+                    button:hover:not(:disabled) {
+                        animation: pulse 0.3s ease;
+                    }
+                    
+                    button:active:not(:disabled) {
+                        transform: scale(0.98);
+                    }
+                    
+                    .create-btn:hover:not(:disabled) {
+                        animation: pulse 0.4s ease infinite alternate;
+                    }
+                    
+                    /* Progress Bar Animations */
+                    .step {
+                        transform-origin: center;
+                    }
+                    
+                    .step.active {
+                        animation: pulse 0.5s ease;
+                    }
+                    
+                    .step.completed {
+                        animation: fadeInLeft 0.3s ease;
+                    }
+                    
+                    .step.completed::after {
+                        animation: fadeInUp 0.4s ease 0.2s both;
+                    }
+                    
+                    /* Location Cards Responsive Enhancement */
                     .location-cards {
                         display: grid;
                         grid-template-columns: 1fr 1fr;
-                        gap: 20px;
-                        margin: 30px 0;
+                        gap: var(--wizard-spacing-xl);
+                        margin: var(--wizard-spacing-xxxl) 0;
+                    }
+                    
+                    @media (max-width: 768px) {
+                        .location-cards {
+                            grid-template-columns: 1fr;
+                            gap: var(--wizard-spacing-lg);
+                            margin: var(--wizard-spacing-xl) 0;
+                        }
                     }
                     
                     .location-card {
                         border: 2px solid var(--vscode-input-border);
-                        border-radius: 8px;
-                        padding: 24px;
+                        border-radius: var(--wizard-border-radius-xl);
+                        padding: var(--wizard-spacing-xxl);
                         cursor: pointer;
-                        transition: all 0.2s ease;
+                        transition: all 0.3s ease;
                         background: var(--vscode-input-background);
                         text-align: center;
                         position: relative;
+                        animation: fadeInUp 0.4s ease;
                     }
+                    
+                    .location-card:nth-child(1) { animation-delay: 0.1s; }
+                    .location-card:nth-child(2) { animation-delay: 0.2s; }
                     
                     .location-card:hover {
                         border-color: var(--vscode-focusBorder);
                         background: var(--vscode-list-hoverBackground);
-                        transform: translateY(-2px);
-                        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                        transform: translateY(-4px) scale(1.02);
+                        box-shadow: var(--wizard-shadow-lg);
                     }
                     
                     .location-card.selected {
                         border-color: var(--vscode-focusBorder);
                         background: var(--vscode-list-activeSelectionBackground);
                         color: var(--vscode-list-activeSelectionForeground);
+                        transform: scale(1.05);
+                        box-shadow: var(--wizard-shadow-lg);
+                        animation: pulse 0.5s ease;
+                    }
+                    
+                    @media (max-width: 480px) {
+                        .location-card {
+                            padding: var(--wizard-spacing-xl);
+                        }
+                        
+                        .card-icon {
+                            font-size: 40px;
+                            margin-bottom: var(--wizard-spacing-md);
+                        }
+                        
+                        .card-title {
+                            font-size: var(--wizard-font-size-lg);
+                        }
+                    }
+                    
+                    /* Tools Selection Responsive Enhancement */
+                    .tools-tabs {
+                        display: flex;
+                        border-bottom: 1px solid var(--vscode-input-border);
+                        margin-bottom: var(--wizard-spacing-xl);
+                        overflow-x: auto;
+                        -webkit-overflow-scrolling: touch;
+                    }
+                    
+                    @media (max-width: 480px) {
+                        .tools-tabs {
+                            flex-direction: column;
+                            border-bottom: none;
+                            border-right: 1px solid var(--vscode-input-border);
+                            margin-bottom: var(--wizard-spacing-lg);
+                        }
+                        
+                        .tab-button {
+                            border-bottom: none;
+                            border-right: 2px solid transparent;
+                            text-align: left;
+                            justify-content: flex-start;
+                        }
+                        
+                        .tab-button.active {
+                            border-right-color: var(--vscode-focusBorder);
+                            border-bottom-color: transparent;
+                        }
+                    }
+                    
+                    .tab-panel {
+                        animation: fadeInUp 0.4s ease;
+                    }
+                    
+                    .tool-card {
+                        animation: fadeInUp 0.3s ease;
+                        animation-fill-mode: both;
+                    }
+                    
+                    .tool-card:nth-child(1) { animation-delay: 0.1s; }
+                    .tool-card:nth-child(2) { animation-delay: 0.2s; }
+                    .tool-card:nth-child(3) { animation-delay: 0.3s; }
+                    .tool-card:nth-child(4) { animation-delay: 0.4s; }
+                    .tool-card:nth-child(5) { animation-delay: 0.5s; }
+                    
+                    .tool-card:hover {
+                        transform: translateY(-2px);
+                        box-shadow: var(--wizard-shadow-md);
+                    }
+                    
+                    .tool-card.selected {
+                        transform: scale(1.02);
+                        animation: pulse 0.4s ease;
+                    }
+                    
+                    /* Resources Section Responsive Enhancement */
+                    .resources-section {
+                        display: flex;
+                        flex-direction: column;
+                        gap: var(--wizard-spacing-xxl);
+                    }
+                    
+                    .drop-zone {
+                        border: 2px dashed var(--vscode-input-border);
+                        border-radius: var(--wizard-border-radius-xl);
+                        padding: var(--wizard-spacing-xxxl) var(--wizard-spacing-xl);
+                        text-align: center;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        background: var(--vscode-input-background);
+                        animation: fadeInUp 0.4s ease;
+                    }
+                    
+                    .drop-zone:hover,
+                    .drop-zone.drag-over {
+                        border-color: var(--vscode-focusBorder);
+                        background: var(--vscode-list-hoverBackground);
+                        transform: scale(1.02);
+                        box-shadow: var(--wizard-shadow-md);
+                    }
+                    
+                    .drop-zone.drag-over {
+                        animation: pulse 0.5s ease infinite alternate;
+                    }
+                    
+                    @media (max-width: 768px) {
+                        .drop-zone {
+                            padding: var(--wizard-spacing-xl) var(--wizard-spacing-lg);
+                        }
+                        
+                        .drop-icon {
+                            font-size: 40px;
+                            margin-bottom: var(--wizard-spacing-md);
+                        }
+                        
+                        .drop-text {
+                            font-size: var(--wizard-font-size-md);
+                        }
+                    }
+                    
+                    .resource-item {
+                        animation: fadeInLeft 0.3s ease;
+                        animation-fill-mode: both;
+                    }
+                    
+                    .resource-item:nth-child(1) { animation-delay: 0.1s; }
+                    .resource-item:nth-child(2) { animation-delay: 0.2s; }
+                    .resource-item:nth-child(3) { animation-delay: 0.3s; }
+                    .resource-item:nth-child(4) { animation-delay: 0.4s; }
+                    
+                    .resource-item:hover {
+                        transform: translateX(4px);
+                        box-shadow: var(--wizard-shadow-sm);
+                    }
+                    
+                    /* Summary Page Responsive Enhancement */
+                    .summary-sections {
+                        display: flex;
+                        flex-direction: column;
+                        gap: var(--wizard-spacing-xxl);
+                        margin-bottom: var(--wizard-spacing-xxl);
+                    }
+                    
+                    .summary-section {
+                        animation: fadeInUp 0.4s ease;
+                        animation-fill-mode: both;
+                    }
+                    
+                    .summary-section:nth-child(1) { animation-delay: 0.1s; }
+                    .summary-section:nth-child(2) { animation-delay: 0.2s; }
+                    .summary-section:nth-child(3) { animation-delay: 0.3s; }
+                    .summary-section:nth-child(4) { animation-delay: 0.4s; }
+                    
+                    @media (max-width: 768px) {
+                        .summary-header {
+                            flex-direction: column;
+                            align-items: flex-start;
+                            gap: var(--wizard-spacing-md);
+                        }
+                        
+                        .summary-item {
+                            flex-direction: column;
+                            align-items: flex-start;
+                            gap: var(--wizard-spacing-sm);
+                        }
+                        
+                        .summary-label {
+                            min-width: auto;
+                        }
+                        
+                        .location-summary {
+                            flex-direction: column;
+                            text-align: center;
+                            gap: var(--wizard-spacing-md);
+                        }
+                    }
+                    
+                    .creation-info {
+                        animation: fadeInUp 0.5s ease 0.5s both;
                     }
                     
                     .location-card.selected::before {
