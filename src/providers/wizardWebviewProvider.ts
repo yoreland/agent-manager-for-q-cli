@@ -944,7 +944,7 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     .form-group:nth-child(4) { animation-delay: 0.4s; }
                     
                     .form-input:focus {
-                        animation: pulse 0.3s ease;
+                        animation: none;
                     }
                     
                     .validation-error.show {
