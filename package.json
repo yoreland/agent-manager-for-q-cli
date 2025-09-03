@@ -51,6 +51,11 @@
         "icon": "$(edit)"
       },
       {
+        "command": "qcli-agents.deleteAgent",
+        "title": "Delete Agent",
+        "icon": "$(trash)"
+      },
+      {
         "command": "qcli-agents.runAgent",
         "title": "Run Agent in Terminal",
         "icon": "$(play)"
@@ -99,7 +104,7 @@
       ],
       "view/item/context": [
         {
-          "command": "qcli-agents.openAgent",
+          "command": "qcli-agents.deleteAgent",
           "when": "view == qcli-agents-tree && viewItem == agentItem",
           "group": "inline@1"
         },
@@ -114,9 +119,14 @@
           "group": "context@1"
         },
         {
-          "command": "qcli-agents.runAgent",
+          "command": "qcli-agents.deleteAgent",
           "when": "view == qcli-agents-tree && viewItem == agentItem",
           "group": "context@2"
+        },
+        {
+          "command": "qcli-agents.runAgent",
+          "when": "view == qcli-agents-tree && viewItem == agentItem",
+          "group": "context@3"
         }
       ]
     },

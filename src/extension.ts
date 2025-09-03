@@ -274,6 +274,50 @@ function registerCoreCommands(context: ISafeExtensionContext, logger: ExtensionL
             }
         );
 
+        // Register delete agent command
+        const deleteAgentCommand = vscode.commands.registerCommand(
+            'qcli-agents.deleteAgent',
+            async (agentItem: any) => {
+                try {
+                    logger.logUserAction('Delete Agent command executed', { agentName: agentItem?.label });
+                    
+                    if (!agentItem) {
+                        await errorHandler!.showErrorMessage('No agent selected to delete');
+                        return;
+                    }
+                    
+                    const agentName = agentItem.label || agentItem.agentItem?.label;
+                    if (!agentName) {
+                        await errorHandler!.showErrorMessage('Invalid agent item: missing name');
+                        return;
+                    }
+                    
+                    // Confirm deletion
+                    const confirmation = await vscode.window.showWarningMessage(
+                        `Are you sure you want to delete the agent "${agentName}"?`,
+                        { modal: true },
+                        'Delete'
+                    );
+                    
+                    if (confirmation !== 'Delete') {
+                        return;
+                    }
+                    
+                    // Delete the agent
+                    await agentManagementService.deleteAgent(agentName);
+                    
+                    // Refresh the tree view
+                    agentTreeProvider.refresh();
+                    
+                    vscode.window.showInformationMessage(`Agent "${agentName}" deleted successfully`);
+                    
+                } catch (error) {
+                    logger.error('Failed to delete agent', error as Error);
+                    await errorHandler!.handleError(error as Error, 'Failed to delete agent');
+                }
+            }
+        );
+
         // Register run agent command
         const runAgentCommand = vscode.commands.registerCommand(
             'qcli-agents.runAgent',
@@ -324,6 +368,7 @@ function registerCoreCommands(context: ISafeExtensionContext, logger: ExtensionL
         context.original.subscriptions.push(openContextManagerCommand);
         context.original.subscriptions.push(createAgentCommand);
         context.original.subscriptions.push(openAgentCommand);
+        context.original.subscriptions.push(deleteAgentCommand);
         context.original.subscriptions.push(runAgentCommand);
         
         logger.debug('Core commands registered successfully');

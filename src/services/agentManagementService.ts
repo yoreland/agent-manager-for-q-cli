@@ -29,6 +29,7 @@ export interface IAgentManagementService {
     
     // Agent file operations
     openAgentConfigFile(agent: AgentItem): Promise<void>;
+    deleteAgent(agentName: string): Promise<void>;
     
     // Agent file watching
     startFileWatcher(): void;
@@ -690,6 +691,45 @@ export class AgentManagementService implements IAgentManagementService {
             
             // Handle file access errors with user feedback
             await this.errorHandler.handleFileAccessError(error as Error, agent.filePath);
+            
+            throw new Error(`${errorMessage}: ${(error as Error).message}`);
+        }
+    }
+
+    /**
+     * Delete an agent by name
+     */
+    async deleteAgent(agentName: string): Promise<void> {
+        try {
+            this.logger.logUserAction('deleteAgent', { agentName });
+            
+            // Find the agent in the current list to get its location
+            const agents = await this.getAgentList();
+            const agent = agents.find(a => a.label === agentName || a.name === agentName);
+            
+            if (!agent) {
+                throw new Error(`Agent '${agentName}' not found`);
+            }
+            
+            // Determine location from agent item
+            const agentWithLocation = agent as AgentItem & { location?: AgentLocation };
+            const location = agentWithLocation.location || AgentLocation.Local;
+            
+            // Delete the agent configuration file
+            await this.agentConfigService.deleteAgentConfig(agentName, location);
+            
+            this.logger.info('Agent deleted successfully', { 
+                agentName, 
+                location,
+                filePath: agent.filePath 
+            });
+            
+        } catch (error) {
+            const errorMessage = `Failed to delete agent '${agentName}'`;
+            this.logger.error(errorMessage, error as Error);
+            
+            // Handle file access errors with user feedback
+            await this.errorHandler.handleFileAccessError(error as Error, agentName);
             
             throw new Error(`${errorMessage}: ${(error as Error).message}`);
         }
