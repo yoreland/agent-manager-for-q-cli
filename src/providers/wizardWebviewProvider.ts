@@ -482,6 +482,122 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                             font-size: 16px;
                         }
                     }
+                    
+                    /* Navigation Enhancements */
+                    .navigation {
+                        position: relative;
+                    }
+                    
+                    .step-counter {
+                        position: absolute;
+                        left: 50%;
+                        top: 50%;
+                        transform: translate(-50%, -50%);
+                        font-size: 12px;
+                        color: var(--vscode-descriptionForeground);
+                        font-weight: 500;
+                    }
+                    
+                    button.loading {
+                        position: relative;
+                        color: transparent;
+                    }
+                    
+                    .spinner {
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        width: 16px;
+                        height: 16px;
+                        border: 2px solid transparent;
+                        border-top: 2px solid currentColor;
+                        border-radius: 50%;
+                        animation: spin 1s linear infinite;
+                        color: var(--vscode-button-foreground);
+                    }
+                    
+                    @keyframes spin {
+                        0% { transform: translate(-50%, -50%) rotate(0deg); }
+                        100% { transform: translate(-50%, -50%) rotate(360deg); }
+                    }
+                    
+                    .create-btn {
+                        background: var(--vscode-button-background);
+                        font-weight: 600;
+                    }
+                    
+                    .create-btn:hover {
+                        background: var(--vscode-button-hoverBackground);
+                        transform: translateY(-1px);
+                    }
+                    
+                    /* Step Transition Animations */
+                    .step-content {
+                        transition: opacity 0.3s ease, transform 0.3s ease;
+                    }
+                    
+                    .step-transition-out {
+                        opacity: 0;
+                        transform: translateX(-20px);
+                    }
+                    
+                    .step-transition-in {
+                        opacity: 0;
+                        transform: translateX(20px);
+                        animation: stepIn 0.3s ease forwards;
+                    }
+                    
+                    @keyframes stepIn {
+                        to {
+                            opacity: 1;
+                            transform: translateX(0);
+                        }
+                    }
+                    
+                    /* Error Summary */
+                    .error-summary {
+                        display: flex;
+                        align-items: flex-start;
+                        gap: 12px;
+                        background: var(--vscode-inputValidation-errorBackground);
+                        border: 1px solid var(--vscode-inputValidation-errorBorder);
+                        border-radius: 4px;
+                        padding: 16px;
+                        margin-top: 20px;
+                        opacity: 0;
+                        transform: translateY(-10px);
+                        transition: all 0.3s ease;
+                    }
+                    
+                    .error-summary.show {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                    
+                    .error-icon {
+                        font-size: 20px;
+                        flex-shrink: 0;
+                    }
+                    
+                    .error-text {
+                        color: var(--vscode-inputValidation-errorForeground);
+                        font-size: 14px;
+                    }
+                    
+                    .error-text strong {
+                        display: block;
+                        margin-bottom: 8px;
+                    }
+                    
+                    .error-text ul {
+                        margin: 0;
+                        padding-left: 16px;
+                    }
+                    
+                    .error-text li {
+                        margin-bottom: 4px;
+                    }
                 </style>
             </head>
             <body>
@@ -534,10 +650,26 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     function updateUI() {
                         if (!wizardState) return;
                         
+                        const previousStep = currentStep;
                         currentStep = wizardState.currentStep;
+                        
                         updateProgressBar();
+                        
+                        // Add transition animation for step changes
+                        if (previousStep !== currentStep) {
+                            const content = document.getElementById('stepContent');
+                            content.classList.add('step-transition-in');
+                            
+                            setTimeout(() => {
+                                content.classList.remove('step-transition-in', 'step-transition-out');
+                            }, 300);
+                        }
+                        
                         updateStepContent();
                         updateNavigation();
+                        
+                        // Clear any pending navigation states
+                        setNavigationLoading(false);
                     }
                     
                     function updateProgressBar() {
@@ -575,35 +707,132 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     }
                     
                     function updateNavigation() {
-                        document.getElementById('prevBtn').disabled = currentStep === 1;
+                        const prevBtn = document.getElementById('prevBtn');
                         const nextBtn = document.getElementById('nextBtn');
+                        const cancelBtn = document.getElementById('cancelBtn');
+                        
+                        // Previous button state
+                        prevBtn.disabled = currentStep === 1;
+                        prevBtn.style.display = currentStep === 1 ? 'none' : 'inline-block';
+                        
+                        // Next/Create button state and text
                         if (currentStep === 5) {
                             nextBtn.textContent = 'Create Agent';
+                            nextBtn.className = 'primary create-btn';
+                            nextBtn.setAttribute('aria-label', 'Create the agent with current configuration');
                         } else {
                             nextBtn.textContent = 'Next';
+                            nextBtn.className = 'primary';
+                            nextBtn.setAttribute('aria-label', \`Proceed to step \${currentStep + 1}\`);
                         }
+                        
+                        // Update button states based on validation
+                        updateNavigationStates();
+                        
+                        // Update step counter
+                        updateStepCounter();
+                    }
+                    
+                    function updateNavigationStates() {
+                        const nextBtn = document.getElementById('nextBtn');
+                        const currentValidation = wizardState?.validation?.[currentStep];
+                        
+                        // Check if current step is valid
+                        const isCurrentStepValid = currentValidation ? currentValidation.isValid : true;
+                        
+                        // For step 2 (Agent Location), always allow proceeding as it has a default
+                        const canProceed = currentStep === 2 || isCurrentStepValid;
+                        
+                        nextBtn.disabled = !canProceed;
+                        
+                        // Add loading state support
+                        if (nextBtn.classList.contains('loading')) {
+                            nextBtn.disabled = true;
+                            nextBtn.innerHTML = currentStep === 5 ? 
+                                '<span class="spinner"></span> Creating...' : 
+                                '<span class="spinner"></span> Validating...';
+                        }
+                    }
+                    
+                    function updateStepCounter() {
+                        // Add step counter if it doesn't exist
+                        let stepCounter = document.getElementById('stepCounter');
+                        if (!stepCounter) {
+                            stepCounter = document.createElement('div');
+                            stepCounter.id = 'stepCounter';
+                            stepCounter.className = 'step-counter';
+                            document.querySelector('.navigation').appendChild(stepCounter);
+                        }
+                        
+                        stepCounter.textContent = \`Step \${currentStep} of 5\`;
+                        stepCounter.setAttribute('aria-live', 'polite');
+                    }
+                    
+                    function setNavigationLoading(isLoading) {
+                        const nextBtn = document.getElementById('nextBtn');
+                        const prevBtn = document.getElementById('prevBtn');
+                        
+                        if (isLoading) {
+                            nextBtn.classList.add('loading');
+                            prevBtn.disabled = true;
+                        } else {
+                            nextBtn.classList.remove('loading');
+                            nextBtn.innerHTML = currentStep === 5 ? 'Create Agent' : 'Next';
+                        }
+                        
+                        updateNavigationStates();
                     }
                     
                     function previousStep() {
                         if (currentStep > 1) {
-                            vscode.postMessage({
-                                type: 'stepChanged',
-                                step: currentStep - 1
-                            });
+                            setNavigationLoading(true);
+                            
+                            // Add transition animation
+                            const content = document.getElementById('stepContent');
+                            content.classList.add('step-transition-out');
+                            
+                            setTimeout(() => {
+                                vscode.postMessage({
+                                    type: 'stepChanged',
+                                    step: currentStep - 1
+                                });
+                            }, 150);
                         }
                     }
                     
                     function nextStep() {
                         if (currentStep < 5) {
+                            // Validate current step before proceeding
+                            setNavigationLoading(true);
+                            
+                            // Mark that we want to proceed after validation
+                            document.getElementById('nextBtn').classList.add('proceed-pending');
+                            
                             vscode.postMessage({
-                                type: 'stepChanged',
-                                step: currentStep + 1
+                                type: 'validationRequested'
                             });
+                            
+                            // The actual step change will happen in handleValidation
                         } else {
+                            // Final step - create agent
+                            setNavigationLoading(true);
+                            
                             vscode.postMessage({
                                 type: 'wizardCompleted'
                             });
                         }
+                    }
+                    
+                    function proceedToNextStep() {
+                        const content = document.getElementById('stepContent');
+                        content.classList.add('step-transition-out');
+                        
+                        setTimeout(() => {
+                            vscode.postMessage({
+                                type: 'stepChanged',
+                                step: currentStep + 1
+                            });
+                        }, 150);
                     }
                     
                     function cancelWizard() {
@@ -613,12 +842,54 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     }
                     
                     function handleValidation(validation, canProceed) {
+                        setNavigationLoading(false);
+                        
                         if (currentStep === 1) {
                             displayBasicPropertiesValidation(validation);
                         }
                         
                         // Update next button state
-                        document.getElementById('nextBtn').disabled = !canProceed;
+                        updateNavigationStates();
+                        
+                        // If validation passed and this was triggered by nextStep, proceed
+                        if (canProceed && document.getElementById('nextBtn').classList.contains('proceed-pending')) {
+                            document.getElementById('nextBtn').classList.remove('proceed-pending');
+                            proceedToNextStep();
+                        } else if (!canProceed) {
+                            // Show validation errors with animation
+                            showValidationErrors(validation);
+                        }
+                    }
+                    
+                    function showValidationErrors(validation) {
+                        // Create or update error summary
+                        let errorSummary = document.getElementById('errorSummary');
+                        if (!errorSummary) {
+                            errorSummary = document.createElement('div');
+                            errorSummary.id = 'errorSummary';
+                            errorSummary.className = 'error-summary';
+                            document.getElementById('stepContent').appendChild(errorSummary);
+                        }
+                        
+                        if (validation.errors && validation.errors.length > 0) {
+                            errorSummary.innerHTML = \`
+                                <div class="error-icon">⚠️</div>
+                                <div class="error-text">
+                                    <strong>Please fix the following issues:</strong>
+                                    <ul>
+                                        \${validation.errors.map(error => \`<li>\${error}</li>\`).join('')}
+                                    </ul>
+                                </div>
+                            \`;
+                            errorSummary.classList.add('show');
+                            
+                            // Auto-hide after 5 seconds
+                            setTimeout(() => {
+                                errorSummary.classList.remove('show');
+                            }, 5000);
+                        } else {
+                            errorSummary.classList.remove('show');
+                        }
                     }
                     
                     // Basic Properties Step Implementation
