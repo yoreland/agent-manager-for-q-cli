@@ -215,20 +215,20 @@ function registerCoreCommands(context: ISafeExtensionContext, logger: ExtensionL
                 try {
                     logger.logUserAction('Create Agent command executed');
                     
-                    // Import and create webview provider
-                    const { AgentCreationWebviewProvider } = await import('./providers/agentCreationWebviewProvider');
-                    const webviewProvider = new AgentCreationWebviewProvider(context, logger);
+                    // Import and create wizard webview provider
+                    const { WizardWebviewProvider } = await import('./providers/wizardWebviewProvider');
+                    const wizardProvider = new WizardWebviewProvider(context, logger);
                     
-                    // Show the creation form
-                    await webviewProvider.showCreationForm();
+                    // Show the wizard
+                    await wizardProvider.showWizard();
                     
-                    logger.info('Agent creation webview opened successfully');
+                    logger.info('Agent creation wizard opened successfully');
                 } catch (error) {
                     const commandError = error as Error;
-                    logger.error('Failed to open agent creation form', commandError);
+                    logger.error('Failed to open agent creation wizard', commandError);
                     
                     vscode.window.showErrorMessage(
-                        `Failed to open agent creation form: ${commandError.message}`
+                        `Failed to open agent creation wizard: ${commandError.message}`
                     );
                 }
             }
