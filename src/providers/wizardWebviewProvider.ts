@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import { ExtensionLogger } from '../services/logger';
 import { WizardState, WizardStep, WizardMessage, WizardResponse, ValidationResult } from '../types/wizard';
+import { WizardStateService, IWizardStateService } from '../services/wizardStateService';
+import { WizardValidationService, IWizardValidationService } from '../services/wizardValidationService';
 import { AgentLocation } from '../core/agent/AgentLocationService';
 
 export interface IWizardWebviewProvider {
@@ -11,13 +13,15 @@ export interface IWizardWebviewProvider {
 export class WizardWebviewProvider implements IWizardWebviewProvider {
     private panel: vscode.WebviewPanel | undefined;
     private disposables: vscode.Disposable[] = [];
-    private wizardState: WizardState;
+    private stateService: IWizardStateService;
+    private validationService: IWizardValidationService;
 
     constructor(
         private readonly context: vscode.ExtensionContext,
         private readonly logger: ExtensionLogger
     ) {
-        this.wizardState = this.createInitialState();
+        this.stateService = new WizardStateService(logger);
+        this.validationService = new WizardValidationService(logger);
     }
 
     async showWizard(): Promise<void> {
@@ -50,21 +54,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
         this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
     }
 
-    private createInitialState(): WizardState {
-        return {
-            currentStep: WizardStep.BasicProperties,
-            totalSteps: 5,
-            stepData: {
-                basicProperties: { name: '', description: '', prompt: '' },
-                agentLocation: { location: 'local' },
-                toolsSelection: { standardTools: [], experimentalTools: [] },
-                resources: { resources: [] }
-            },
-            validation: {},
-            isComplete: false
-        };
-    }
-
     private async handleWizardMessage(message: WizardMessage): Promise<void> {
         try {
             switch (message.type) {
@@ -76,7 +65,7 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                 
                 case 'dataUpdated':
                     if (message.data) {
-                        this.updateStepData(message.data);
+                        await this.updateStepData(message.data);
                     }
                     break;
                 
@@ -94,36 +83,86 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
     }
 
     private async changeStep(newStep: WizardStep): Promise<void> {
-        // Validate current step before proceeding
-        const validation = await this.validateStep(this.wizardState.currentStep);
+        const currentState = this.stateService.getState();
         
-        if (!validation.isValid && newStep > this.wizardState.currentStep) {
+        // Validate current step before proceeding forward
+        if (newStep > currentState.currentStep) {
+            const validation = await this.validationService.validateStep(
+                currentState.currentStep, 
+                currentState.stepData
+            );
+            
+            if (!validation.isValid) {
+                this.stateService.setValidation(currentState.currentStep, validation);
+                this.sendResponse({
+                    type: 'validationResult',
+                    validation,
+                    canProceed: false
+                });
+                return;
+            }
+            
+            this.stateService.setValidation(currentState.currentStep, validation);
+        }
+
+        // Check if we can proceed to the target step
+        if (!this.stateService.canProceedToStep(newStep)) {
             this.sendResponse({
-                type: 'validationResult',
-                validation,
+                type: 'navigationUpdate',
                 canProceed: false
             });
             return;
         }
 
-        this.wizardState.currentStep = newStep;
+        this.stateService.setCurrentStep(newStep);
         this.sendResponse({
             type: 'stateUpdate',
-            state: this.wizardState
+            state: this.stateService.getState()
         });
     }
 
-    private updateStepData(data: Partial<WizardState['stepData']>): void {
-        this.wizardState.stepData = { ...this.wizardState.stepData, ...data };
+    private async updateStepData(data: Partial<WizardState['stepData']>): Promise<void> {
+        const currentState = this.stateService.getState();
+        
+        // Update step data based on current step
+        switch (currentState.currentStep) {
+            case WizardStep.BasicProperties:
+                if (data.basicProperties) {
+                    this.stateService.updateStepData('basicProperties', data.basicProperties);
+                }
+                break;
+            case WizardStep.AgentLocation:
+                if (data.agentLocation) {
+                    this.stateService.updateStepData('agentLocation', data.agentLocation);
+                }
+                break;
+            case WizardStep.ToolsSelection:
+                if (data.toolsSelection) {
+                    this.stateService.updateStepData('toolsSelection', data.toolsSelection);
+                }
+                break;
+            case WizardStep.Resources:
+                if (data.resources) {
+                    this.stateService.updateStepData('resources', data.resources);
+                }
+                break;
+        }
+
+        // Send updated state
         this.sendResponse({
             type: 'stateUpdate',
-            state: this.wizardState
+            state: this.stateService.getState()
         });
     }
 
     private async validateCurrentStep(): Promise<void> {
-        const validation = await this.validateStep(this.wizardState.currentStep);
-        this.wizardState.validation[this.wizardState.currentStep] = validation;
+        const currentState = this.stateService.getState();
+        const validation = await this.validationService.validateStep(
+            currentState.currentStep, 
+            currentState.stepData
+        );
+        
+        this.stateService.setValidation(currentState.currentStep, validation);
         
         this.sendResponse({
             type: 'validationResult',
@@ -132,35 +171,24 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
         });
     }
 
-    private async validateStep(step: WizardStep): Promise<ValidationResult> {
-        const errors: string[] = [];
-        
-        switch (step) {
-            case WizardStep.BasicProperties:
-                const { name, prompt } = this.wizardState.stepData.basicProperties;
-                if (!name.trim()) errors.push('Agent name is required');
-                if (!prompt.trim()) errors.push('Prompt is required');
-                break;
-                
-            case WizardStep.AgentLocation:
-                // Location is always valid as it has a default
-                break;
-                
-            case WizardStep.ToolsSelection:
-                // Tools selection is optional
-                break;
-                
-            case WizardStep.Resources:
-                // Resources are optional
-                break;
-        }
-        
-        return { isValid: errors.length === 0, errors };
-    }
-
     private async completeWizard(): Promise<void> {
+        const finalState = this.stateService.getState();
+        
+        // Final validation of all steps
+        for (let step = WizardStep.BasicProperties; step < WizardStep.Summary; step++) {
+            const validation = await this.validationService.validateStep(step, finalState.stepData);
+            if (!validation.isValid) {
+                this.sendResponse({
+                    type: 'validationResult',
+                    validation,
+                    canProceed: false
+                });
+                return;
+            }
+        }
+
         // TODO: Integrate with existing agent creation service
-        this.logger.info('Wizard completed', this.wizardState);
+        this.logger.info('Wizard completed', finalState);
         this.panel?.dispose();
     }
 
