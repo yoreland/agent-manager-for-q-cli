@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { ExtensionLogger } from '../services/logger';
 import { WebviewMessage, ExtensionMessage, AgentFormData } from '../types/agentCreation';
 import { AgentCreationFormService, IAgentCreationFormService } from '../services/agentCreationFormService';
+import { AgentLocation } from '../core/agent/AgentLocationService';
 
 export interface IAgentCreationWebviewProvider {
     showCreationForm(): Promise<void>;
@@ -12,6 +13,7 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
     private panel: vscode.WebviewPanel | undefined;
     private disposables: vscode.Disposable[] = [];
     private formService: IAgentCreationFormService;
+    private selectedLocation: AgentLocation = AgentLocation.Local; // Default to local
 
     constructor(
         private readonly context: vscode.ExtensionContext,
@@ -78,6 +80,12 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
                     // Could be used for auto-save functionality in the future
                     break;
                 
+                case 'locationChanged':
+                    this.logger.debug('Agent location changed', { location: message.location });
+                    // Store the selected location for agent creation
+                    this.selectedLocation = message.location;
+                    break;
+                
                 case 'validateForm':
                     this.logger.info('Validating form data');
                     const validationResult = this.formService.validateFormData(message.data);
@@ -88,7 +96,10 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
                     break;
                 
                 case 'submitForm':
-                    this.logger.info('Submitting form data', { agentName: message.data.name });
+                    this.logger.info('Submitting form data', { 
+                        agentName: message.data.name, 
+                        location: this.selectedLocation 
+                    });
                     
                     // Validate one more time before creation
                     const finalValidation = this.formService.validateFormData(message.data);
@@ -100,7 +111,10 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
                         return;
                     }
                     
-                    const creationResult = await this.formService.createAgentFromFormData(message.data);
+                    const creationResult = await this.formService.createAgentFromFormData(
+                        message.data, 
+                        this.selectedLocation
+                    );
                     this.sendMessage({
                         type: 'creationResult',
                         result: creationResult
@@ -109,6 +123,7 @@ export class AgentCreationWebviewProvider implements IAgentCreationWebviewProvid
                     if (creationResult.success) {
                         this.logger.info('Agent created successfully', { 
                             agentName: message.data.name,
+                            location: this.selectedLocation,
                             agentPath: creationResult.agentPath 
                         });
                         // Auto-close after successful creation

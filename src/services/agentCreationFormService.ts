@@ -9,7 +9,7 @@ import * as path from 'path';
 export interface IAgentCreationFormService {
     getDefaultFormData(): AgentFormData;
     validateFormData(data: AgentFormData): FormValidationResult;
-    createAgentFromFormData(data: AgentFormData): Promise<AgentCreationResult>;
+    createAgentFromFormData(data: AgentFormData, location?: AgentLocation): Promise<AgentCreationResult>;
     getAvailableTools(): BuiltInTool[];
     getToolSections(): ToolSection[];
 }
@@ -155,15 +155,27 @@ export class AgentCreationFormService implements IAgentCreationFormService {
         };
     }
 
-    async createAgentFromFormData(data: AgentFormData): Promise<AgentCreationResult> {
+    async createAgentFromFormData(data: AgentFormData, location: AgentLocation = AgentLocation.Local): Promise<AgentCreationResult> {
         try {
-            this.logger.info('Creating agent from form data', { name: data.name });
+            this.logger.info('Creating agent from form data', { name: data.name, location });
             
             // Get workspace folder
             const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
             if (!workspaceFolder) {
                 throw new Error('No workspace folder found');
             }
+            
+            // Determine target directory based on location
+            let agentDirectory: string;
+            if (location === AgentLocation.Global) {
+                const os = require('os');
+                agentDirectory = path.join(os.homedir(), '.aws', 'amazonq', 'cli-agents');
+            } else {
+                agentDirectory = path.join(workspaceFolder.uri.fsPath, '.amazonq', 'cli-agents');
+            }
+            
+            // Ensure directory exists
+            await fs.promises.mkdir(agentDirectory, { recursive: true });
             
             // Create agent configuration
             const agentConfig = {
@@ -181,18 +193,14 @@ export class AgentCreationFormService implements IAgentCreationFormService {
                 useLegacyMcpJson: true
             };
             
-            // Create .amazonq/cli-agents directory if it doesn't exist
-            const agentsDir = path.join(workspaceFolder.uri.fsPath, '.amazonq', 'cli-agents');
-            if (!fs.existsSync(agentsDir)) {
-                fs.mkdirSync(agentsDir, { recursive: true });
-            }
+            // Agent directory is already determined and created above
             
             // Create agent file
-            const agentPath = path.join(agentsDir, `${data.name}.json`);
+            const agentPath = path.join(agentDirectory, `${data.name}.json`);
             
             // Check if agent already exists
             if (fs.existsSync(agentPath)) {
-                throw new Error(`Agent "${data.name}" already exists`);
+                throw new Error(`Agent "${data.name}" already exists in ${location} location`);
             }
             
             // Write agent configuration

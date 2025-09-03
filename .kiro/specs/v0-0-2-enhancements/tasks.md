@@ -196,18 +196,18 @@
 
 ## 추가 작업 필요 (미완성 구현)
 
-- [ ] 11. 글로벌/로컬 에이전트 통합 완성
+- [x] 11. 글로벌/로컬 에이전트 통합 완성
   - AgentLocationService가 구현되어 있지만 실제 서비스에서 사용되지 않는 문제 해결
   - AgentConfigService와 AgentManagementService에 글로벌 에이전트 지원 통합
   - _요구사항: 2.1, 2.5_
 
-- [ ] 11.1 AgentConfigService 글로벌 지원 통합
+- [x] 11.1 AgentConfigService 글로벌 지원 통합
   - scanAgentFiles() 메서드를 로컬과 글로벌 디렉토리 모두 스캔하도록 수정
   - AgentLocationService를 의존성으로 추가하여 다중 위치 지원
   - 에이전트 생성/삭제 시 위치 정보 고려하도록 수정
   - _요구사항: 2.2, 2.3, 2.4_
 
-- [ ] 11.2 AgentManagementService 다중 위치 지원 완성
+- [x] 11.2 AgentManagementService 다중 위치 지원 완성
   - getAgentList()에서 로컬과 글로벌 에이전트를 모두 로드하도록 수정
   - 에이전트 아이템에 위치 정보(local/global) 추가
   - 이름 충돌 감지 및 우선순위 처리 로직 적용
@@ -219,7 +219,7 @@
   - 충돌 에이전트에 대한 시각적 경고 표시
   - _요구사항: 3.1, 3.2, 3.3_
 
-- [ ] 11.4 에이전트 생성 폼 위치 선택 기능 연결
+- [x] 11.4 에이전트 생성 폼 위치 선택 기능 연결
   - 웹뷰에서 선택한 위치 정보를 실제 에이전트 생성에 반영
   - AgentCreationFormService에서 위치별 저장 경로 처리
   - 글로벌 디렉토리 자동 생성 및 권한 검증 적용
