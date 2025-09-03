@@ -122,6 +122,14 @@ export class AgentTreeProvider implements vscode.TreeDataProvider<AgentItem | Cr
         const agentItem = element as AgentItem;
         const treeItem = new vscode.TreeItem(agentItem.label);
         
+        // Set unique ID to maintain selection state
+        treeItem.id = `agent-${agentItem.name}`;
+        
+        // Set resource URI to help VS Code track the item
+        if (agentItem.filePath) {
+            treeItem.resourceUri = vscode.Uri.file(agentItem.filePath);
+        }
+        
         // Set properties
         if (agentItem.description !== undefined) {
             treeItem.description = agentItem.description;
