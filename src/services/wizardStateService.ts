@@ -1,5 +1,8 @@
 import { WizardState, WizardStep, ValidationResult, BasicPropertiesData, AgentLocationData, ToolsSelectionData, ResourcesData } from '../types/wizard';
 import { ExtensionLogger } from './logger';
+import * as vscode from 'vscode';
+
+const WIZARD_STATE_KEY = 'qcli.wizard.state';
 
 export interface IWizardStateService {
     getState(): WizardState;
@@ -9,13 +12,43 @@ export interface IWizardStateService {
     canProceedToStep(targetStep: WizardStep): boolean;
     isStepCompleted(step: WizardStep): boolean;
     reset(): void;
+    clearState(): void;
 }
 
 export class WizardStateService implements IWizardStateService {
     private state: WizardState;
 
-    constructor(private readonly logger: ExtensionLogger) {
-        this.state = this.createInitialState();
+    constructor(private readonly logger: ExtensionLogger, private context?: vscode.ExtensionContext) {
+        this.state = this.initializeState();
+    }
+
+    private initializeState(): WizardState {
+        // Try to restore previous state from workspace if context is available
+        if (this.context) {
+            const savedState = this.context.workspaceState.get<WizardState>(WIZARD_STATE_KEY);
+            if (savedState && this.isValidState(savedState)) {
+                this.logger.debug('Restored wizard state from workspace');
+                return savedState;
+            }
+        }
+        
+        return this.createInitialState();
+    }
+
+    private isValidState(state: any): state is WizardState {
+        return state && 
+               typeof state.currentStep === 'number' &&
+               state.stepData &&
+               state.stepData.basicProperties &&
+               state.stepData.agentLocation &&
+               state.stepData.toolsSelection &&
+               state.stepData.resources;
+    }
+
+    private persistState(): void {
+        if (this.context) {
+            this.context.workspaceState.update(WIZARD_STATE_KEY, this.state);
+        }
     }
 
     getState(): WizardState {
@@ -27,12 +60,14 @@ export class WizardStateService implements IWizardStateService {
         data: Partial<WizardState['stepData'][T]>
     ): void {
         this.state.stepData[step] = { ...this.state.stepData[step], ...data };
+        this.persistState();
         this.logger.debug('Wizard step data updated', { step, data });
     }
 
     setCurrentStep(step: WizardStep): void {
         if (this.canProceedToStep(step)) {
             this.state.currentStep = step;
+            this.persistState();
             this.logger.debug('Wizard step changed', { step });
         } else {
             this.logger.warn('Cannot proceed to step due to validation', { step });
@@ -67,7 +102,16 @@ export class WizardStateService implements IWizardStateService {
 
     reset(): void {
         this.state = this.createInitialState();
+        this.persistState();
         this.logger.debug('Wizard state reset');
+    }
+
+    clearState(): void {
+        this.state = this.createInitialState();
+        if (this.context) {
+            this.context.workspaceState.update(WIZARD_STATE_KEY, undefined);
+        }
+        this.logger.debug('Wizard state cleared');
     }
 
     private createInitialState(): WizardState {

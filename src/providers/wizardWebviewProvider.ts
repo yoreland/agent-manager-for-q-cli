@@ -283,6 +283,9 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                 location: finalState.stepData.agentLocation.location
             });
 
+            // Clear wizard state after successful creation
+            this.stateService.clearState();
+
             // Close the wizard after a short delay
             setTimeout(() => {
                 this.panel?.dispose();
