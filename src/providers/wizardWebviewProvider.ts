@@ -2535,7 +2535,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                             clearTimeout(validationTimeout);
                             validationTimeout = setTimeout(() => {
                                 updateBasicPropertiesData();
-                                validateField('name', nameInput.value);
                             }, 300);
                         });
                         
@@ -2667,30 +2666,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                                 basicProperties: { name, description, prompt }
                             }
                         });
-                    }
-                    
-                    function validateField(field, value) {
-                        // Client-side validation for immediate feedback
-                        if (field === 'name') {
-                            const errorEl = document.getElementById('nameError');
-                            let error = '';
-                            
-                            if (!value.trim()) {
-                                error = 'Agent name is required';
-                            } else if (value.length < 2) {
-                                error = 'Agent name must be at least 2 characters';
-                            } else if (!/^[a-zA-Z0-9_-]+$/.test(value)) {
-                                error = 'Agent name can only contain letters, numbers, hyphens, and underscores';
-                            }
-                            
-                            if (error) {
-                                errorEl.textContent = error;
-                                errorEl.classList.add('show');
-                            } else {
-                                errorEl.classList.remove('show');
-                            }
-                        }
-                        // Prompt validation removed - now optional
                     }
                     
                     function displayBasicPropertiesValidation(validation) {
