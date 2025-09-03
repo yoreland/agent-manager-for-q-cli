@@ -66,11 +66,26 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
 
         // Handle panel disposal
         this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
+        
+        // Send initial state after a short delay to ensure webview is ready
+        setTimeout(() => {
+            this.sendResponse({
+                type: 'stateUpdate',
+                state: this.stateService.getState()
+            });
+        }, 100);
     }
 
     private async handleWizardMessage(message: WizardMessage): Promise<void> {
         try {
             switch (message.type) {
+                case 'requestInitialState':
+                    this.sendResponse({
+                        type: 'stateUpdate',
+                        state: this.stateService.getState()
+                    });
+                    break;
+                    
                 case 'stepChanged':
                     if (message.step) {
                         await this.changeStep(message.step);
@@ -2104,8 +2119,41 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     // Initialize wizard
                     window.addEventListener('message', event => {
                         const message = event.data;
+                        console.log('Received message:', message);
                         handleWizardResponse(message);
                     });
+                    
+                    function handleWizardResponse(response) {
+                        console.log('Handling response:', response);
+                        switch (response.type) {
+                            case 'stateUpdate':
+                                wizardState = response.state;
+                                console.log('Updated wizard state:', wizardState);
+                                updateUI();
+                                break;
+                            case 'validationResult':
+                                handleValidation(response.validation, response.canProceed);
+                                break;
+                            case 'agentCreated':
+                                handleAgentCreated(response.agentName, response.location);
+                                break;
+                        }
+                    }
+                    
+                    // Request initial state when page loads
+                    function requestInitialState() {
+                        console.log('Requesting initial state');
+                        vscode.postMessage({
+                            type: 'requestInitialState'
+                        });
+                    }
+                    
+                    // Initialize when DOM is ready
+                    if (document.readyState === 'loading') {
+                        document.addEventListener('DOMContentLoaded', requestInitialState);
+                    } else {
+                        requestInitialState();
+                    }
                     
                     function handleWizardResponse(response) {
                         switch (response.type) {
@@ -2180,10 +2228,19 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     }
                     
                     function updateUI() {
-                        if (!wizardState) return;
+                        console.log('updateUI called with wizardState:', wizardState);
+                        if (!wizardState) {
+                            console.log('No wizard state available, showing loading...');
+                            const content = document.getElementById('stepContent');
+                            if (content) {
+                                content.innerHTML = '<div style="text-align: center; padding: 40px;">Loading wizard...</div>';
+                            }
+                            return;
+                        }
                         
                         const previousStep = currentStep;
                         currentStep = wizardState.currentStep;
+                        console.log('Current step:', currentStep);
                         
                         updateProgressBar();
                         

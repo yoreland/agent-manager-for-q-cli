@@ -51,7 +51,7 @@ export interface ValidationResult {
 }
 
 export interface WizardMessage {
-    type: 'stepChanged' | 'dataUpdated' | 'validationRequested' | 'wizardCompleted' | 'openAgentConfig' | 'createAnother';
+    type: 'stepChanged' | 'dataUpdated' | 'validationRequested' | 'wizardCompleted' | 'openAgentConfig' | 'createAnother' | 'requestInitialState';
     step?: WizardStep;
     data?: Partial<WizardState['stepData']>;
     validation?: ValidationResult;
