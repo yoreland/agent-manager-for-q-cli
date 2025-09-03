@@ -425,6 +425,7 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     /* Progress Bar Enhancement */
                     .progress-bar {
                         display: flex;
+                        gap: var(--wizard-spacing-xs);
                         margin-bottom: var(--wizard-spacing-lg);
                         background: var(--vscode-editor-background);
                         border-radius: var(--wizard-border-radius-lg);
