@@ -429,10 +429,13 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         border-radius: var(--wizard-border-radius-lg);
                         padding: var(--wizard-spacing-xs);
                         border: 1px solid var(--vscode-input-border);
+                        overflow-x: auto;
+                        -webkit-overflow-scrolling: touch;
                     }
                     
                     .step {
                         flex: 1;
+                        min-width: 120px;
                         text-align: center;
                         padding: var(--wizard-spacing-md) var(--wizard-spacing-sm);
                         border-radius: var(--wizard-border-radius-md);
@@ -442,6 +445,7 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         transition: all 0.2s ease;
                         cursor: pointer;
                         position: relative;
+                        white-space: nowrap;
                     }
                     
                     .step:hover {
@@ -795,20 +799,14 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         }
                         
                         .progress-bar {
-                            flex-direction: column;
+                            padding: var(--wizard-spacing-sm);
                             gap: var(--wizard-spacing-xs);
-                            padding: var(--wizard-spacing-md);
                         }
                         
                         .step {
-                            padding: var(--wizard-spacing-sm) var(--wizard-spacing-md);
-                            border-radius: var(--wizard-border-radius-md);
-                            border: 1px solid var(--vscode-input-border);
-                            margin-bottom: var(--wizard-spacing-xs);
-                        }
-                        
-                        .step:last-child {
-                            margin-bottom: 0;
+                            min-width: 100px;
+                            padding: var(--wizard-spacing-sm) var(--wizard-spacing-xs);
+                            font-size: var(--wizard-font-size-xs);
                         }
                         
                         .step-content {
@@ -844,6 +842,16 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     }
                     
                     @media (max-width: 480px) {
+                        .progress-bar {
+                            padding: var(--wizard-spacing-xs);
+                        }
+                        
+                        .step {
+                            min-width: 80px;
+                            padding: var(--wizard-spacing-xs);
+                            font-size: 10px;
+                        }
+                        
                         .form-input, .form-textarea {
                             font-size: var(--wizard-font-size-lg);
                             padding: var(--wizard-spacing-lg);
@@ -2516,26 +2524,25 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                                     id="agentDescription" 
                                     class="form-input form-textarea" 
                                     placeholder="Brief description of what this agent does (optional)"
-                                    maxlength="500"
                                 >\${data.description || ''}</textarea>
-                                <div class="char-counter">
-                                    <span id="descCounter">\${(data.description || '').length}</span>/500 characters
+                                <div class="form-help">
+                                    Optional description to help identify the agent's purpose.
                                 </div>
                                 <div class="validation-warning" id="descWarning"></div>
                             </div>
                             
                             <div class="form-group">
                                 <label class="form-label" for="agentPrompt">
-                                    System Prompt <span class="required">*</span>
+                                    System Prompt
                                 </label>
                                 <textarea 
                                     id="agentPrompt" 
                                     class="form-input form-textarea code-style" 
-                                    placeholder="Define the agent's behavior, role, and instructions..."
+                                    placeholder="Define the agent's behavior, role, and instructions (optional)..."
                                     rows="6"
-                                >\${data.prompt}</textarea>
+                                >\${data.prompt || ''}</textarea>
                                 <div class="form-help">
-                                    This defines how your agent will behave and respond. Be specific about the agent's role and capabilities.
+                                    Optional high-level context for the agent, similar to a system prompt.
                                 </div>
                                 <div class="validation-error" id="promptError"></div>
                             </div>
@@ -2558,7 +2565,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         });
                         
                         descInput.addEventListener('input', () => {
-                            descCounter.textContent = descInput.value.length;
                             clearTimeout(validationTimeout);
                             validationTimeout = setTimeout(() => {
                                 updateBasicPropertiesData();
@@ -2569,7 +2575,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                             clearTimeout(validationTimeout);
                             validationTimeout = setTimeout(() => {
                                 updateBasicPropertiesData();
-                                validateField('prompt', promptInput.value);
                             }, 300);
                         });
                     }
@@ -2709,23 +2714,8 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                             } else {
                                 errorEl.classList.remove('show');
                             }
-                        } else if (field === 'prompt') {
-                            const errorEl = document.getElementById('promptError');
-                            let error = '';
-                            
-                            if (!value.trim()) {
-                                error = 'System prompt is required';
-                            } else if (value.length < 10) {
-                                error = 'System prompt must be at least 10 characters';
-                            }
-                            
-                            if (error) {
-                                errorEl.textContent = error;
-                                errorEl.classList.add('show');
-                            } else {
-                                errorEl.classList.remove('show');
-                            }
                         }
+                        // Prompt validation removed - now optional
                     }
                     
                     function displayBasicPropertiesValidation(validation) {

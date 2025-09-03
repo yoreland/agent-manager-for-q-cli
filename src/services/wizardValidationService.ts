@@ -73,13 +73,8 @@ export class WizardValidationService implements IWizardValidationService {
                     } else if (!/^[a-zA-Z0-9_-]+$/.test(value)) {
                         errors.push('Agent name can only contain letters, numbers, hyphens, and underscores');
                     }
-                } else if (field === 'prompt') {
-                    if (!value || !value.trim()) {
-                        errors.push('Prompt is required');
-                    } else if (value.length < 10) {
-                        errors.push('Prompt must be at least 10 characters');
-                    }
                 }
+                // Prompt is now optional - no validation needed
                 break;
         }
 
@@ -90,7 +85,7 @@ export class WizardValidationService implements IWizardValidationService {
         const errors: string[] = [];
         const warnings: string[] = [];
 
-        // Name validation
+        // Name validation (still required)
         const nameValidation = this.validateField(WizardStep.BasicProperties, 'name', data.name);
         errors.push(...nameValidation.errors);
 
@@ -107,14 +102,8 @@ export class WizardValidationService implements IWizardValidationService {
             }
         }
 
-        // Prompt validation
-        const promptValidation = this.validateField(WizardStep.BasicProperties, 'prompt', data.prompt);
-        errors.push(...promptValidation.errors);
-
-        // Description validation (optional but with warnings)
-        if (data.description && data.description.length > 500) {
-            warnings.push('Description is quite long. Consider keeping it concise.');
-        }
+        // Prompt is now optional - no validation needed
+        // Description is now unlimited - no validation needed
 
         return { isValid: errors.length === 0, errors, warnings };
     }
