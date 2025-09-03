@@ -27,9 +27,9 @@ export interface IAgentConfigService {
     deleteAgentConfig(name: string, location?: AgentLocation): Promise<void>;
     
     // Validation
-    validateAgentConfig(config: AgentConfig): ValidationResult;
+    validateAgentConfig(config: AgentConfig, options?: { skipReservedNameCheck?: boolean }): ValidationResult;
     isAgentNameExists(name: string): Promise<boolean>;
-    validateAgentName(name: string): ValidationResult;
+    validateAgentName(name: string, skipReservedNameCheck?: boolean): ValidationResult;
     
     // Utility methods
     createDefaultAgentConfig(name: string): AgentConfig;
@@ -170,8 +170,8 @@ export class AgentConfigService implements IAgentConfigService {
             const fileContent = await fs.readFile(filePath, 'utf-8');
             const config = JSON.parse(fileContent) as AgentConfig;
             
-            // Validate the configuration
-            const validation = this.validateAgentConfig(config);
+            // Validate the configuration (skip reserved name check for existing files)
+            const validation = this.validateAgentConfig(config, { skipReservedNameCheck: true });
             if (!validation.isValid) {
                 const errorMessage = `Invalid agent configuration in ${filePath}`;
                 this.logger.warn(errorMessage, { errors: validation.errors });
@@ -315,7 +315,7 @@ export class AgentConfigService implements IAgentConfigService {
     /**
      * Validate an agent configuration object
      */
-    validateAgentConfig(config: AgentConfig): ValidationResult {
+    validateAgentConfig(config: AgentConfig, options?: { skipReservedNameCheck?: boolean }): ValidationResult {
         const errors: string[] = [];
         const warnings: string[] = [];
 
@@ -323,7 +323,7 @@ export class AgentConfigService implements IAgentConfigService {
         if (!config.name || typeof config.name !== 'string') {
             errors.push('Agent name is required and must be a string');
         } else {
-            const nameValidation = this.validateAgentName(config.name);
+            const nameValidation = this.validateAgentName(config.name, options?.skipReservedNameCheck);
             if (!nameValidation.isValid) {
                 errors.push(...nameValidation.errors);
             }
@@ -431,7 +431,7 @@ export class AgentConfigService implements IAgentConfigService {
     /**
      * Validate an agent name
      */
-    validateAgentName(name: string): ValidationResult {
+    validateAgentName(name: string, skipReservedNameCheck?: boolean): ValidationResult {
         const errors: string[] = [];
 
         // Check if name is provided
@@ -464,8 +464,8 @@ export class AgentConfigService implements IAgentConfigService {
             errors.push('Agent name can only contain letters, numbers, hyphens, and underscores');
         }
 
-        // Check reserved names
-        if (AGENT_CONSTANTS.RESERVED_NAMES.includes(trimmedName.toLowerCase() as any)) {
+        // Check reserved names (skip if requested)
+        if (!skipReservedNameCheck && AGENT_CONSTANTS.RESERVED_NAMES.includes(trimmedName.toLowerCase() as any)) {
             errors.push(`'${trimmedName}' is a reserved name and cannot be used`);
         }
 
