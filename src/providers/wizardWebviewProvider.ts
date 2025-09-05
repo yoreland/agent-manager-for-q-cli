@@ -1876,33 +1876,15 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         gap: 24px;
                     }
                     
-                    .hook-header h2 {
-                        margin: 0 0 8px 0;
-                        font-size: 20px;
-                        color: var(--vscode-foreground);
-                    }
-                    
-                    .hook-header p {
-                        margin: 0;
-                        color: var(--vscode-descriptionForeground);
-                    }
-                    
-                    .hook-skip-option {
-                        padding: 16px;
-                        background: var(--vscode-editor-background);
-                        border: 1px solid var(--vscode-input-border);
-                        border-radius: 6px;
-                    }
-                    
                     .template-grid {
                         display: grid;
-                        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                        gap: 16px;
+                        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+                        gap: 12px;
                         margin-top: 16px;
                     }
                     
                     .template-card {
-                        padding: 16px;
+                        padding: 12px;
                         border: 1px solid var(--vscode-input-border);
                         border-radius: 6px;
                         cursor: pointer;
@@ -1920,19 +1902,19 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     }
                     
                     .template-icon {
-                        font-size: 24px;
-                        margin-bottom: 8px;
+                        font-size: 20px;
+                        margin-bottom: 6px;
                     }
                     
                     .template-info h4 {
                         margin: 0 0 4px 0;
-                        font-size: 14px;
+                        font-size: 13px;
                         color: var(--vscode-foreground);
                     }
                     
                     .template-info p {
                         margin: 0;
-                        font-size: 12px;
+                        font-size: 11px;
                         color: var(--vscode-descriptionForeground);
                     }
                     
@@ -3376,59 +3358,44 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         const data = wizardState?.stepData?.hookConfiguration || { hooks: [], skipHooks: false };
                         return \`
                             <div class="hook-configuration-section">
-                                <div class="hook-header">
-                                    <h2>Context Hooks</h2>
-                                    <p>Configure commands that run automatically to provide context to your agent.</p>
-                                </div>
-                                
-                                <div class="hook-skip-option">
-                                    <label class="checkbox-container">
-                                        <input type="checkbox" id="skipHooks" \${data.skipHooks ? 'checked' : ''}>
-                                        <span class="checkmark"></span>
-                                        Skip Hook configuration (you can add them later)
-                                    </label>
-                                </div>
-                                
-                                <div class="hook-content" \${data.skipHooks ? 'style="display: none;"' : ''}>
-                                    <div class="hook-templates">
-                                        <h3>Quick Templates</h3>
-                                        <div class="template-grid">
-                                            <div class="template-card" data-template="git-status">
-                                                <div class="template-icon">📊</div>
-                                                <div class="template-info">
-                                                    <h4>Git Status</h4>
-                                                    <p>Show git status with each prompt</p>
-                                                </div>
+                                <div class="hook-templates">
+                                    <h3>Quick Templates</h3>
+                                    <div class="template-grid">
+                                        <div class="template-card custom" data-template="custom">
+                                            <div class="template-icon">⚙️</div>
+                                            <div class="template-info">
+                                                <h4>Create Hook</h4>
+                                                <p>Create your own hook</p>
                                             </div>
-                                            <div class="template-card" data-template="project-info">
-                                                <div class="template-icon">📁</div>
-                                                <div class="template-info">
-                                                    <h4>Project Info</h4>
-                                                    <p>Display project name at conversation start</p>
-                                                </div>
+                                        </div>
+                                        <div class="template-card" data-template="git-status">
+                                            <div class="template-icon">📊</div>
+                                            <div class="template-info">
+                                                <h4>Git Status</h4>
+                                                <p>Show git status with each prompt</p>
                                             </div>
-                                            <div class="template-card" data-template="current-branch">
-                                                <div class="template-icon">🌿</div>
-                                                <div class="template-info">
-                                                    <h4>Current Branch</h4>
-                                                    <p>Show current git branch at start</p>
-                                                </div>
+                                        </div>
+                                        <div class="template-card" data-template="project-info">
+                                            <div class="template-icon">📁</div>
+                                            <div class="template-info">
+                                                <h4>Project Info</h4>
+                                                <p>Display project name at conversation start</p>
                                             </div>
-                                            <div class="template-card custom" data-template="custom">
-                                                <div class="template-icon">⚙️</div>
-                                                <div class="template-info">
-                                                    <h4>Custom Hook</h4>
-                                                    <p>Create your own hook</p>
-                                                </div>
+                                        </div>
+                                        <div class="template-card" data-template="current-branch">
+                                            <div class="template-icon">🌿</div>
+                                            <div class="template-info">
+                                                <h4>Current Branch</h4>
+                                                <p>Show current git branch at start</p>
                                             </div>
                                         </div>
                                     </div>
-                                    
-                                    <div class="hook-list">
-                                        <h3>Configured Hooks</h3>
-                                        <div id="hooksList">
-                                            \${getHooksListHTML(data.hooks)}
-                                        </div>
+                                </div>
+                                
+                                <div class="hook-list">
+                                    <h3>Configured Hooks</h3>
+                                    <div id="hooksList">
+                                        \${getHooksListHTML(data.hooks)}
                                     </div>
                                 </div>
                             </div>
@@ -3786,19 +3753,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     }
                     
                     function setupHookConfigurationHandlers() {
-                        // Skip hooks checkbox handler
-                        const skipHooksCheckbox = document.getElementById('skipHooks');
-                        if (skipHooksCheckbox) {
-                            skipHooksCheckbox.addEventListener('change', function() {
-                                const hookContent = document.querySelector('.hook-content');
-                                if (hookContent) {
-                                    hookContent.style.display = this.checked ? 'none' : 'block';
-                                }
-                                
-                                updateHookConfiguration({ skipHooks: this.checked });
-                            });
-                        }
-                        
                         // Template card click handlers
                         document.querySelectorAll('.template-card').forEach(card => {
                             card.addEventListener('click', function() {
