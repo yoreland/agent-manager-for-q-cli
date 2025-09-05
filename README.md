@@ -7,6 +7,7 @@ A VS Code Extension that simplifies Amazon Q Developer CLI agent management with
 - **Visual Agent Creation**: Complete form-based agent creation with real-time validation
 - **Global & Local Agents**: Create agents for specific workspaces or use across all projects
 - **One-Click Execution**: Run agents directly from VS Code with the ▶️ button
+- **Context Hook Configuration**: Automated context injection with predefined templates
 - **Experimental Tools Support**: Access to Q CLI's experimental features (`knowledge`, `thinking`, `todo_list`)
 - **Smart Conflict Detection**: Visual warnings when agents with same names exist in different locations
 - **Professional UI**: VS Code-native interface with comprehensive form validation
@@ -25,6 +26,7 @@ A VS Code Extension that simplifies Amazon Q Developer CLI agent management with
    - **Prompt**: System instructions defining the agent's behavior
    - **Tools**: Select from standard and experimental tools
    - **Resources**: Add file paths the agent can access
+   - **Context Hooks**: Configure commands that run automatically to provide context (optional)
 4. Click **Create Agent**
 
 ### Managing Agents
@@ -59,6 +61,24 @@ A VS Code Extension that simplifies Amazon Q Developer CLI agent management with
 - **Use Case**: General-purpose agents used across multiple projects
 
 > **Note**: When both local and global agents have the same name, the local agent takes precedence.
+
+## What's New in v0.0.5
+
+- 🔧 **Backward Compatibility**: Fixed compatibility with existing agent files that don't have `$schema` field
+- 🛠️ **Improved Error Handling**: Better error messages for agent configuration validation
+
+## What's New in v0.0.4
+
+- 🪝 **Context Hook Configuration**: Configure commands that run automatically to provide context
+- 📋 **Template-Based Hooks**: Pre-defined templates for common scenarios:
+  - **Git Status**: Show git status with each prompt
+  - **Current Branch**: Display current git branch at conversation start
+  - **Project Info**: Show project name at conversation start
+  - **Recent Commits**: Display last 3 git commits at conversation start
+- ⚙️ **Custom Hook Creation**: Create your own hooks with modal dialog interface
+- 🔒 **Security Validation**: Real-time command analysis with security warnings
+- ✏️ **Hook Management**: Full CRUD operations for hook editing and removal
+- 🎨 **Improved UI**: Better layout with Create Hook prominently displayed
 
 ## What's New in v0.0.3
 
