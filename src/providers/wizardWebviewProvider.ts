@@ -1876,6 +1876,31 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         gap: 24px;
                     }
                     
+                    .create-hook-section {
+                        display: flex;
+                        justify-content: center;
+                    }
+                    
+                    .template-card.large {
+                        min-width: 200px;
+                        padding: 16px;
+                        text-align: center;
+                    }
+                    
+                    .template-card.large .template-icon {
+                        font-size: 28px;
+                        margin-bottom: 8px;
+                    }
+                    
+                    .template-card.large .template-info h4 {
+                        font-size: 16px;
+                        margin-bottom: 6px;
+                    }
+                    
+                    .template-card.large .template-info p {
+                        font-size: 12px;
+                    }
+                    
                     .template-grid {
                         display: grid;
                         grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -3358,21 +3383,31 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         const data = wizardState?.stepData?.hookConfiguration || { hooks: [], skipHooks: false };
                         return \`
                             <div class="hook-configuration-section">
+                                <div class="create-hook-section">
+                                    <div class="template-card custom large" data-template="custom">
+                                        <div class="template-icon">⚙️</div>
+                                        <div class="template-info">
+                                            <h4>Create Hook</h4>
+                                            <p>Create your own custom hook command</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
                                 <div class="hook-templates">
                                     <h3>Quick Templates</h3>
                                     <div class="template-grid">
-                                        <div class="template-card custom" data-template="custom">
-                                            <div class="template-icon">⚙️</div>
-                                            <div class="template-info">
-                                                <h4>Create Hook</h4>
-                                                <p>Create your own hook</p>
-                                            </div>
-                                        </div>
                                         <div class="template-card" data-template="git-status">
                                             <div class="template-icon">📊</div>
                                             <div class="template-info">
                                                 <h4>Git Status</h4>
                                                 <p>Show git status with each prompt</p>
+                                            </div>
+                                        </div>
+                                        <div class="template-card" data-template="current-branch">
+                                            <div class="template-icon">🌿</div>
+                                            <div class="template-info">
+                                                <h4>Current Branch</h4>
+                                                <p>Show current git branch at start</p>
                                             </div>
                                         </div>
                                         <div class="template-card" data-template="project-info">
@@ -3382,11 +3417,25 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                                                 <p>Display project name at conversation start</p>
                                             </div>
                                         </div>
-                                        <div class="template-card" data-template="current-branch">
-                                            <div class="template-icon">🌿</div>
+                                        <div class="template-card" data-template="recent-commits">
+                                            <div class="template-icon">📝</div>
                                             <div class="template-info">
-                                                <h4>Current Branch</h4>
-                                                <p>Show current git branch at start</p>
+                                                <h4>Recent Commits</h4>
+                                                <p>Show last 3 git commits</p>
+                                            </div>
+                                        </div>
+                                        <div class="template-card" data-template="package-info">
+                                            <div class="template-icon">📦</div>
+                                            <div class="template-info">
+                                                <h4>Package Info</h4>
+                                                <p>Show package.json name and version</p>
+                                            </div>
+                                        </div>
+                                        <div class="template-card" data-template="working-directory">
+                                            <div class="template-icon">📂</div>
+                                            <div class="template-info">
+                                                <h4>Working Directory</h4>
+                                                <p>Show current directory path</p>
                                             </div>
                                         </div>
                                     </div>
@@ -3776,6 +3825,14 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                                 isCustom: false,
                                 templateId: 'git-status'
                             },
+                            'current-branch': {
+                                id: Date.now().toString(),
+                                name: 'Current Branch',
+                                trigger: 'agentSpawn',
+                                command: 'git branch --show-current',
+                                isCustom: false,
+                                templateId: 'current-branch'
+                            },
                             'project-info': {
                                 id: Date.now().toString(),
                                 name: 'Project Info',
@@ -3784,13 +3841,29 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                                 isCustom: false,
                                 templateId: 'project-info'
                             },
-                            'current-branch': {
+                            'recent-commits': {
                                 id: Date.now().toString(),
-                                name: 'Current Branch',
+                                name: 'Recent Commits',
                                 trigger: 'agentSpawn',
-                                command: 'git branch --show-current',
+                                command: 'git log --oneline -3',
                                 isCustom: false,
-                                templateId: 'current-branch'
+                                templateId: 'recent-commits'
+                            },
+                            'package-info': {
+                                id: Date.now().toString(),
+                                name: 'Package Info',
+                                trigger: 'agentSpawn',
+                                command: 'if [ -f package.json ]; then echo "$(jq -r .name package.json) v$(jq -r .version package.json)"; fi',
+                                isCustom: false,
+                                templateId: 'package-info'
+                            },
+                            'working-directory': {
+                                id: Date.now().toString(),
+                                name: 'Working Directory',
+                                trigger: 'agentSpawn',
+                                command: 'pwd',
+                                isCustom: false,
+                                templateId: 'working-directory'
                             }
                         };
                         
