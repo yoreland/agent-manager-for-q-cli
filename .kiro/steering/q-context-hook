@@ -1,0 +1,149 @@
+Using context hooks
+
+Context hooks are a feature in Amazon Q Developer CLI that you can use to automatically inject context into your conversations with Q Developer. Instead of manually adding context with the /context command, context hooks run commands and include their output as context.
+
+Types of context hooks
+
+Q Developer CLI supports two types of context hooks:
+
+Conversation start hooks
+Run once at the beginning of a conversation. Their output is added to the conversation context and persists throughout the session.
+
+Per-prompt hooks
+Run with each user message. Their output is added only to the current prompt.
+
+Managing context hooks
+
+You can manage context hooks by using the /context hooks command in the Q Developer CLI.
+
+View your hooks
+To view all configured hooks at both global and profile levels:
+
+
+/context hooks
+This command displays all hooks that are configured for your current profile and at the global level, along with their status (enabled or disabled).
+
+Add a hook
+To add a new context hook:
+
+
+/context hooks add [--global] <name> --trigger <trigger> --command <command>
+<name>
+A unique name for the hook
+
+<trigger>
+Either per_prompt or conversation_start
+
+<command>
+The shell command to execute
+
+--global
+(Optional) Add the hook to global configuration instead of the current profile
+
+Example Adding a git status hook
+
+/context hooks add git-status --trigger per_prompt --command "git status --short"
+Remove a hook
+To remove an existing context hook:
+
+
+/context hooks rm <name> [--global]
+Enable or disable hooks
+To enable a specific hook:
+
+
+/context hooks enable [--global] <name> 
+To disable a specific hook:
+
+
+/context hooks disable [--global] <name> 
+To enable all hooks:
+
+
+/context hooks enable-all [--global]
+To disable all hooks:
+
+
+/context hooks disable-all [--global]
+Get help with hooks
+To display detailed help for the hooks commands:
+
+
+/context hooks help
+Configurations
+You can verify the configuration of your hooks at the following locations.
+
+If the hook is global:
+
+
+~/.aws/amazonq/global_context.json
+If the hook is profile-based:
+
+
+~/.aws/amazonq/profiles/profile-name/context.json
+Example use cases
+
+The following examples demonstrate common use cases for context hooks.
+
+Git status
+Add a hook to show git status with each prompt:
+
+
+/context hooks add git-status --trigger per_prompt --command "git status --short"
+This hook runs the git status --short command before each prompt and includes the output in your conversation with Q Developer. This helps Q Developer understand the current state of your git repository when you ask questions about version control or need help with git commands.
+
+Project information
+Add a hook to show project information at the start of a conversation:
+
+
+/context hooks add project-info --trigger conversation_start --command "echo 'Project: '$(basename $(pwd))"
+This hook runs once at the beginning of your conversation and includes the current project name in the context. This helps Q Developer provide more relevant responses that are specific to your project.
+
+Tip
+You can expand this hook to include more project information, such as the programming language, framework, or project structure.
+
+Behavior and limitations
+
+When you use context hooks, keep the following behaviors and limitations in mind:
+
+Hooks run in parallel to minimize impact on response time
+
+Hook output is formatted and clearly marked in the context
+
+The /clear command re-evaluates conversation start hooks
+
+Hooks are stored in your Q Developer CLI configuration
+
+Currently, only inline command hooks are supported
+
+Hook output is limited to 10KB per hook
+
+Hooks time out after 5 seconds by default
+
+Security considerations
+
+When you use context hooks, consider the following security best practices:
+
+Context hooks execute shell commands with your current user permissions. Be careful about which commands you include in your hooks, as they have the same access as your user account.
+
+Be careful when adding hooks that might expose sensitive information, such as credentials or personal data. Review the output of your hooks to ensure that they don't include information that you don't want to share.
+
+Consider disabling hooks when they're not needed. This reduces the risk of accidentally exposing sensitive information.
+
+Don't use hooks to run commands that could modify your system or data. Hooks should be used for reading information, not for making changes.
+
+Be cautious when using hooks in shared environments. Other users might be able to see the output of your hooks if they have access to your Q Developer CLI sessions.
+
+Warning
+Never include commands in your hooks that expose passwords, access keys, or other credentials. This information could be stored in your conversation history and potentially exposed to others.
+
+Troubleshooting
+
+If you encounter issues with context hooks, try the following solutions:
+
+Troubleshooting context hooks
+Issue	Solution
+Hook doesn't run	Verify that the hook is enabled with /context hooks
+Command fails	Test the command directly in your terminal to ensure it works
+Output is too large	Modify your command to limit output size
+Hook times out	Optimize your command for faster execution
