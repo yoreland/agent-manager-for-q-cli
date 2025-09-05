@@ -18,6 +18,7 @@ export interface AgentConflictInfo {
 export interface IAgentLocationService {
     getLocalAgentsPath(): string;
     getGlobalAgentsPath(): string;
+    hasWorkspace(): boolean;
     ensureDirectoryExists(location: AgentLocation): Promise<void>;
     resolveAgentPath(name: string, location: AgentLocation): string;
     detectNameConflicts(name: string): Promise<AgentConflictInfo>;
@@ -32,10 +33,15 @@ export class AgentLocationService implements IAgentLocationService {
         // Use VS Code workspace path instead of process.cwd()
         const workspaceFolders = vscode.workspace.workspaceFolders;
         if (!workspaceFolders || workspaceFolders.length === 0) {
-            throw new Error('No workspace folder found. Agent management requires an open workspace.');
+            throw new Error('No workspace folder found. Local agent management requires an open workspace.');
         }
         
         return path.join(workspaceFolders[0].uri.fsPath, this.LOCAL_AGENTS_DIR);
+    }
+
+    hasWorkspace(): boolean {
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        return !!(workspaceFolders && workspaceFolders.length > 0);
     }
 
     getGlobalAgentsPath(): string {

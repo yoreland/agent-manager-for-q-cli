@@ -66,22 +66,31 @@ export class AgentConfigService implements IAgentConfigService {
         // Get workspace root
         const workspaceFolders = vscode.workspace.workspaceFolders;
         if (!workspaceFolders || workspaceFolders.length === 0) {
-            throw new Error('No workspace folder found. Agent management requires an open workspace.');
+            // No workspace - only global agents will be available
+            this.workspaceRoot = '';
+            this.agentDirectoryPath = '';
+            this.logger.info('No workspace found - only global agents will be available');
+        } else {
+            this.workspaceRoot = workspaceFolders[0]!.uri.fsPath;
+            this.agentDirectoryPath = path.join(this.workspaceRoot, AGENT_CONSTANTS.AGENT_DIRECTORY);
+            
+            this.logger.debug('AgentConfigService initialized', {
+                workspaceRoot: this.workspaceRoot,
+                agentDirectory: this.agentDirectoryPath
+            });
         }
-        
-        this.workspaceRoot = workspaceFolders[0]!.uri.fsPath;
-        this.agentDirectoryPath = path.join(this.workspaceRoot, AGENT_CONSTANTS.AGENT_DIRECTORY);
-        
-        this.logger.debug('AgentConfigService initialized', {
-            workspaceRoot: this.workspaceRoot,
-            agentDirectory: this.agentDirectoryPath
-        });
     }
 
     /**
      * Ensure the agent directory exists, create if it doesn't
      */
     async ensureAgentDirectory(): Promise<void> {
+        // Skip if no workspace (only global agents available)
+        if (!this.agentDirectoryPath) {
+            this.logger.debug('No workspace - skipping local agent directory creation');
+            return;
+        }
+        
         try {
             await fs.access(this.agentDirectoryPath);
             this.logger.debug('Agent directory already exists', { path: this.agentDirectoryPath });
