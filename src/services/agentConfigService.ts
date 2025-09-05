@@ -343,8 +343,9 @@ export class AgentConfigService implements IAgentConfigService {
             }
         }
 
-        if (!config.$schema || typeof config.$schema !== 'string') {
-            errors.push('Schema reference ($schema) is required and must be a string');
+        // Schema is optional for backward compatibility with existing agent files
+        if (config.$schema && typeof config.$schema !== 'string') {
+            errors.push('Schema reference ($schema) must be a string if provided');
         }
 
         if (typeof config.description !== 'string') {
