@@ -3424,20 +3424,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                                                 <p>Show last 3 git commits</p>
                                             </div>
                                         </div>
-                                        <div class="template-card" data-template="package-info">
-                                            <div class="template-icon">📦</div>
-                                            <div class="template-info">
-                                                <h4>Package Info</h4>
-                                                <p>Show package.json name and version</p>
-                                            </div>
-                                        </div>
-                                        <div class="template-card" data-template="working-directory">
-                                            <div class="template-icon">📂</div>
-                                            <div class="template-info">
-                                                <h4>Working Directory</h4>
-                                                <p>Show current directory path</p>
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
                                 
@@ -3845,25 +3831,9 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                                 id: Date.now().toString(),
                                 name: 'Recent Commits',
                                 trigger: 'agentSpawn',
-                                command: 'git log --oneline -3',
+                                command: 'git --no-pager log --oneline -3',
                                 isCustom: false,
                                 templateId: 'recent-commits'
-                            },
-                            'package-info': {
-                                id: Date.now().toString(),
-                                name: 'Package Info',
-                                trigger: 'agentSpawn',
-                                command: 'if [ -f package.json ]; then echo "$(jq -r .name package.json) v$(jq -r .version package.json)"; fi',
-                                isCustom: false,
-                                templateId: 'package-info'
-                            },
-                            'working-directory': {
-                                id: Date.now().toString(),
-                                name: 'Working Directory',
-                                trigger: 'agentSpawn',
-                                command: 'pwd',
-                                isCustom: false,
-                                templateId: 'working-directory'
                             }
                         };
                         
