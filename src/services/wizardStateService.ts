@@ -1,4 +1,4 @@
-import { WizardState, WizardStep, ValidationResult, BasicPropertiesData, AgentLocationData, ToolsSelectionData, ResourcesData } from '../types/wizard';
+import { WizardState, WizardStep, ValidationResult, BasicPropertiesData, AgentLocationData, ToolsSelectionData, ResourcesData, HookConfigurationData, AgentHook } from '../types/wizard';
 import { ExtensionLogger } from './logger';
 import * as vscode from 'vscode';
 
@@ -13,6 +13,10 @@ export interface IWizardStateService {
     isStepCompleted(step: WizardStep): boolean;
     reset(): void;
     clearState(): void;
+    updateHookConfiguration(data: Partial<HookConfigurationData>): void;
+    addHook(hook: AgentHook): void;
+    removeHook(hookId: string): void;
+    updateHook(hookId: string, updates: Partial<AgentHook>): void;
 }
 
 export class WizardStateService implements IWizardStateService {
@@ -42,7 +46,8 @@ export class WizardStateService implements IWizardStateService {
                state.stepData.basicProperties &&
                state.stepData.agentLocation &&
                state.stepData.toolsSelection &&
-               state.stepData.resources;
+               state.stepData.resources &&
+               state.stepData.hookConfiguration;
     }
 
     private persistState(): void {
@@ -117,7 +122,7 @@ export class WizardStateService implements IWizardStateService {
     private createInitialState(): WizardState {
         return {
             currentStep: WizardStep.BasicProperties,
-            totalSteps: 5,
+            totalSteps: 6,
             stepData: {
                 basicProperties: { name: '', description: '', prompt: '' },
                 agentLocation: { location: 'local' },
@@ -131,10 +136,45 @@ export class WizardStateService implements IWizardStateService {
                         'file://README.md', 
                         'file://.amazonq/rules/**/*.md'
                     ] 
-                }
+                },
+                hookConfiguration: { hooks: [], skipHooks: false }
             },
             validation: {},
             isComplete: false
         };
+    }
+
+    updateHookConfiguration(data: Partial<HookConfigurationData>): void {
+        this.state.stepData.hookConfiguration = {
+            ...this.state.stepData.hookConfiguration,
+            ...data
+        };
+        this.persistState();
+        this.logger.debug('Hook configuration updated', { data });
+    }
+    
+    addHook(hook: AgentHook): void {
+        this.state.stepData.hookConfiguration.hooks.push(hook);
+        this.persistState();
+        this.logger.debug('Hook added', { hookId: hook.id });
+    }
+    
+    removeHook(hookId: string): void {
+        this.state.stepData.hookConfiguration.hooks = 
+            this.state.stepData.hookConfiguration.hooks.filter(h => h.id !== hookId);
+        this.persistState();
+        this.logger.debug('Hook removed', { hookId });
+    }
+    
+    updateHook(hookId: string, updates: Partial<AgentHook>): void {
+        const hookIndex = this.state.stepData.hookConfiguration.hooks.findIndex(h => h.id === hookId);
+        if (hookIndex !== -1) {
+            this.state.stepData.hookConfiguration.hooks[hookIndex] = {
+                ...this.state.stepData.hookConfiguration.hooks[hookIndex],
+                ...updates
+            };
+            this.persistState();
+            this.logger.debug('Hook updated', { hookId, updates });
+        }
     }
 }

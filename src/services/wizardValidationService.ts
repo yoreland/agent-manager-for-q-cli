@@ -1,6 +1,7 @@
-import { WizardStep, ValidationResult, WizardState } from '../types/wizard';
+import { WizardStep, ValidationResult, WizardState, HookConfigurationData } from '../types/wizard';
 import { ExtensionLogger } from './logger';
 import { IAgentConfigService } from './agentConfigService';
+import { HookValidationService } from './hookValidationService';
 
 export interface IWizardValidationService {
     validateStep(step: WizardStep, stepData: WizardState['stepData']): Promise<ValidationResult>;
@@ -10,8 +11,11 @@ export interface IWizardValidationService {
 
 export class WizardValidationService implements IWizardValidationService {
     private agentConfigService?: IAgentConfigService;
+    private hookValidationService: HookValidationService;
 
-    constructor(private readonly logger: ExtensionLogger) {}
+    constructor(private readonly logger: ExtensionLogger) {
+        this.hookValidationService = new HookValidationService();
+    }
 
     setAgentConfigService(service: IAgentConfigService): void {
         this.agentConfigService = service;
@@ -43,6 +47,12 @@ export class WizardValidationService implements IWizardValidationService {
                 const resourcesValidation = await this.validateResources(stepData.resources);
                 errors.push(...resourcesValidation.errors);
                 warnings.push(...(resourcesValidation.warnings || []));
+                break;
+
+            case WizardStep.HookConfiguration:
+                const hookValidation = this.validateHookConfiguration(stepData.hookConfiguration);
+                errors.push(...hookValidation.errors);
+                warnings.push(...(hookValidation.warnings || []));
                 break;
 
             case WizardStep.Summary:
@@ -165,5 +175,26 @@ export class WizardValidationService implements IWizardValidationService {
         }
 
         return { isValid: errors.length === 0, errors, warnings };
+    }
+
+    private validateHookConfiguration(data: HookConfigurationData): ValidationResult {
+        // Hook을 건너뛰는 경우 항상 유효
+        if (data.skipHooks) {
+            return { isValid: true, errors: [] };
+        }
+        
+        // Hook이 없어도 유효 (선택사항)
+        if (data.hooks.length === 0) {
+            return { isValid: true, errors: [] };
+        }
+        
+        // Hook 목록 유효성 검사
+        const hookResult = this.hookValidationService.validateHookList(data.hooks);
+        
+        return {
+            isValid: hookResult.isValid,
+            errors: hookResult.errors,
+            warnings: hookResult.warnings
+        };
     }
 }

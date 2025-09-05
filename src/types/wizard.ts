@@ -2,12 +2,15 @@
  * Wizard framework types for step-by-step agent creation
  */
 
+import { HookConfigurationData } from './hook';
+
 export enum WizardStep {
     BasicProperties = 1,
     AgentLocation = 2,
     ToolsSelection = 3,
     Resources = 4,
-    Summary = 5
+    HookConfiguration = 5,
+    Summary = 6
 }
 
 export interface WizardState {
@@ -18,6 +21,7 @@ export interface WizardState {
         agentLocation: AgentLocationData;
         toolsSelection: ToolsSelectionData;
         resources: ResourcesData;
+        hookConfiguration: HookConfigurationData;
     };
     validation: {
         [key in WizardStep]?: ValidationResult;
