@@ -215,6 +215,11 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     this.stateService.updateStepData('resources', data.resources);
                 }
                 break;
+            case WizardStep.HookConfiguration:
+                if (data.hookConfiguration) {
+                    this.stateService.updateStepData('hookConfiguration', data.hookConfiguration);
+                }
+                break;
         }
 
         // Don't send stateUpdate - just store the data silently
@@ -311,7 +316,7 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
     }
 
     private buildAgentConfig(stepData: WizardState['stepData']): any {
-        const { basicProperties, toolsSelection, resources } = stepData;
+        const { basicProperties, toolsSelection, resources, hookConfiguration } = stepData;
         
         const config: any = {
             $schema: "https://raw.githubusercontent.com/aws/amazon-q-developer-cli/refs/heads/main/schemas/agent-v1.json",
@@ -323,7 +328,6 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
             toolAliases: {},
             allowedTools: ["fs_read"],
             resources: [],
-            hooks: {},
             toolsSettings: {},
             useLegacyMcpJson: true
         };
@@ -337,6 +341,23 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
         // Add resources if any are provided
         if (resources.resources.length > 0) {
             config.resources = resources.resources;
+        }
+
+        // Add hooks if any are configured and not skipped
+        if (hookConfiguration && !hookConfiguration.skipHooks && hookConfiguration.hooks.length > 0) {
+            const hooks: any = {};
+            
+            // Group hooks by trigger type
+            hookConfiguration.hooks.forEach(hook => {
+                if (!hooks[hook.trigger]) {
+                    hooks[hook.trigger] = [];
+                }
+                hooks[hook.trigger].push({
+                    command: hook.command
+                });
+            });
+            
+            config.hooks = hooks;
         }
 
         return config;
@@ -1848,6 +1869,294 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         background: var(--vscode-inputValidation-errorBackground);
                     }
                     
+                    /* Hook Configuration Styling */
+                    .hook-configuration-section {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 24px;
+                    }
+                    
+                    .hook-header h2 {
+                        margin: 0 0 8px 0;
+                        font-size: 20px;
+                        color: var(--vscode-foreground);
+                    }
+                    
+                    .hook-header p {
+                        margin: 0;
+                        color: var(--vscode-descriptionForeground);
+                    }
+                    
+                    .hook-skip-option {
+                        padding: 16px;
+                        background: var(--vscode-editor-background);
+                        border: 1px solid var(--vscode-input-border);
+                        border-radius: 6px;
+                    }
+                    
+                    .template-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                        gap: 16px;
+                        margin-top: 16px;
+                    }
+                    
+                    .template-card {
+                        padding: 16px;
+                        border: 1px solid var(--vscode-input-border);
+                        border-radius: 6px;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                        background: var(--vscode-editor-background);
+                    }
+                    
+                    .template-card:hover {
+                        border-color: var(--vscode-focusBorder);
+                        background: var(--vscode-list-hoverBackground);
+                    }
+                    
+                    .template-card.custom {
+                        border-style: dashed;
+                    }
+                    
+                    .template-icon {
+                        font-size: 24px;
+                        margin-bottom: 8px;
+                    }
+                    
+                    .template-info h4 {
+                        margin: 0 0 4px 0;
+                        font-size: 14px;
+                        color: var(--vscode-foreground);
+                    }
+                    
+                    .template-info p {
+                        margin: 0;
+                        font-size: 12px;
+                        color: var(--vscode-descriptionForeground);
+                    }
+                    
+                    .empty-hooks {
+                        text-align: center;
+                        padding: 40px 20px;
+                        color: var(--vscode-descriptionForeground);
+                    }
+                    
+                    .empty-hooks .empty-icon {
+                        font-size: 48px;
+                        margin-bottom: 16px;
+                        display: block;
+                    }
+                    
+                    .hooks-grid {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 12px;
+                    }
+                    
+                    .hook-item {
+                        padding: 16px;
+                        border: 1px solid var(--vscode-input-border);
+                        border-radius: 6px;
+                        background: var(--vscode-editor-background);
+                    }
+                    
+                    .hook-header {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        margin-bottom: 8px;
+                    }
+                    
+                    .hook-name {
+                        font-weight: 600;
+                        color: var(--vscode-foreground);
+                    }
+                    
+                    .hook-actions {
+                        display: flex;
+                        gap: 8px;
+                    }
+                    
+                    .edit-hook-btn, .remove-hook-btn {
+                        background: none;
+                        border: none;
+                        cursor: pointer;
+                        padding: 4px;
+                        border-radius: 4px;
+                        font-size: 14px;
+                    }
+                    
+                    .edit-hook-btn:hover, .remove-hook-btn:hover {
+                        background: var(--vscode-list-hoverBackground);
+                    }
+                    
+                    .trigger-badge {
+                        display: inline-block;
+                        padding: 2px 8px;
+                        border-radius: 12px;
+                        font-size: 11px;
+                        font-weight: 600;
+                        margin-right: 8px;
+                    }
+                    
+                    .trigger-badge.agentSpawn {
+                        background: var(--vscode-charts-blue);
+                        color: white;
+                    }
+                    
+                    .trigger-badge.userPromptSubmit {
+                        background: var(--vscode-charts-green);
+                        color: white;
+                    }
+                    
+                    .hook-command {
+                        font-family: var(--vscode-editor-font-family);
+                        font-size: 12px;
+                        background: var(--vscode-textCodeBlock-background);
+                        padding: 8px;
+                        border-radius: 4px;
+                        color: var(--vscode-textPreformat-foreground);
+                        margin-top: 8px;
+                    }
+                    
+                    .hook-modal {
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0, 0, 0, 0.5);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        z-index: 1000;
+                    }
+                    
+                    .hook-modal-content {
+                        background: var(--vscode-editor-background);
+                        border: 1px solid var(--vscode-input-border);
+                        border-radius: 6px;
+                        width: 90%;
+                        max-width: 500px;
+                        max-height: 80vh;
+                        overflow-y: auto;
+                    }
+                    
+                    .hook-modal-header {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        padding: 16px;
+                        border-bottom: 1px solid var(--vscode-input-border);
+                    }
+                    
+                    .hook-modal-header h3 {
+                        margin: 0;
+                        color: var(--vscode-foreground);
+                    }
+                    
+                    .close-modal {
+                        background: none;
+                        border: none;
+                        font-size: 18px;
+                        cursor: pointer;
+                        color: var(--vscode-foreground);
+                    }
+                    
+                    .hook-modal-body {
+                        padding: 16px;
+                    }
+                    
+                    .form-group {
+                        margin-bottom: 16px;
+                    }
+                    
+                    .form-group label {
+                        display: block;
+                        margin-bottom: 4px;
+                        font-weight: 600;
+                        color: var(--vscode-foreground);
+                    }
+                    
+                    .form-group input,
+                    .form-group select,
+                    .form-group textarea {
+                        width: 100%;
+                        padding: 8px;
+                        border: 1px solid var(--vscode-input-border);
+                        border-radius: 4px;
+                        background: var(--vscode-input-background);
+                        color: var(--vscode-input-foreground);
+                        font-family: var(--vscode-font-family);
+                    }
+                    
+                    .hook-modal-footer {
+                        display: flex;
+                        justify-content: flex-end;
+                        gap: 8px;
+                        padding: 16px;
+                        border-top: 1px solid var(--vscode-input-border);
+                    }
+                    
+                    .cancel-btn, .save-btn {
+                        padding: 8px 16px;
+                        border: 1px solid var(--vscode-input-border);
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-family: var(--vscode-font-family);
+                    }
+                    
+                    .cancel-btn {
+                        background: var(--vscode-button-secondaryBackground);
+                        color: var(--vscode-button-secondaryForeground);
+                    }
+                    
+                    .save-btn {
+                        background: var(--vscode-button-background);
+                        color: var(--vscode-button-foreground);
+                    }
+                    
+                    .hooks-summary {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 12px;
+                    }
+                    
+                    .hooks-count {
+                        font-weight: 600;
+                        color: var(--vscode-foreground);
+                    }
+                    
+                    .hook-preview-item {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        padding: 8px;
+                        background: var(--vscode-textCodeBlock-background);
+                        border-radius: 4px;
+                        margin-bottom: 4px;
+                    }
+                    
+                    .hook-preview-trigger {
+                        font-size: 16px;
+                    }
+                    
+                    .hook-preview-name {
+                        font-size: 12px;
+                        color: var(--vscode-foreground);
+                    }
+                    
+                    .validation-errors {
+                        margin-top: 8px;
+                    }
+                    
+                    .error-message {
+                        color: var(--vscode-errorForeground);
+                        font-size: 12px;
+                        margin-bottom: 4px;
+                    }
+                    
                     /* Summary Page Styling */
                     .summary-sections {
                         display: flex;
@@ -2084,7 +2393,8 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         <div class="step" data-step="2">2. Location</div>
                         <div class="step" data-step="3">3. Tools</div>
                         <div class="step" data-step="4">4. Resources</div>
-                        <div class="step" data-step="5">5. Summary</div>
+                        <div class="step" data-step="5">5. Hooks</div>
+                        <div class="step" data-step="6">6. Summary</div>
                     </div>
                     
                     <div class="step-content" id="stepContent">
@@ -2261,6 +2571,10 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                                 setupResourcesHandlers();
                                 break;
                             case 5:
+                                content.innerHTML = getHookConfigurationHTML();
+                                setupHookConfigurationHandlers();
+                                break;
+                            case 6:
                                 content.innerHTML = getSummaryHTML();
                                 break;
                         }
@@ -3058,6 +3372,105 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         \`;
                     }
                     
+                    function getHookConfigurationHTML() {
+                        const data = wizardState?.stepData?.hookConfiguration || { hooks: [], skipHooks: false };
+                        return \`
+                            <div class="hook-configuration-section">
+                                <div class="hook-header">
+                                    <h2>Context Hooks</h2>
+                                    <p>Configure commands that run automatically to provide context to your agent.</p>
+                                </div>
+                                
+                                <div class="hook-skip-option">
+                                    <label class="checkbox-container">
+                                        <input type="checkbox" id="skipHooks" \${data.skipHooks ? 'checked' : ''}>
+                                        <span class="checkmark"></span>
+                                        Skip Hook configuration (you can add them later)
+                                    </label>
+                                </div>
+                                
+                                <div class="hook-content" \${data.skipHooks ? 'style="display: none;"' : ''}>
+                                    <div class="hook-templates">
+                                        <h3>Quick Templates</h3>
+                                        <div class="template-grid">
+                                            <div class="template-card" data-template="git-status">
+                                                <div class="template-icon">📊</div>
+                                                <div class="template-info">
+                                                    <h4>Git Status</h4>
+                                                    <p>Show git status with each prompt</p>
+                                                </div>
+                                            </div>
+                                            <div class="template-card" data-template="project-info">
+                                                <div class="template-icon">📁</div>
+                                                <div class="template-info">
+                                                    <h4>Project Info</h4>
+                                                    <p>Display project name at conversation start</p>
+                                                </div>
+                                            </div>
+                                            <div class="template-card" data-template="current-branch">
+                                                <div class="template-icon">🌿</div>
+                                                <div class="template-info">
+                                                    <h4>Current Branch</h4>
+                                                    <p>Show current git branch at start</p>
+                                                </div>
+                                            </div>
+                                            <div class="template-card custom" data-template="custom">
+                                                <div class="template-icon">⚙️</div>
+                                                <div class="template-info">
+                                                    <h4>Custom Hook</h4>
+                                                    <p>Create your own hook</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="hook-list">
+                                        <h3>Configured Hooks</h3>
+                                        <div id="hooksList">
+                                            \${getHooksListHTML(data.hooks)}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        \`;
+                    }
+                    
+                    function getHooksListHTML(hooks) {
+                        if (hooks.length === 0) {
+                            return \`
+                                <div class="empty-hooks">
+                                    <div class="empty-icon">🪝</div>
+                                    <div class="empty-text">No hooks configured yet</div>
+                                    <div class="empty-subtext">Select a template above to get started</div>
+                                </div>
+                            \`;
+                        }
+                        
+                        return \`
+                            <div class="hooks-grid">
+                                \${hooks.map((hook, index) => \`
+                                    <div class="hook-item" data-index="\${index}">
+                                        <div class="hook-header">
+                                            <div class="hook-name">\${hook.name}</div>
+                                            <div class="hook-actions">
+                                                <button class="edit-hook-btn" onclick="editHook(\${index})">✏️</button>
+                                                <button class="remove-hook-btn" onclick="removeHook(\${index})">🗑️</button>
+                                            </div>
+                                        </div>
+                                        <div class="hook-details">
+                                            <div class="hook-trigger">
+                                                <span class="trigger-badge \${hook.trigger}">
+                                                    \${hook.trigger === 'agentSpawn' ? '🚀 On Start' : '💬 Per Prompt'}
+                                                </span>
+                                            </div>
+                                            <div class="hook-command">\${hook.command}</div>
+                                        </div>
+                                    </div>
+                                \`).join('')}
+                            </div>
+                        \`;
+                    }
+                    
                     function addManualPath() {
                         const input = document.getElementById('manualPath');
                         const path = input.value.trim();
@@ -3169,7 +3582,7 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                     
                     function getSummaryHTML() {
                         const data = wizardState?.stepData || {};
-                        const { basicProperties, agentLocation, toolsSelection, resources } = data;
+                        const { basicProperties, agentLocation, toolsSelection, resources, hookConfiguration } = data;
                         
                         return \`
                             <div class="summary-sections">
@@ -3235,6 +3648,16 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                                     </div>
                                     <div class="summary-content">
                                         \${getResourcesSummaryHTML(resources)}
+                                    </div>
+                                </div>
+                                
+                                <div class="summary-section">
+                                    <div class="summary-header">
+                                        <h3>Context Hooks</h3>
+                                        <button class="edit-btn" onclick="goToStep(5)">Edit</button>
+                                    </div>
+                                    <div class="summary-content">
+                                        \${getHooksSummaryHTML(hookConfiguration)}
                                     </div>
                                 </div>
                             </div>
@@ -3317,11 +3740,285 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
                         \`;
                     }
                     
+                    function getHooksSummaryHTML(hookConfiguration) {
+                        if (!hookConfiguration || hookConfiguration.skipHooks) {
+                            return \`
+                                <div class="empty-summary">
+                                    <span class="empty-icon">🪝</span>
+                                    <span>Hooks skipped</span>
+                                </div>
+                            \`;
+                        }
+                        
+                        const hooks = hookConfiguration.hooks || [];
+                        
+                        if (hooks.length === 0) {
+                            return \`
+                                <div class="empty-summary">
+                                    <span class="empty-icon">🪝</span>
+                                    <span>No hooks configured</span>
+                                </div>
+                            \`;
+                        }
+                        
+                        return \`
+                            <div class="hooks-summary">
+                                <div class="hooks-count">\${hooks.length} hook(s) configured</div>
+                                <div class="hooks-preview">
+                                    \${hooks.map(hook => \`
+                                        <div class="hook-preview-item">
+                                            <span class="hook-preview-trigger \${hook.trigger}">
+                                                \${hook.trigger === 'agentSpawn' ? '🚀' : '💬'}
+                                            </span>
+                                            <span class="hook-preview-name">\${hook.name}</span>
+                                        </div>
+                                    \`).join('')}
+                                </div>
+                            </div>
+                        \`;
+                    }
+                    
                     function goToStep(stepNumber) {
                         vscode.postMessage({
                             type: 'stepChanged',
                             step: stepNumber
                         });
+                    }
+                    
+                    function setupHookConfigurationHandlers() {
+                        // Skip hooks checkbox handler
+                        const skipHooksCheckbox = document.getElementById('skipHooks');
+                        if (skipHooksCheckbox) {
+                            skipHooksCheckbox.addEventListener('change', function() {
+                                const hookContent = document.querySelector('.hook-content');
+                                if (hookContent) {
+                                    hookContent.style.display = this.checked ? 'none' : 'block';
+                                }
+                                
+                                updateHookConfiguration({ skipHooks: this.checked });
+                            });
+                        }
+                        
+                        // Template card click handlers
+                        document.querySelectorAll('.template-card').forEach(card => {
+                            card.addEventListener('click', function() {
+                                const templateId = this.dataset.template;
+                                if (templateId === 'custom') {
+                                    showCustomHookDialog();
+                                } else {
+                                    addTemplateHook(templateId);
+                                }
+                            });
+                        });
+                    }
+                    
+                    function addTemplateHook(templateId) {
+                        const templates = {
+                            'git-status': {
+                                id: Date.now().toString(),
+                                name: 'Git Status',
+                                trigger: 'userPromptSubmit',
+                                command: 'git status --short',
+                                isCustom: false,
+                                templateId: 'git-status'
+                            },
+                            'project-info': {
+                                id: Date.now().toString(),
+                                name: 'Project Info',
+                                trigger: 'agentSpawn',
+                                command: 'echo "Project: $(basename $(pwd))"',
+                                isCustom: false,
+                                templateId: 'project-info'
+                            },
+                            'current-branch': {
+                                id: Date.now().toString(),
+                                name: 'Current Branch',
+                                trigger: 'agentSpawn',
+                                command: 'git branch --show-current',
+                                isCustom: false,
+                                templateId: 'current-branch'
+                            }
+                        };
+                        
+                        const template = templates[templateId];
+                        if (template) {
+                            const currentHooks = wizardState?.stepData?.hookConfiguration?.hooks || [];
+                            
+                            // Check for duplicates
+                            if (currentHooks.some(h => h.templateId === templateId)) {
+                                showHookError('This template is already added');
+                                return;
+                            }
+                            
+                            const newHooks = [...currentHooks, template];
+                            updateHookConfiguration({ hooks: newHooks });
+                            refreshHooksList();
+                        }
+                    }
+                    
+                    function showCustomHookDialog() {
+                        // Create modal dialog for custom hook
+                        const modal = document.createElement('div');
+                        modal.className = 'hook-modal';
+                        modal.innerHTML = \`
+                            <div class="hook-modal-content">
+                                <div class="hook-modal-header">
+                                    <h3>Create Custom Hook</h3>
+                                    <button class="close-modal" onclick="closeHookModal()">✕</button>
+                                </div>
+                                <div class="hook-modal-body">
+                                    <div class="form-group">
+                                        <label for="hookName">Hook Name</label>
+                                        <input type="text" id="hookName" placeholder="Enter hook name">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="hookTrigger">Trigger</label>
+                                        <select id="hookTrigger">
+                                            <option value="agentSpawn">On conversation start</option>
+                                            <option value="userPromptSubmit">With each prompt</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="hookCommand">Command</label>
+                                        <textarea id="hookCommand" placeholder="Enter shell command" rows="3"></textarea>
+                                    </div>
+                                    <div class="hook-validation-messages" id="hookValidation"></div>
+                                </div>
+                                <div class="hook-modal-footer">
+                                    <button class="cancel-btn" onclick="closeHookModal()">Cancel</button>
+                                    <button class="save-btn" onclick="saveCustomHook()">Save Hook</button>
+                                </div>
+                            </div>
+                        \`;
+                        
+                        document.body.appendChild(modal);
+                        
+                        // Focus on name input
+                        setTimeout(() => {
+                            document.getElementById('hookName').focus();
+                        }, 100);
+                    }
+                    
+                    function closeHookModal() {
+                        const modal = document.querySelector('.hook-modal');
+                        if (modal) {
+                            modal.remove();
+                        }
+                    }
+                    
+                    function saveCustomHook() {
+                        const name = document.getElementById('hookName').value.trim();
+                        const trigger = document.getElementById('hookTrigger').value;
+                        const command = document.getElementById('hookCommand').value.trim();
+                        
+                        if (!name || !command) {
+                            showHookValidation(['Hook name and command are required']);
+                            return;
+                        }
+                        
+                        const hook = {
+                            id: Date.now().toString(),
+                            name,
+                            trigger,
+                            command,
+                            isCustom: true
+                        };
+                        
+                        const currentHooks = wizardState?.stepData?.hookConfiguration?.hooks || [];
+                        const newHooks = [...currentHooks, hook];
+                        
+                        updateHookConfiguration({ hooks: newHooks });
+                        refreshHooksList();
+                        closeHookModal();
+                    }
+                    
+                    function editHook(index) {
+                        const hooks = wizardState?.stepData?.hookConfiguration?.hooks || [];
+                        const hook = hooks[index];
+                        if (!hook) return;
+                        
+                        // Show edit dialog (similar to custom hook dialog)
+                        showCustomHookDialog();
+                        
+                        // Pre-fill with existing values
+                        setTimeout(() => {
+                            document.getElementById('hookName').value = hook.name;
+                            document.getElementById('hookTrigger').value = hook.trigger;
+                            document.getElementById('hookCommand').value = hook.command;
+                            
+                            // Change save button to update
+                            const saveBtn = document.querySelector('.save-btn');
+                            saveBtn.textContent = 'Update Hook';
+                            saveBtn.onclick = () => updateExistingHook(index);
+                        }, 100);
+                    }
+                    
+                    function updateExistingHook(index) {
+                        const name = document.getElementById('hookName').value.trim();
+                        const trigger = document.getElementById('hookTrigger').value;
+                        const command = document.getElementById('hookCommand').value.trim();
+                        
+                        if (!name || !command) {
+                            showHookValidation(['Hook name and command are required']);
+                            return;
+                        }
+                        
+                        const hooks = wizardState?.stepData?.hookConfiguration?.hooks || [];
+                        hooks[index] = {
+                            ...hooks[index],
+                            name,
+                            trigger,
+                            command
+                        };
+                        
+                        updateHookConfiguration({ hooks });
+                        refreshHooksList();
+                        closeHookModal();
+                    }
+                    
+                    function removeHook(index) {
+                        const hooks = wizardState?.stepData?.hookConfiguration?.hooks || [];
+                        const newHooks = hooks.filter((_, i) => i !== index);
+                        
+                        updateHookConfiguration({ hooks: newHooks });
+                        refreshHooksList();
+                    }
+                    
+                    function updateHookConfiguration(data) {
+                        if (wizardState?.stepData?.hookConfiguration) {
+                            Object.assign(wizardState.stepData.hookConfiguration, data);
+                        }
+                        
+                        vscode.postMessage({
+                            type: 'dataUpdated',
+                            data: {
+                                hookConfiguration: wizardState.stepData.hookConfiguration
+                            }
+                        });
+                    }
+                    
+                    function refreshHooksList() {
+                        const hooksList = document.getElementById('hooksList');
+                        if (hooksList) {
+                            const hooks = wizardState?.stepData?.hookConfiguration?.hooks || [];
+                            hooksList.innerHTML = getHooksListHTML(hooks);
+                        }
+                    }
+                    
+                    function showHookError(message) {
+                        // Show error message (similar to resource error)
+                        console.error('Hook error:', message);
+                    }
+                    
+                    function showHookValidation(errors) {
+                        const validationDiv = document.getElementById('hookValidation');
+                        if (validationDiv && errors.length > 0) {
+                            validationDiv.innerHTML = \`
+                                <div class="validation-errors">
+                                    \${errors.map(error => \`<div class="error-message">⚠️ \${error}</div>\`).join('')}
+                                </div>
+                            \`;
+                        }
                     }
                     
                     // Initialize
