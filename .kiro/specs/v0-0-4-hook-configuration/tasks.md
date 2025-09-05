@@ -66,21 +66,21 @@
   - 오류 상황에서도 에이전트 생성을 계속할 수 있는 복구 로직
   - _요구사항: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-- [ ] 11. Hook 설정 단계 CSS 스타일링
+- [x] 11. Hook 설정 단계 CSS 스타일링
   - Hook 설정 UI에 대한 VS Code 테마 호환 스타일 추가
   - 템플릿 선택 카드 스타일 구현
   - Hook 목록 및 폼 요소 스타일링
   - 유효성 검사 메시지 및 경고 스타일 추가
   - _요구사항: 1.1, 2.1, 3.1_
 
-- [ ] 12. Hook 설정 기능 단위 테스트 작성
+- [x] 12. Hook 설정 기능 단위 테스트 작성
   - HookTemplateService 테스트 케이스 작성
   - HookValidationService 테스트 케이스 작성
   - WizardStateService Hook 관련 메서드 테스트
   - WizardValidationService Hook 검증 테스트
   - _요구사항: 모든 요구사항의 검증_
 
-- [ ] 13. Hook 설정 통합 테스트 작성
+- [x] 13. Hook 설정 통합 테스트 작성
   - 전체 마법사 플로우에서 Hook 설정 단계 테스트
   - Hook 설정이 포함된 에이전트 JSON 생성 테스트
   - Hook 건너뛰기 시나리오 테스트
