@@ -35,6 +35,34 @@ src/
 │   └── commands/           # Command handlers
 ├── providers/              # Tree data providers
 └── services/               # Application services
+    ├── hookTemplateService.ts    # Hook template management
+    ├── hookValidationService.ts  # Hook security validation
+    ├── wizardStateService.ts     # Wizard state management
+    └── wizardValidationService.ts # Wizard step validation
+```
+
+### Hook Configuration Architecture
+
+The Hook configuration system follows a layered approach with clear separation of concerns:
+
+```
+Hook Layer Architecture:
+├── UI Layer (wizardWebviewProvider.ts)
+│   ├── Template Selection Interface
+│   ├── Custom Hook Creation Modal
+│   └── Hook Management UI
+├── Validation Layer
+│   ├── HookValidationService (Security & Syntax)
+│   ├── WizardValidationService (Integration)
+│   └── Real-time Validation Feedback
+├── State Management Layer
+│   ├── WizardStateService (Hook CRUD)
+│   ├── Hook Configuration State
+│   └── Persistence & Recovery
+└── Template Layer
+    ├── HookTemplateService (Predefined Templates)
+    ├── Template Categories (Git, Project, System)
+    └── Template Metadata & Security Levels
 ```
 
 ### Key Architectural Patterns
@@ -164,7 +192,31 @@ src/
 - **Improved Empty State**: Updated message to guide users to the + button in title bar
 - **Context Value Mapping**: Fixed `viewItem` mapping from `agent` to `agentItem` for proper menu integration
 
+### Hook Configuration Enhancements (v0.0.4)
+
+#### Context Hook System Implementation
+- **Template-Based Hook Creation**: Pre-defined templates for common scenarios
+  - Git Status Hook (userPromptSubmit trigger)
+  - Project Info Hook (agentSpawn trigger)  
+  - Current Branch Hook (agentSpawn trigger)
+- **Custom Hook Creation**: Modal dialog interface for creating custom hooks
+- **Real-time Security Validation**: Command analysis for dangerous operations
+- **Hook Management UI**: Full CRUD operations with inline editing
+- **Skip Hook Option**: Optional configuration for quick agent setup
+
 #### Technical Implementation
+- **Hook Services Architecture**: 
+  ```typescript
+  HookTemplateService     // Template management
+  HookValidationService   // Security validation
+  WizardStateService      // State management with Hook CRUD
+  WizardValidationService // Integration validation
+  ```
+- **JSON Generation**: Proper mapping to agentSpawn/userPromptSubmit triggers
+- **Wizard Integration**: Added HookConfiguration step (5/6) in agent creation flow
+- **Error Recovery**: Comprehensive error handling with user-friendly recovery options
+
+#### UI Integration Technical Details
 - **Package.json Menu Configuration**: 
   ```json
   "view/item/context": [

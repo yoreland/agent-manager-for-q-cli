@@ -29,11 +29,17 @@ src/
 ├── services/               # Business logic services
 │   ├── contextManager.ts  # Core context management logic
 │   ├── agentConfigService.ts   # Agent configuration file handling
-│   └── fileSystemService.ts    # File system operations
+│   ├── fileSystemService.ts    # File system operations
+│   ├── hookTemplateService.ts  # Hook template management
+│   ├── hookValidationService.ts # Hook security validation
+│   ├── wizardStateService.ts   # Wizard state management
+│   └── wizardValidationService.ts # Wizard step validation
 ├── types/                  # TypeScript type definitions
 │   ├── context.ts         # Context-related types
 │   ├── qcli.ts           # Q CLI configuration types
-│   └── extension.ts       # Extension-specific types
+│   ├── extension.ts       # Extension-specific types
+│   ├── hook.ts            # Hook configuration types
+│   └── wizard.ts          # Wizard framework types
 ├── utils/                  # Utility functions
 │   ├── pathUtils.ts       # Path manipulation utilities
 │   ├── jsonUtils.ts       # JSON parsing and writing utilities

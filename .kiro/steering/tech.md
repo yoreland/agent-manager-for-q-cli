@@ -29,6 +29,13 @@
 - **Async/Await**: All file operations use modern async patterns
 - **Path Resolution**: Cross-platform path handling using Node.js path module
 - **JSON Manipulation**: Safe parsing and writing of agent configuration files
+- **Hook Validation**: Real-time security analysis of shell commands
+
+### Hook Configuration System
+- **Template Engine**: Pre-defined hook templates for common use cases
+- **Security Validation**: Command analysis for dangerous operations
+- **Modal Dialogs**: Custom hook creation with webview modals
+- **State Management**: Wizard-based configuration with validation
 
 ## Technical Constraints
 
@@ -66,6 +73,8 @@
 ### Testing Strategy
 - **Unit Tests**: Jest for isolated component testing
 - **Integration Tests**: VS Code Extension Test Runner
+- **Hook Security Tests**: Validation of dangerous command detection
+- **Wizard Flow Tests**: Complete agent creation scenarios
 - **Manual Testing**: Extension Development Host for user workflow testing
 
 ### Code Quality

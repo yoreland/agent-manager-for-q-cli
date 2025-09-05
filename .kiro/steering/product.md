@@ -24,9 +24,18 @@ VS Code Extension that simplifies Amazon Q Developer CLI agent management throug
 - **Real-time Form Validation**: Immediate feedback with inline error messages
 - **Tool Selection Interface**: Dual-column tool management (Available vs Allowed tools)
 - **Resource Management**: Add/remove file resources with validation
+- **Context Hook Configuration**: Automated context injection with predefined templates
 - **Post-Creation Workflow**: Success actions (Open Config, Create Another, Done)
 - **Accessibility Support**: Full keyboard navigation and screen reader compatibility
 - **Loading States**: Professional loading indicators and progress feedback
+
+### Phase 1.6 (Hook Configuration) - ✅ Completed
+- **Context Hook Management**: Configure commands that run automatically to provide context
+- **Template-based Hooks**: Pre-defined templates for common scenarios (Git status, Project info, Branch info)
+- **Custom Hook Creation**: Create custom hooks with modal dialog interface
+- **Hook Validation**: Real-time security validation and command analysis
+- **Skip Hook Option**: Optional hook configuration for quick agent setup
+- **Hook Editing**: Full CRUD operations for hook management
 
 ### Phase 2 (Future)
 - **Agent Templates**: Pre-configured agent templates for common use cases
@@ -49,9 +58,11 @@ VS Code Extension that simplifies Amazon Q Developer CLI agent management throug
 ## Value Proposition
 Transform Q CLI agent management from complex JSON configuration to an intuitive visual workflow, making Amazon Q Developer agent creation and management accessible to developers of all experience levels.
 
-## Current Capabilities (v1.0.1)
+## Current Capabilities (v0.0.4)
 - **Complete Agent Lifecycle**: Create, view, configure, and execute agents
 - **Professional UI**: VS Code-native interface with comprehensive form validation
+- **Context Hook System**: Automated context injection with template-based and custom hooks
+- **Security Validation**: Real-time command analysis with security warnings
 - **Accessibility Compliant**: WCAG guidelines compliance with full keyboard support
 - **Error Recovery**: Intelligent error handling with user-friendly recovery options
 - **Performance Optimized**: Fast loading, efficient caching, and smooth interactions
