@@ -4,6 +4,8 @@ import {
     AgentLocation,
     LocationSeparatorItem,
     AgentItemWithLocation,
+    AgentSelectionEvent,
+    AgentSelectionEventEmitter,
     AGENT_CONSTANTS, 
     AGENT_COMMANDS 
 } from '../types/agent';
@@ -15,11 +17,15 @@ import { ExtensionLogger } from '../services/logger';
  * Implements VS Code's TreeDataProvider interface to display agent items
  * Handles agent list display, creation button, and empty states
  */
-export class AgentTreeProvider implements vscode.TreeDataProvider<AgentItem | LocationSeparatorItem | CreateAgentItem | EmptyStateItem> {
+export class AgentTreeProvider implements vscode.TreeDataProvider<AgentItem | LocationSeparatorItem | CreateAgentItem | EmptyStateItem>, AgentSelectionEventEmitter {
     private _onDidChangeTreeData: vscode.EventEmitter<AgentItem | LocationSeparatorItem | CreateAgentItem | EmptyStateItem | undefined | null | void> = 
         new vscode.EventEmitter<AgentItem | LocationSeparatorItem | CreateAgentItem | EmptyStateItem | undefined | null | void>();
     readonly onDidChangeTreeData: vscode.Event<AgentItem | LocationSeparatorItem | CreateAgentItem | EmptyStateItem | undefined | null | void> = 
         this._onDidChangeTreeData.event;
+
+    // Agent selection event emitter
+    private _onAgentSelected: vscode.EventEmitter<AgentSelectionEvent> = new vscode.EventEmitter<AgentSelectionEvent>();
+    readonly onAgentSelected: vscode.Event<AgentSelectionEvent> = this._onAgentSelected.event;
 
     private agentItems: AgentItem[] = [];
     private _disposed = false;
@@ -31,6 +37,7 @@ export class AgentTreeProvider implements vscode.TreeDataProvider<AgentItem | Lo
     ) {
         // Register disposables
         this.disposables.push(this._onDidChangeTreeData);
+        this.disposables.push(this._onAgentSelected);
         
         // Listen to agent list changes
         this.disposables.push(
@@ -64,6 +71,42 @@ export class AgentTreeProvider implements vscode.TreeDataProvider<AgentItem | Lo
     private onAgentListChanged(agents: AgentItem[]): void {
         this.logger.debug(`Agent list changed: ${agents.length} agents`);
         this.updateAgentItems(agents);
+    }
+
+    /**
+     * Fire an agent selection event
+     */
+    fireAgentSelected(event: AgentSelectionEvent): void {
+        if (this._disposed) {
+            return;
+        }
+        
+        this.logger.debug(`Agent selected: ${event.agentName} at ${event.location}`);
+        this._onAgentSelected.fire(event);
+    }
+
+    /**
+     * Handle agent selection and fire selection event
+     */
+    private handleAgentSelection(agentItem: AgentItem): void {
+        if (this._disposed) {
+            return;
+        }
+
+        // Determine agent location from file path
+        const location = agentItem.filePath.includes('.aws/amazonq/cli-agents') 
+            ? AgentLocation.Global 
+            : AgentLocation.Local;
+
+        const selectionEvent: AgentSelectionEvent = {
+            agentName: agentItem.config.name,
+            agentPath: agentItem.filePath,
+            agentConfig: agentItem.config,
+            location: location,
+            timestamp: Date.now()
+        };
+
+        this.fireAgentSelected(selectionEvent);
     }
 
     /**
@@ -130,8 +173,8 @@ export class AgentTreeProvider implements vscode.TreeDataProvider<AgentItem | Lo
         const agentItem = element as AgentItem;
         const treeItem = new vscode.TreeItem(agentItem.label);
         
-        // Set unique ID to maintain selection state (fallback to label if name is undefined)
-        const agentId = agentItem.name || agentItem.label || 'unknown';
+        // Set unique ID to maintain selection state (fallback to label if config.name is undefined)
+        const agentId = agentItem.config.name || agentItem.label || 'unknown';
         treeItem.id = `agent-${agentId}`;
         
         // Set resource URI to help VS Code track the item
@@ -159,10 +202,10 @@ export class AgentTreeProvider implements vscode.TreeDataProvider<AgentItem | Lo
         if (agentItem.command) {
             treeItem.command = agentItem.command;
         } else {
-            // Set default command to open the agent file
+            // Set command to select the agent (fires selection event)
             treeItem.command = {
-                command: AGENT_COMMANDS.OPEN_AGENT,
-                title: 'Open Agent Configuration',
+                command: AGENT_COMMANDS.SELECT_AGENT,
+                title: 'Select Agent',
                 arguments: [agentItem]
             };
         }
@@ -340,22 +383,6 @@ export class AgentTreeProvider implements vscode.TreeDataProvider<AgentItem | Lo
     }
 
     /**
-     * Create the "Create New Agent" button item
-     */
-    private createCreateAgentItem(): CreateAgentItem {
-        return {
-            label: 'Create New Agent',
-            description: 'Add a new Q CLI agent',
-            iconPath: AGENT_CONSTANTS.CREATE_ICON,
-            contextValue: AGENT_CONSTANTS.CONTEXT_VALUES.CREATE_BUTTON,
-            command: {
-                command: AGENT_COMMANDS.CREATE_AGENT,
-                title: 'Create New Agent'
-            }
-        };
-    }
-
-    /**
      * Create empty state item when no agents exist
      */
     private createEmptyStateItem(): EmptyStateItem {
@@ -403,6 +430,18 @@ export class AgentTreeProvider implements vscode.TreeDataProvider<AgentItem | Lo
         
         tooltip.isTrusted = true;
         return tooltip;
+    }
+
+    /**
+     * Handle agent selection command
+     */
+    selectAgent(agentItem: AgentItem): void {
+        if (this._disposed) {
+            return;
+        }
+
+        this.logger.debug(`Agent selected via command: ${agentItem.config.name}`);
+        this.handleAgentSelection(agentItem);
     }
 
     /**

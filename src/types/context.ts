@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { AgentConfig } from './agent';
 
 /**
  * Represents an item in the context tree view
@@ -24,6 +25,55 @@ export interface ContextItem {
     
     /** Whether this item is collapsible */
     collapsibleState?: vscode.TreeItemCollapsibleState;
+}
+
+/**
+ * Resource file item for Context Resources view
+ */
+export interface ResourceFileItem extends ContextItem {
+    /** Full file path */
+    filePath: string;
+    
+    /** Workspace relative path */
+    relativePath: string;
+    
+    /** Original resource pattern from agent config */
+    originalPattern: string;
+    
+    /** File type */
+    fileType: 'file' | 'directory';
+    
+    /** File size in bytes */
+    size: number;
+    
+    /** Last modified timestamp */
+    lastModified: number;
+    
+    /** Whether file exists */
+    exists: boolean;
+    
+    /** Child items for directories */
+    children?: ResourceFileItem[];
+}
+
+/**
+ * Context resource state
+ */
+export interface ContextResourceState {
+    /** Currently selected agent */
+    selectedAgent: AgentConfig | null;
+    
+    /** Resource files from selected agent */
+    resourceFiles: ResourceFileItem[];
+    
+    /** Loading state */
+    isLoading: boolean;
+    
+    /** Error message if any */
+    error: string | null;
+    
+    /** Search filter */
+    searchFilter: string;
 }
 
 /**

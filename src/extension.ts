@@ -370,12 +370,38 @@ function registerCoreCommands(context: ISafeExtensionContext, logger: ExtensionL
             }
         );
 
+        // Register select agent command (for firing selection events)
+        const selectAgentCommand = vscode.commands.registerCommand(
+            'qcli-agents.selectAgent',
+            async (agentItem: any) => {
+                try {
+                    logger.logUserAction('Select Agent command executed', { agentName: agentItem?.label });
+                    
+                    if (!agentItem) {
+                        logger.warn('No agent item provided to select command');
+                        return;
+                    }
+                    
+                    // Call selectAgent method on the tree provider to fire selection event
+                    if (extensionState?.agentTreeProvider) {
+                        (extensionState.agentTreeProvider as any).selectAgent(agentItem);
+                    }
+                    
+                } catch (error) {
+                    const commandError = error as Error;
+                    logger.error('Failed to select agent', commandError);
+                    await errorHandler!.showErrorMessage(`Failed to select agent: ${commandError.message}`);
+                }
+            }
+        );
+
         // Add commands to subscriptions for proper cleanup
         context.original.subscriptions.push(openContextManagerCommand);
         context.original.subscriptions.push(createAgentCommand);
         context.original.subscriptions.push(openAgentCommand);
         context.original.subscriptions.push(deleteAgentCommand);
         context.original.subscriptions.push(runAgentCommand);
+        context.original.subscriptions.push(selectAgentCommand);
         
         logger.debug('Core commands registered successfully');
     } catch (error) {

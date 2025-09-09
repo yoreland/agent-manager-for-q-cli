@@ -324,6 +324,37 @@ export const DEFAULT_AGENT_CONFIG: Omit<AgentConfig, 'name'> = {
 };
 
 /**
+ * Agent selection event data
+ */
+export interface AgentSelectionEvent {
+    /** Name of the selected agent */
+    agentName: string;
+    
+    /** Full path to the agent configuration file */
+    agentPath: string;
+    
+    /** Parsed agent configuration */
+    agentConfig: AgentConfig;
+    
+    /** Location of the agent (local or global) */
+    location: AgentLocation;
+    
+    /** Timestamp when the selection occurred */
+    timestamp: number;
+}
+
+/**
+ * Interface for components that emit agent selection events
+ */
+export interface AgentSelectionEventEmitter {
+    /** Event fired when an agent is selected */
+    onAgentSelected: vscode.Event<AgentSelectionEvent>;
+    
+    /** Fire an agent selection event */
+    fireAgentSelected(event: AgentSelectionEvent): void;
+}
+
+/**
  * Agent-related commands
  */
 export const AGENT_COMMANDS = {
@@ -338,6 +369,9 @@ export const AGENT_COMMANDS = {
     
     /** Open agent file command */
     OPEN_AGENT: 'qcli-agents.openAgent',
+    
+    /** Select agent command (fires selection event) */
+    SELECT_AGENT: 'qcli-agents.selectAgent',
     
     /** Refresh agent list command */
     REFRESH_AGENTS: 'qcli-agents.refreshTree',

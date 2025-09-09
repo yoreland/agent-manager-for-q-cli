@@ -2,7 +2,7 @@
   "name": "agent-manager-for-q-cli",
   "displayName": "Agent Manager for Q CLI",
   "description": "VS Code Extension that simplifies Amazon Q Developer CLI agent management with intuitive agent creation, configuration, and execution tools",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "publisher": "raphael-shin",
   "icon": "media/logo.png",
   "repository": {
@@ -74,12 +74,12 @@
       "qcli-context": [
         {
           "id": "qcli-agents-tree",
-          "name": "Agent Manager for Q CLI",
+          "name": "Agent Management",
           "when": "true"
         },
         {
           "id": "qcli-context-tree",
-          "name": "Context Files",
+          "name": "Context Resources",
           "when": "true"
         }
       ]
