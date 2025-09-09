@@ -36,6 +36,41 @@
         "icon": "$(refresh)"
       },
       {
+        "command": "qcli-context.openFile",
+        "title": "Open File",
+        "icon": "$(go-to-file)"
+      },
+      {
+        "command": "qcli-context.revealInExplorer",
+        "title": "Reveal in Explorer",
+        "icon": "$(folder-opened)"
+      },
+      {
+        "command": "qcli-context.copyPath",
+        "title": "Copy Path",
+        "icon": "$(copy)"
+      },
+      {
+        "command": "qcli-context.copyRelativePath",
+        "title": "Copy Relative Path",
+        "icon": "$(copy)"
+      },
+      {
+        "command": "qcli-context.searchFiles",
+        "title": "Search Files",
+        "icon": "$(search)"
+      },
+      {
+        "command": "qcli-context.clearSearch",
+        "title": "Clear Search",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "qcli-context.refreshResources",
+        "title": "Refresh Resources",
+        "icon": "$(sync)"
+      },
+      {
         "command": "qcli-agents.refreshTree",
         "title": "새로고침",
         "icon": "$(refresh)"
@@ -44,6 +79,10 @@
         "command": "qcli-agents.createAgent",
         "title": "Create New Agent",
         "icon": "$(add)"
+      },
+      {
+        "command": "qcli-agents.selectAgent",
+        "title": "Select Agent"
       },
       {
         "command": "qcli-agents.openAgent",
@@ -100,6 +139,16 @@
           "command": "qcli-context.refreshTree",
           "when": "view == qcli-context-tree",
           "group": "navigation"
+        },
+        {
+          "command": "qcli-context.searchFiles",
+          "when": "view == qcli-context-tree",
+          "group": "navigation"
+        },
+        {
+          "command": "qcli-context.refreshResources",
+          "when": "view == qcli-context-tree",
+          "group": "navigation"
         }
       ],
       "view/item/context": [
@@ -112,6 +161,31 @@
           "command": "qcli-agents.runAgent",
           "when": "view == qcli-agents-tree && viewItem == agentItem",
           "group": "inline@2"
+        },
+        {
+          "command": "qcli-agents.openAgent",
+          "when": "view == qcli-agents-tree && viewItem == agentItem",
+          "group": "inline@3"
+        },
+        {
+          "command": "qcli-context.openFile",
+          "when": "view == qcli-context-tree && viewItem == resourceFile",
+          "group": "inline@1"
+        },
+        {
+          "command": "qcli-context.revealInExplorer",
+          "when": "view == qcli-context-tree && viewItem =~ /^resource/",
+          "group": "context@1"
+        },
+        {
+          "command": "qcli-context.copyPath",
+          "when": "view == qcli-context-tree && viewItem =~ /^resource/",
+          "group": "context@2"
+        },
+        {
+          "command": "qcli-context.copyRelativePath",
+          "when": "view == qcli-context-tree && viewItem =~ /^resource/",
+          "group": "context@3"
         },
         {
           "command": "qcli-agents.openAgent",

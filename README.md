@@ -7,6 +7,7 @@ A VS Code Extension that simplifies Amazon Q Developer CLI agent management with
 - **Visual Agent Creation**: Complete form-based agent creation with real-time validation
 - **Global & Local Agents**: Create agents for specific workspaces or use across all projects
 - **One-Click Execution**: Run agents directly from VS Code with the ▶️ button
+- **Context Resources View**: Visual display of agent resource files organized by patterns
 - **Context Hook Configuration**: Automated context injection with predefined templates
 - **Experimental Tools Support**: Access to Q CLI's experimental features (`knowledge`, `thinking`, `todo_list`)
 - **Smart Conflict Detection**: Visual warnings when agents with same names exist in different locations
@@ -32,8 +33,15 @@ A VS Code Extension that simplifies Amazon Q Developer CLI agent management with
 ### Managing Agents
 - **View Agents**: All agents appear organized by location in the Activity Bar tree view
 - **Run Agent**: Click the ▶️ button next to any agent
-- **Edit Configuration**: Right-click an agent → "Open Agent Configuration"
+- **Edit Configuration**: Right-click an agent → "Open Agent Configuration" or click the 📄 button
 - **Quick Terminal**: Right-click an agent → "Run Agent in Terminal"
+
+### Context Resources View
+- **Automatic Display**: Select any agent to view its resource files in the Context Resources panel
+- **Pattern-Based Grouping**: Files are organized by their resource patterns (e.g., `src/**/*.ts`, `README.md`)
+- **Quick File Access**: Click any file to open it directly in the editor
+- **File Operations**: Right-click files for additional actions (copy path, reveal in explorer)
+- **Search & Filter**: Use the search button to filter files by name or path
 
 ### Tool Categories
 
@@ -61,6 +69,15 @@ A VS Code Extension that simplifies Amazon Q Developer CLI agent management with
 - **Use Case**: General-purpose agents used across multiple projects
 
 > **Note**: When both local and global agents have the same name, the local agent takes precedence.
+
+## What's New in v0.0.6
+
+- 📁 **Context Resources View**: Visual display of agent resource files with pattern-based grouping
+- 🔍 **Smart File Organization**: Files grouped by their resource patterns for better understanding
+- ⚡ **One-Click File Access**: Click any resource file to open it directly in the editor
+- 🔄 **Real-time Updates**: Automatic refresh when resource files change
+- 📄 **Enhanced Agent Controls**: Added inline button to open agent configuration files
+- 🎯 **Improved UX**: Flat list structure with pattern grouping for better navigation
 
 ## What's New in v0.0.5
 

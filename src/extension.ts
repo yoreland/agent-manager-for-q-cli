@@ -157,6 +157,11 @@ export function deactivate(): void {
             extensionState.agentTreeProvider.dispose();
         }
         
+        // Dispose of services if they exist
+        if (extensionState.contextResourceService && typeof extensionState.contextResourceService.dispose === 'function') {
+            extensionState.contextResourceService.dispose();
+        }
+        
         // Clear any cached data
         clearCachedData();
         
@@ -375,7 +380,8 @@ function registerCoreCommands(context: ISafeExtensionContext, logger: ExtensionL
             'qcli-agents.selectAgent',
             async (agentItem: any) => {
                 try {
-                    logger.logUserAction('Select Agent command executed', { agentName: agentItem?.label });
+                    logger.info(`SELECT_AGENT command triggered for: ${agentItem?.name || agentItem?.label || 'unknown'}`);
+                    console.log('SELECT_AGENT command triggered', agentItem);
                     
                     if (!agentItem) {
                         logger.warn('No agent item provided to select command');
@@ -384,7 +390,11 @@ function registerCoreCommands(context: ISafeExtensionContext, logger: ExtensionL
                     
                     // Call selectAgent method on the tree provider to fire selection event
                     if (extensionState?.agentTreeProvider) {
+                        logger.info('Calling selectAgent on agentTreeProvider');
                         (extensionState.agentTreeProvider as any).selectAgent(agentItem);
+                        logger.info('selectAgent method called successfully');
+                    } else {
+                        logger.error('agentTreeProvider not available in extensionState');
                     }
                     
                 } catch (error) {
@@ -589,6 +599,21 @@ async function initializeAgentTreeView(context: vscode.ExtensionContext, logger:
             showCollapseAll: true
         });
 
+        // Listen for tree selection changes to fire agent selection events
+        agentTreeView.onDidChangeSelection(e => {
+            if (e.selection && e.selection.length > 0) {
+                const selectedItem = e.selection[0];
+                logger.info(`Agent tree selection changed: ${selectedItem?.label || 'unknown'}`);
+                console.log('Agent tree selection changed', selectedItem);
+                
+                // Check if it's an agent item (not separator or create button)
+                if (selectedItem && 'config' in selectedItem && selectedItem.config) {
+                    logger.info(`Firing selection event for agent: ${selectedItem.config.name}`);
+                    agentTreeProvider.handleAgentSelection(selectedItem as any);
+                }
+            }
+        });
+
         // Add tree view to subscriptions for proper cleanup
         context.subscriptions.push(agentTreeView);
 
@@ -635,11 +660,22 @@ async function initializeAgentTreeView(context: vscode.ExtensionContext, logger:
  */
 async function initializeContextTreeView(context: vscode.ExtensionContext, logger: ExtensionLogger): Promise<void> {
     try {
-        // Import the ContextTreeProvider class
+        // Import required services and providers
         const { ContextTreeProvider } = await import('./providers/contextTreeProvider');
+        const { ContextResourceService } = await import('./services/contextResourceService');
         
-        // Create the context tree provider
-        const contextTreeProvider = new ContextTreeProvider();
+        // Initialize ContextResourceService
+        const contextResourceService = new ContextResourceService(logger);
+        
+        // Get AgentTreeProvider for event subscription
+        const agentTreeProvider = extensionState?.agentTreeProvider;
+        
+        // Create the context tree provider with service integration
+        const contextTreeProvider = new ContextTreeProvider(
+            contextResourceService,
+            logger,
+            agentTreeProvider
+        );
         
         // Register the tree data provider with VS Code
         const contextTreeView = vscode.window.createTreeView('qcli-context-tree', {
@@ -650,9 +686,10 @@ async function initializeContextTreeView(context: vscode.ExtensionContext, logge
         // Add tree view to subscriptions for proper cleanup
         context.subscriptions.push(contextTreeView);
 
-        // Store the tree provider in extension state for later use
+        // Store providers in extension state for later use
         if (extensionState) {
             extensionState.contextTreeProvider = contextTreeProvider;
+            extensionState.contextResourceService = contextResourceService;
         }
 
         // Register context tree view commands
@@ -663,7 +700,56 @@ async function initializeContextTreeView(context: vscode.ExtensionContext, logge
             logger.logTiming('Context tree view refresh', startTime);
         });
 
-        context.subscriptions.push(refreshContextCommand);
+        // Register context resource commands
+        const { ContextResourceCommands } = await import('./commands/contextResourceCommands');
+        const contextResourceCommands = new ContextResourceCommands(logger);
+
+        const openFileCommand = vscode.commands.registerCommand('qcli-context.openFile', 
+            (item: any) => contextResourceCommands.openFile(item));
+        
+        const revealInExplorerCommand = vscode.commands.registerCommand('qcli-context.revealInExplorer', 
+            (item: any) => contextResourceCommands.revealInExplorer(item));
+        
+        const copyPathCommand = vscode.commands.registerCommand('qcli-context.copyPath', 
+            (item: any) => contextResourceCommands.copyPath(item));
+        
+        const copyRelativePathCommand = vscode.commands.registerCommand('qcli-context.copyRelativePath', 
+            (item: any) => contextResourceCommands.copyRelativePath(item));
+        
+        const searchFilesCommand = vscode.commands.registerCommand('qcli-context.searchFiles', 
+            () => contextResourceCommands.searchFiles(contextTreeProvider));
+
+        const clearSearchCommand = vscode.commands.registerCommand('qcli-context.clearSearch',
+            () => {
+                contextTreeProvider.clearSearchFilter();
+                vscode.window.showInformationMessage('Search filter cleared');
+            });
+
+        const refreshResourcesCommand = vscode.commands.registerCommand('qcli-context.refreshResources',
+            async () => {
+                try {
+                    // Clear cache and refresh
+                    if (extensionState?.contextResourceService) {
+                        (extensionState.contextResourceService as any).resourceCache?.clear();
+                    }
+                    contextTreeProvider.refresh();
+                    vscode.window.showInformationMessage('Resources refreshed');
+                } catch (error) {
+                    logger.error('Failed to refresh resources', error as Error);
+                    vscode.window.showErrorMessage('Failed to refresh resources');
+                }
+            });
+
+        context.subscriptions.push(
+            refreshContextCommand,
+            openFileCommand,
+            revealInExplorerCommand,
+            copyPathCommand,
+            copyRelativePathCommand,
+            searchFilesCommand,
+            clearSearchCommand,
+            refreshResourcesCommand
+        );
 
         logger.debug('Context tree view provider initialized successfully');
     } catch (error) {

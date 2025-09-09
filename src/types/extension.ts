@@ -82,6 +82,9 @@ export interface ExtensionState {
     
     /** Agent tree provider for Activity Bar integration */
     agentTreeProvider?: any; // Using any to avoid circular dependency
+    
+    /** Context resource service for file management */
+    contextResourceService?: any; // Using any to avoid circular dependency
 }
 
 /**

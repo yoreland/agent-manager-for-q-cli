@@ -78,11 +78,13 @@ export class AgentTreeProvider implements vscode.TreeDataProvider<AgentItem | Lo
      */
     fireAgentSelected(event: AgentSelectionEvent): void {
         if (this._disposed) {
+            this.logger.debug('AgentTreeProvider disposed, ignoring selection event');
             return;
         }
         
-        this.logger.debug(`Agent selected: ${event.agentName} at ${event.location}`);
+        this.logger.debug(`Firing agent selection event: ${event.agentName} at ${event.location}`);
         this._onAgentSelected.fire(event);
+        this.logger.debug(`Agent selection event fired for: ${event.agentName}`);
     }
 
     /**
@@ -198,17 +200,8 @@ export class AgentTreeProvider implements vscode.TreeDataProvider<AgentItem | Lo
         // Set collapsible state
         treeItem.collapsibleState = agentItem.collapsibleState || vscode.TreeItemCollapsibleState.None;
         
-        // Set command for clicking on the agent item
-        if (agentItem.command) {
-            treeItem.command = agentItem.command;
-        } else {
-            // Set command to select the agent (fires selection event)
-            treeItem.command = {
-                command: AGENT_COMMANDS.SELECT_AGENT,
-                title: 'Select Agent',
-                arguments: [agentItem]
-            };
-        }
+        // Don't set command for agent items - use selection event instead
+        // This prevents conflicts with other commands and allows proper selection handling
         
         // Add tooltip with agent details
         treeItem.tooltip = this.createAgentTooltip(agentItem);
@@ -437,11 +430,14 @@ export class AgentTreeProvider implements vscode.TreeDataProvider<AgentItem | Lo
      */
     selectAgent(agentItem: AgentItem): void {
         if (this._disposed) {
+            this.logger.warn('AgentTreeProvider disposed, ignoring selectAgent call');
             return;
         }
 
-        this.logger.debug(`Agent selected via command: ${agentItem.config.name}`);
+        this.logger.info(`selectAgent method called for: ${agentItem.config.name}`);
+        console.log('selectAgent method called', agentItem);
         this.handleAgentSelection(agentItem);
+        this.logger.info(`handleAgentSelection completed for: ${agentItem.config.name}`);
     }
 
     /**
