@@ -394,20 +394,21 @@ export class AgentConfigService implements IAgentConfigService {
             }
         }
 
-        // Validate objects
-        if (typeof config.mcpServers !== 'object' || config.mcpServers === null) {
+        // Validate objects - only validate if present
+        if (config.mcpServers !== undefined && (typeof config.mcpServers !== 'object' || config.mcpServers === null)) {
             errors.push('mcpServers must be an object');
         }
 
-        if (typeof config.toolAliases !== 'object' || config.toolAliases === null) {
+        if (config.toolAliases !== undefined && (typeof config.toolAliases !== 'object' || config.toolAliases === null)) {
             errors.push('toolAliases must be an object');
         }
 
-        if (typeof config.hooks !== 'object' || config.hooks === null) {
+        // hooks is optional - only validate if present
+        if (config.hooks !== undefined && (typeof config.hooks !== 'object' || config.hooks === null)) {
             errors.push('hooks must be an object');
         }
 
-        if (typeof config.toolsSettings !== 'object' || config.toolsSettings === null) {
+        if (config.toolsSettings !== undefined && (typeof config.toolsSettings !== 'object' || config.toolsSettings === null)) {
             errors.push('toolsSettings must be an object');
         }
 
@@ -503,6 +504,35 @@ export class AgentConfigService implements IAgentConfigService {
             isValid: errors.length === 0,
             errors
         };
+    }
+
+    /**
+     * Clean empty objects and arrays from configuration
+     */
+    private cleanEmptyFields(config: any): any {
+        const cleaned: any = {};
+        
+        for (const [key, value] of Object.entries(config)) {
+            if (value === null || value === undefined) {
+                continue;
+            }
+            
+            if (Array.isArray(value)) {
+                if (value.length > 0) {
+                    cleaned[key] = value;
+                }
+            } else if (typeof value === 'object') {
+                const cleanedObject = this.cleanEmptyFields(value);
+                if (Object.keys(cleanedObject).length > 0) {
+                    cleaned[key] = cleanedObject;
+                }
+            } else if (value !== '' || key === 'prompt') {
+                // Keep non-empty strings, but allow empty prompt
+                cleaned[key] = value;
+            }
+        }
+        
+        return cleaned;
     }
 
     /**

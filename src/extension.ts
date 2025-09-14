@@ -1,3 +1,14 @@
+/**
+ * @fileoverview Main extension entry point for Agent Manager for Q CLI.
+ * 
+ * This module handles VS Code extension lifecycle, command registration,
+ * and initialization of core services including agent management,
+ * tree providers, and webview panels.
+ * 
+ * @author Agent Manager for Q CLI Extension
+ * @since 0.1.0
+ */
+
 import * as vscode from 'vscode';
 import { ExtensionState, LogLevel } from './types/extension';
 import { ExtensionLogger } from './services/logger';
@@ -6,16 +17,33 @@ import { CompatibilityService, ISafeExtensionContext } from './services/compatib
 import { ErrorHandler } from './services/errorHandler';
 // ContextTreeProvider and ContextPanel are now lazy-loaded for better performance
 
-// Global extension state
+/** Global extension state container */
 let extensionState: ExtensionState | undefined;
+
+/** Compatibility service for cross-IDE support */
 let compatibilityService: CompatibilityService | undefined;
+
+/** Safe context wrapper for extension operations */
 let safeContext: ISafeExtensionContext | undefined;
+
+/** Global error handler instance */
 let errorHandler: ErrorHandler | undefined;
 
 /**
- * Extension activation function
- * Called when the extension is activated for the first time
- * Optimized for fast activation (< 100ms)
+ * Activates the VS Code extension.
+ * 
+ * Called when the extension is first activated. Initializes core services,
+ * registers commands, and sets up tree providers. Optimized for fast
+ * activation (target < 100ms).
+ * 
+ * @param context - VS Code extension context
+ * @returns Promise that resolves when activation is complete
+ * 
+ * @example
+ * ```typescript
+ * // Called automatically by VS Code
+ * await activate(context);
+ * ```
  */
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
     // Start performance monitoring
@@ -132,9 +160,18 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 }
 
 /**
- * Extension deactivation function
- * Called when the extension is deactivated
- * Ensures proper cleanup of all resources to prevent memory leaks
+ * Deactivates the VS Code extension.
+ * 
+ * Called when the extension is being deactivated. Performs cleanup
+ * of all resources, disposes services, and prevents memory leaks.
+ * 
+ * @returns void
+ * 
+ * @example
+ * ```typescript
+ * // Called automatically by VS Code
+ * deactivate();
+ * ```
  */
 export function deactivate(): void {
     if (extensionState?.logger) {
@@ -381,7 +418,6 @@ function registerCoreCommands(context: ISafeExtensionContext, logger: ExtensionL
             async (agentItem: any) => {
                 try {
                     logger.info(`SELECT_AGENT command triggered for: ${agentItem?.name || agentItem?.label || 'unknown'}`);
-                    console.log('SELECT_AGENT command triggered', agentItem);
                     
                     if (!agentItem) {
                         logger.warn('No agent item provided to select command');
@@ -604,7 +640,6 @@ async function initializeAgentTreeView(context: vscode.ExtensionContext, logger:
             if (e.selection && e.selection.length > 0) {
                 const selectedItem = e.selection[0];
                 logger.info(`Agent tree selection changed: ${selectedItem?.label || 'unknown'}`);
-                console.log('Agent tree selection changed', selectedItem);
                 
                 // Check if it's an agent item (not separator or create button)
                 if (selectedItem && 'config' in selectedItem && selectedItem.config) {

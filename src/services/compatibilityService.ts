@@ -153,7 +153,7 @@ export class CompatibilityService implements ICompatibilityService {
         }
 
         if (this._config.logCompatibilityIssues) {
-            console.log('IDE detected:', this._ideInfo);
+            this._logger.info('IDE detected', this._ideInfo);
         }
 
         return this._ideInfo;

@@ -1,32 +1,65 @@
 /**
- * Performance monitoring utilities for the Agent Manager for Q CLI extension
- * Helps track activation time and memory usage to ensure requirements are met
+ * @fileoverview Performance monitoring utilities for Agent Manager extension.
+ * 
+ * This module provides performance tracking capabilities including activation
+ * time monitoring, memory usage tracking, and metrics collection to ensure
+ * the extension meets performance requirements.
+ * 
+ * @author Agent Manager for Q CLI Extension
+ * @since 0.1.0
  */
 
 import { getExtensionState } from '../extension';
 
 /**
- * Performance metrics interface
+ * Performance metrics data structure.
+ * 
+ * Contains timing and memory usage information for performance analysis
+ * and optimization of extension operations.
+ * 
+ * @interface PerformanceMetrics
  */
 export interface PerformanceMetrics {
+    /** Extension activation time in milliseconds */
     activationTime: number;
+    /** Node.js memory usage statistics */
     memoryUsage: NodeJS.MemoryUsage;
+    /** Timestamp when metrics were collected */
     timestamp: number;
 }
 
 /**
- * Performance monitor class for tracking extension performance
+ * Performance monitor class for tracking extension performance.
+ * 
+ * Singleton class that provides performance monitoring capabilities
+ * including activation time tracking, memory usage monitoring, and
+ * metrics history management with configurable retention.
+ * 
+ * @example
+ * ```typescript
+ * const monitor = PerformanceMonitor.getInstance();
+ * monitor.startActivationTracking();
+ * // ... extension activation code ...
+ * monitor.recordActivationComplete();
+ * ```
  */
 export class PerformanceMonitor {
+    /** Singleton instance */
     private static instance: PerformanceMonitor | undefined;
+    /** Activation start timestamp */
     private activationStartTime: number = 0;
+    /** Performance metrics history */
     private metrics: PerformanceMetrics[] = [];
-    private readonly maxMetricsHistory = 10; // Keep only last 10 measurements
+    /** Maximum number of metrics to retain in history */
+    private readonly maxMetricsHistory = 10;
 
+    /** Private constructor for singleton pattern */
     private constructor() {}
 
     /**
-     * Get singleton instance
+     * Gets the singleton instance of PerformanceMonitor.
+     * 
+     * @returns The PerformanceMonitor singleton instance
      */
     public static getInstance(): PerformanceMonitor {
         if (!PerformanceMonitor.instance) {

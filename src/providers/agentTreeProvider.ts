@@ -1,3 +1,14 @@
+/**
+ * @fileoverview Tree Data Provider for Q CLI Agent Management view.
+ * 
+ * This module implements VS Code's TreeDataProvider interface to display
+ * Q CLI agents in the Activity Bar with support for local/global separation,
+ * agent creation, and selection events.
+ * 
+ * @author Agent Manager for Q CLI Extension
+ * @since 0.1.0
+ */
+
 import * as vscode from 'vscode';
 import { 
     AgentItem, 
@@ -13,9 +24,17 @@ import { IAgentManagementService } from '../services/agentManagementService';
 import { ExtensionLogger } from '../services/logger';
 
 /**
- * Tree Data Provider for the Q CLI Agent Management view
+ * Tree Data Provider for the Q CLI Agent Management view.
+ * 
  * Implements VS Code's TreeDataProvider interface to display agent items
- * Handles agent list display, creation button, and empty states
+ * in the Activity Bar. Handles agent list display, creation buttons,
+ * empty states, and agent selection events with location separation.
+ * 
+ * @example
+ * ```typescript
+ * const provider = new AgentTreeProvider(agentService, logger);
+ * vscode.window.createTreeView('qcli-agents', { treeDataProvider: provider });
+ * ```
  */
 export class AgentTreeProvider implements vscode.TreeDataProvider<AgentItem | LocationSeparatorItem | CreateAgentItem | EmptyStateItem>, AgentSelectionEventEmitter {
     private _onDidChangeTreeData: vscode.EventEmitter<AgentItem | LocationSeparatorItem | CreateAgentItem | EmptyStateItem | undefined | null | void> = 
@@ -435,7 +454,6 @@ export class AgentTreeProvider implements vscode.TreeDataProvider<AgentItem | Lo
         }
 
         this.logger.info(`selectAgent method called for: ${agentItem.config.name}`);
-        console.log('selectAgent method called', agentItem);
         this.handleAgentSelection(agentItem);
         this.logger.info(`handleAgentSelection completed for: ${agentItem.config.name}`);
     }

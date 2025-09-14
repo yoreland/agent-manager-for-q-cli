@@ -1,32 +1,64 @@
+/**
+ * @fileoverview Type definitions for Q CLI agent configurations and operations.
+ * 
+ * This module defines interfaces, enums, and types used throughout the
+ * Agent Manager extension for handling Q CLI agent configurations,
+ * validation, and management operations.
+ * 
+ * @author Agent Manager for Q CLI Extension
+ * @since 0.1.0
+ */
+
 import * as vscode from 'vscode';
 
 /**
- * Agent location types for local vs global agents
+ * Enumeration of agent storage locations.
+ * 
+ * Defines where Q CLI agents can be stored - either locally in the
+ * workspace or globally in the user's home directory.
+ * 
+ * @enum {string}
  */
 export enum AgentLocation {
+    /** Local workspace agent (.amazonq/cli-agents/) */
     Local = 'local',
+    /** Global user agent (~/.aws/amazonq/cli-agents/) */
     Global = 'global'
 }
 
 /**
- * Information about agent name conflicts between local and global
+ * Information about agent name conflicts between local and global locations.
+ * 
+ * Used to detect and resolve conflicts when agents with the same name
+ * exist in both local and global locations.
+ * 
+ * @interface AgentConflictInfo
  */
 export interface AgentConflictInfo {
+    /** Whether a naming conflict exists */
     hasConflict: boolean;
+    /** Whether agent exists in local location */
     localExists: boolean;
+    /** Whether agent exists in global location */
     globalExists: boolean;
+    /** Recommended action to resolve conflict */
     recommendedAction: 'use_local' | 'use_global' | 'rename';
 }
 
 /**
- * Q CLI Agent configuration schema interface
- * Based on the official Q CLI agent schema
+ * Q CLI Agent configuration schema interface.
+ * 
+ * Based on the official Q CLI agent JSON schema. Defines the structure
+ * and properties required for a valid Q CLI agent configuration.
+ * 
+ * @interface AgentConfig
+ * @see {@link https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/q-developer-cli-agents.html}
  */
 export interface AgentConfig {
-    /** Schema reference URL */
+    /** JSON schema reference URL for validation */
     $schema: string;
     
-    /** Agent name (must match filename without .json extension) */
+    /** Unique agent identifier (must match filename without .json extension) */
     name: string;
     
     /** Human-readable description of the agent */
@@ -36,13 +68,13 @@ export interface AgentConfig {
     prompt: string | null;
     
     /** MCP (Model Context Protocol) servers configuration */
-    mcpServers: Record<string, any>;
+    mcpServers?: Record<string, any>;
     
     /** List of available tools for the agent */
     tools: string[];
     
     /** Tool aliases mapping */
-    toolAliases: Record<string, string>;
+    toolAliases?: Record<string, string>;
     
     /** List of explicitly allowed tools */
     allowedTools: string[];
@@ -51,10 +83,10 @@ export interface AgentConfig {
     resources: string[];
     
     /** Hook configurations */
-    hooks: Record<string, any>;
+    hooks?: Record<string, any>;
     
     /** Tool-specific settings */
-    toolsSettings: Record<string, any>;
+    toolsSettings?: Record<string, any>;
     
     /** Whether to use legacy MCP JSON format */
     useLegacyMcpJson: boolean;
@@ -310,16 +342,12 @@ export const DEFAULT_AGENT_CONFIG: Omit<AgentConfig, 'name'> = {
     $schema: AGENT_CONSTANTS.TEMPLATES.SCHEMA_URL,
     description: AGENT_CONSTANTS.TEMPLATES.DEFAULT_DESCRIPTION,
     prompt: null,
-    mcpServers: {},
     tools: [
         ...AGENT_CONSTANTS.TEMPLATES.BASIC_TOOLS,
         ...AGENT_CONSTANTS.TEMPLATES.ADVANCED_TOOLS
     ],
-    toolAliases: {},
     allowedTools: ['fs_read'],
     resources: [...AGENT_CONSTANTS.TEMPLATES.DEFAULT_RESOURCES],
-    hooks: {},
-    toolsSettings: {},
     useLegacyMcpJson: true
 };
 

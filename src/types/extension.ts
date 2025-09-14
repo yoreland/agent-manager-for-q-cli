@@ -1,33 +1,58 @@
+/**
+ * @fileoverview Core extension type definitions and interfaces.
+ * 
+ * This module defines fundamental types, interfaces, and enums used
+ * throughout the Agent Manager extension including logging, state
+ * management, and extension lifecycle types.
+ * 
+ * @author Agent Manager for Q CLI Extension
+ * @since 0.1.0
+ */
+
 import * as vscode from 'vscode';
 import { ContextItem } from './context';
 
 /**
- * Log levels for the extension logger
+ * Enumeration of log levels for extension logging.
+ * 
+ * Defines the severity levels for log messages with numeric values
+ * for easy comparison and filtering.
+ * 
+ * @enum {number}
  */
 export enum LogLevel {
+    /** Debug level - verbose logging for development */
     DEBUG = 0,
+    /** Info level - general information messages */
     INFO = 1,
+    /** Warning level - potential issues that don't break functionality */
     WARN = 2,
+    /** Error level - serious issues that may break functionality */
     ERROR = 3
 }
 
 /**
- * Logger interface for extension logging
+ * Logger interface for extension logging operations.
+ * 
+ * Defines the contract for logging services throughout the extension
+ * with support for different log levels and structured messaging.
+ * 
+ * @interface Logger
  */
 export interface Logger {
-    /** Log debug message (only in debug mode) */
+    /** Logs debug messages (only displayed in debug mode) */
     debug(message: string, ...args: any[]): void;
     
-    /** Log informational message */
+    /** Logs informational messages for general operation tracking */
     info(message: string, ...args: any[]): void;
     
-    /** Log warning message */
+    /** Logs warning messages for potential issues */
     warn(message: string, ...args: any[]): void;
     
-    /** Log error message with optional error object */
+    /** Logs error messages with optional error object for debugging */
     error(message: string, error?: Error): void;
     
-    /** Set the current log level */
+    /** Sets the current minimum log level for filtering */
     setLogLevel(level: LogLevel): void;
     
     /** Get the current log level */

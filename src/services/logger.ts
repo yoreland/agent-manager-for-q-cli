@@ -1,16 +1,52 @@
+/**
+ * @fileoverview Extension Logger Service for Q CLI Agent Manager.
+ * 
+ * This module provides comprehensive logging functionality with support
+ * for multiple log levels, output channels, debug modes, and performance
+ * monitoring for the Agent Manager extension.
+ * 
+ * @author Agent Manager for Q CLI Extension
+ * @since 0.1.0
+ */
+
 import * as vscode from 'vscode';
 import { Logger, LogLevel } from '../types/extension';
 
 /**
- * Logger implementation for the Q CLI Agent Manager extension
+ * Logger implementation for the Q CLI Agent Manager extension.
+ * 
+ * Provides structured logging with configurable log levels, output channels,
+ * debug modes, and integration with VS Code's output panel. Supports
+ * performance monitoring and lifecycle event tracking.
+ * 
+ * @example
+ * ```typescript
+ * const logger = new ExtensionLogger(outputChannel, LogLevel.INFO, true);
+ * logger.info('Agent created successfully');
+ * logger.error('Failed to load agent configuration', error);
+ * ```
  */
 export class ExtensionLogger implements Logger {
+    /** VS Code output channel for log messages */
     private outputChannel: vscode.OutputChannel;
+    /** Minimum log level for filtering messages */
     private logLevel: LogLevel;
+    /** Whether debug mode is enabled */
     private debugMode: boolean;
+    /** Whether to show output panel on errors */
     private showOutputOnError: boolean;
+    /** Whether to also log to console */
     private logToConsole: boolean;
 
+    /**
+     * Creates a new ExtensionLogger instance.
+     * 
+     * @param outputChannel - VS Code output channel for displaying logs
+     * @param logLevel - Minimum log level to display (default: INFO)
+     * @param debugMode - Enable debug mode for verbose logging (default: false)
+     * @param showOutputOnError - Show output panel when errors occur (default: true)
+     * @param logToConsole - Also log messages to console (default: false)
+     */
     constructor(
         outputChannel: vscode.OutputChannel, 
         logLevel: LogLevel = LogLevel.INFO, 
@@ -26,7 +62,9 @@ export class ExtensionLogger implements Logger {
     }
 
     /**
-     * Set the minimum log level
+     * Sets the minimum log level for filtering messages.
+     * 
+     * @param level - New minimum log level
      */
     setLogLevel(level: LogLevel): void {
         this.logLevel = level;

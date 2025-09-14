@@ -11,8 +11,7 @@
     "use_aws",
     "knowledge",
     "thinking",
-    "introspect",
-    "report_issue"
+    "introspect"
   ],
   "toolAliases": {},
   "allowedTools": [

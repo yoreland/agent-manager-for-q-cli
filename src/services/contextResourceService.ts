@@ -1,3 +1,14 @@
+/**
+ * @fileoverview Context Resource Service for Q CLI agent resource management.
+ * 
+ * This module provides functionality to resolve, cache, and watch agent
+ * resource patterns, converting glob patterns into actual file paths
+ * for display in the Context Resources view.
+ * 
+ * @author Agent Manager for Q CLI Extension
+ * @since 0.1.0
+ */
+
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { AgentConfig } from '../types/agent';
@@ -5,24 +16,50 @@ import { ResourceFileItem } from '../types/context';
 import { ExtensionLogger } from './logger';
 
 /**
- * Service interface for Context Resource operations
+ * Service interface for Context Resource operations.
+ * 
+ * Defines the contract for managing agent resource files including
+ * pattern resolution, caching, and file system watching.
+ * 
+ * @interface IContextResourceService
  */
 export interface IContextResourceService {
+    /** Resolves agent resource patterns to actual file paths */
     getResourceFiles(agentConfig: AgentConfig): Promise<ResourceFileItem[]>;
+    /** Sets up file system watchers for resource pattern changes */
     watchResourceChanges(agentConfig: AgentConfig): vscode.Disposable;
 }
 
 /**
- * Cache entry with TTL support
+ * Cache entry with TTL (Time To Live) support.
+ * 
+ * Used to cache resolved resource files with expiration timestamps
+ * to improve performance and reduce file system operations.
+ * 
+ * @interface CacheEntry
  */
 interface CacheEntry {
+    /** Cached resource file data */
     data: ResourceFileItem[];
+    /** Cache entry creation timestamp */
     timestamp: number;
+    /** Time to live in milliseconds */
     ttl: number;
 }
 
 /**
- * Context Resource Service implementation
+ * Context Resource Service implementation.
+ * 
+ * Provides resource file resolution, caching, and file system watching
+ * for Q CLI agent resource patterns. Supports glob patterns and exact
+ * file paths with performance optimizations.
+ * 
+ * @example
+ * ```typescript
+ * const service = new ContextResourceService(logger);
+ * const files = await service.getResourceFiles(agentConfig);
+ * const watcher = service.watchResourceChanges(agentConfig);
+ * ```
  */
 export class ContextResourceService implements IContextResourceService {
     private logger: ExtensionLogger;

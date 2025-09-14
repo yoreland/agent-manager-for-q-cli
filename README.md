@@ -70,7 +70,7 @@ A VS Code Extension that simplifies Amazon Q Developer CLI agent management with
 
 > **Note**: When both local and global agents have the same name, the local agent takes precedence.
 
-## What's New in v0.0.6
+## What's New in v0.1.0
 
 - 📁 **Context Resources View**: Visual display of agent resource files with pattern-based grouping
 - 🔍 **Smart File Organization**: Files grouped by their resource patterns for better understanding
@@ -78,44 +78,6 @@ A VS Code Extension that simplifies Amazon Q Developer CLI agent management with
 - 🔄 **Real-time Updates**: Automatic refresh when resource files change
 - 📄 **Enhanced Agent Controls**: Added inline button to open agent configuration files
 - 🎯 **Improved UX**: Flat list structure with pattern grouping for better navigation
-
-## What's New in v0.0.5
-
-- 🔧 **Backward Compatibility**: Fixed compatibility with existing agent files that don't have `$schema` field
-- 🛠️ **Improved Error Handling**: Better error messages for agent configuration validation
-
-## What's New in v0.0.4
-
-- 🪝 **Context Hook Configuration**: Configure commands that run automatically to provide context
-- 📋 **Template-Based Hooks**: Pre-defined templates for common scenarios:
-  - **Git Status**: Show git status with each prompt
-  - **Current Branch**: Display current git branch at conversation start
-  - **Project Info**: Show project name at conversation start
-  - **Recent Commits**: Display last 3 git commits at conversation start
-- ⚙️ **Custom Hook Creation**: Create your own hooks with modal dialog interface
-- 🔒 **Security Validation**: Real-time command analysis with security warnings
-- ✏️ **Hook Management**: Full CRUD operations for hook editing and removal
-- 🎨 **Improved UI**: Better layout with Create Hook prominently displayed
-
-## What's New in v0.0.3
-
-- ✅ **Step-by-Step Agent Creation Wizard**: Intuitive multi-step interface replacing single-page form
-- ✅ **Drag & Drop Resource Support**: Easily add files and directories to agent resources
-
-## What's New in v0.0.2
-
-- ✅ **Global Agent Support**: Manage agents across all workspaces
-- ✅ **Experimental Tools**: Dedicated section for Q CLI experimental features
-- ✅ **Enhanced Tree View**: Organized display with conflict detection
-- ✅ **Selection State Fix**: Fixed bug where agent selection color would disappear
-
-## Migration from v0.0.1
-
-**Good News**: All your existing agents will continue to work without any changes! 🎉
-
-- **Existing local agents** are automatically recognized
-- **No configuration changes** needed - all existing agent files remain compatible
-- **Tree view automatically updates** to show your agents in the new organized structure
 
 ## Requirements
 
@@ -126,8 +88,13 @@ A VS Code Extension that simplifies Amazon Q Developer CLI agent management with
 
 1. Install from VS Code Marketplace (coming soon)
 2. Or install from VSIX file:
+   
    ```bash
    code --install-extension agent-manager-for-q-cli-0.0.2.vsix
+   ```
+   
+   ```bash
+   kiro --install-extension agent-manager-for-q-cli-0.0.2.vsix
    ```
 
 ---

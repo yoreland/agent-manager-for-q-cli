@@ -1,3 +1,14 @@
+/**
+ * @fileoverview Agent Management Service for Q CLI agent operations.
+ * 
+ * This module provides comprehensive agent management functionality including
+ * creation, validation, execution, and file operations for both local and
+ * global Q CLI agents.
+ * 
+ * @author Agent Manager for Q CLI Extension
+ * @since 0.1.0
+ */
+
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { 
@@ -15,19 +26,24 @@ import { IErrorHandler } from './errorHandler';
 import { AgentLocation } from '../core/agent/AgentLocationService';
 
 /**
- * Interface for Agent Management Service
+ * Interface for Agent Management Service operations.
+ * 
+ * Defines the contract for managing Q CLI agents including creation,
+ * validation, execution, and file operations.
+ * 
+ * @interface IAgentManagementService
  */
 export interface IAgentManagementService {
-    // Agent list management
+    /** Agent list management operations */
     getAgentList(): Promise<AgentItem[]>;
     refreshAgentList(): Promise<void>;
     
-    // Agent creation
+    /** Agent creation operations */
     createNewAgent(name: string, location?: AgentLocation): Promise<AgentCreationResult>;
     createNewAgentInteractive(): Promise<void>;
     validateAgentName(name: string): ValidationResult;
     
-    // Agent file operations
+    /** Agent file operations */
     openAgentConfigFile(agent: AgentItem): Promise<void>;
     deleteAgent(agentName: string): Promise<void>;
     
@@ -43,8 +59,19 @@ export interface IAgentManagementService {
 }
 
 /**
- * Service for managing Q CLI Agent business logic
- * Handles agent list management, creation workflows, and file system watching
+ * Service for managing Q CLI Agent business logic and operations.
+ * 
+ * Provides comprehensive agent management including creation workflows,
+ * validation, execution, file system watching, and event handling.
+ * Supports both local (.amazonq/cli-agents/) and global (~/.aws/amazonq/cli-agents/)
+ * agent locations.
+ * 
+ * @example
+ * ```typescript
+ * const service = new AgentManagementService(configService, logger, errorHandler);
+ * const agents = await service.getAgentList();
+ * await service.createNewAgent('my-agent', 'local');
+ * ```
  */
 export class AgentManagementService implements IAgentManagementService {
     private readonly agentConfigService: IAgentConfigService;
@@ -61,6 +88,13 @@ export class AgentManagementService implements IAgentManagementService {
     private fileWatcher: vscode.FileSystemWatcher | undefined;
     private isWatchingFiles = false;
     
+    /**
+     * Creates a new AgentManagementService instance.
+     * 
+     * @param agentConfigService - Service for agent configuration operations
+     * @param logger - Extension logger for debugging and monitoring
+     * @param errorHandler - Error handling service for graceful error recovery
+     */
     constructor(agentConfigService: IAgentConfigService, logger: ExtensionLogger, errorHandler: IErrorHandler) {
         this.agentConfigService = agentConfigService;
         this.logger = logger;
@@ -419,22 +453,11 @@ export class AgentManagementService implements IAgentManagementService {
     private isAgentRunning(agentName: string): boolean {
         const terminals = vscode.window.terminals;
         
-        // Debug: log all terminal names
-        console.log('=== Agent Running Check ===');
-        console.log(`Looking for agent: "${agentName}"`);
-        console.log('Active terminals:', terminals.map(t => t.name));
-        
         const isRunning = terminals.some(terminal => {
             const terminalName = terminal.name;
             const expectedName = `Q CLI - ${agentName}`;
-            const isMatch = terminalName === expectedName;
-            
-            console.log(`Terminal "${terminalName}" === "${expectedName}": ${isMatch}`);
-            return isMatch;
+            return terminalName === expectedName;
         });
-        
-        console.log(`Agent "${agentName}" is running: ${isRunning}`);
-        console.log('=== End Check ===');
         
         return isRunning;
     }

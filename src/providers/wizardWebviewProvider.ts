@@ -328,6 +328,7 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
             toolAliases: {},
             allowedTools: ["fs_read"],
             resources: [],
+            hooks: {},
             toolsSettings: {},
             useLegacyMcpJson: true
         };
