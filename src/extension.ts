@@ -10,11 +10,11 @@
  */
 
 import * as vscode from 'vscode';
-import { ExtensionState, LogLevel } from './types/extension';
-import { ExtensionLogger } from './services/logger';
-import { PerformanceMonitor } from './utils/performance';
-import { CompatibilityService, ISafeExtensionContext } from './services/compatibilityService';
-import { ErrorHandler } from './services/errorHandler';
+import { ExtensionState, LogLevel } from './shared/types/extension';
+import { ExtensionLogger } from './application/shared/logger';
+import { PerformanceMonitor } from './shared/utils/performance';
+import { CompatibilityService, ISafeExtensionContext } from './application/shared/compatibilityService';
+import { ErrorHandler } from './application/shared/errorHandler';
 // ContextTreeProvider and ContextPanel are now lazy-loaded for better performance
 
 /** Global extension state container */
@@ -258,7 +258,7 @@ function registerCoreCommands(context: ISafeExtensionContext, logger: ExtensionL
                     logger.logUserAction('Create Agent command executed');
                     
                     // Import and create wizard webview provider
-                    const { WizardWebviewProvider } = await import('./providers/wizardWebviewProvider');
+                    const { WizardWebviewProvider } = await import('./presentation/tree-providers/wizardWebviewProvider');
                     const wizardProvider = new WizardWebviewProvider(context, logger);
                     
                     // Show the wizard
@@ -608,10 +608,10 @@ async function initializeTreeViewProvider(context: vscode.ExtensionContext, logg
 async function initializeAgentTreeView(context: vscode.ExtensionContext, logger: ExtensionLogger): Promise<void> {
     try {
         // Import the required classes
-        const { AgentTreeProvider } = await import('./providers/agentTreeProvider');
-        const { AgentManagementService } = await import('./services/agentManagementService');
-        const { AgentConfigService } = await import('./services/agentConfigService');
-        const { AgentLocationService } = await import('./core/agent/AgentLocationService');
+        const { AgentTreeProvider } = await import('./presentation/tree-providers/agentTreeProvider');
+        const { AgentManagementService } = await import('./application/agent/agentManagementService');
+        const { AgentConfigService } = await import('./application/agent/agentConfigService');
+        const { AgentLocationService } = await import('./domain/agent/AgentLocationService');
         
         // Create the agent location service
         const locationService = new AgentLocationService();
@@ -696,8 +696,8 @@ async function initializeAgentTreeView(context: vscode.ExtensionContext, logger:
 async function initializeContextTreeView(context: vscode.ExtensionContext, logger: ExtensionLogger): Promise<void> {
     try {
         // Import required services and providers
-        const { ContextTreeProvider } = await import('./providers/contextTreeProvider');
-        const { ContextResourceService } = await import('./services/contextResourceService');
+        const { ContextTreeProvider } = await import('./presentation/tree-providers/contextTreeProvider');
+        const { ContextResourceService } = await import('./application/context/contextResourceService');
         
         // Initialize ContextResourceService
         const contextResourceService = new ContextResourceService(logger);
@@ -736,7 +736,7 @@ async function initializeContextTreeView(context: vscode.ExtensionContext, logge
         });
 
         // Register context resource commands
-        const { ContextResourceCommands } = await import('./commands/contextResourceCommands');
+        const { ContextResourceCommands } = await import('./presentation/commands/contextResourceCommands');
         const contextResourceCommands = new ContextResourceCommands(logger);
 
         const openFileCommand = vscode.commands.registerCommand('qcli-context.openFile', 
