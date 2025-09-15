@@ -81,6 +81,11 @@
         "icon": "$(add)"
       },
       {
+        "command": "qcli-agents.syncFromPromptz",
+        "title": "Sync from PromptZ",
+        "icon": "$(cloud-download)"
+      },
+      {
         "command": "qcli-agents.selectAgent",
         "title": "Select Agent"
       },
@@ -132,6 +137,11 @@
         },
         {
           "command": "qcli-agents.createAgent",
+          "when": "view == qcli-agents-tree",
+          "group": "navigation"
+        },
+        {
+          "command": "qcli-agents.syncFromPromptz",
           "when": "view == qcli-agents-tree",
           "group": "navigation"
         },
@@ -232,6 +242,16 @@
           "type": "boolean",
           "default": false,
           "description": "Also log messages to the developer console (useful for development)"
+        },
+        "qcli-agents.promptz.apiUrl": {
+          "type": "string",
+          "default": "",
+          "description": "PromptZ API URL (get from https://promptz.dev/mcp)"
+        },
+        "qcli-agents.promptz.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "PromptZ API Key (get from https://promptz.dev/mcp)"
         }
       }
     }

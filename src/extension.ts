@@ -15,6 +15,8 @@ import { ExtensionLogger } from './application/shared/logger';
 import { PerformanceMonitor } from './shared/utils/performance';
 import { CompatibilityService, ISafeExtensionContext } from './application/shared/compatibilityService';
 import { ErrorHandler } from './application/shared/errorHandler';
+import { PromptZService } from './infrastructure/promptz/PromptZService';
+import { PromptZSyncCommand } from './presentation/commands/promptz-sync';
 // ContextTreeProvider and ContextPanel are now lazy-loaded for better performance
 
 /** Global extension state container */
@@ -272,6 +274,26 @@ function registerCoreCommands(context: ISafeExtensionContext, logger: ExtensionL
                     vscode.window.showErrorMessage(
                         `Failed to open agent creation wizard: ${commandError.message}`
                     );
+                }
+            }
+        );
+
+        // Register PromptZ sync command
+        const promptzService = new PromptZService();
+        const promptzSyncCommand = vscode.commands.registerCommand(
+            'qcli-agents.syncFromPromptz',
+            async () => {
+                try {
+                    logger.logUserAction('PromptZ sync command executed');
+                    const { AgentConfigService } = await import('./application/agent/agentConfigService');
+                    const { ErrorHandler } = await import('./application/shared/errorHandler');
+                    const errorHandler = new ErrorHandler(logger);
+                    const agentConfigService = new AgentConfigService(logger, errorHandler);
+                    const syncCommand = new PromptZSyncCommand(promptzService, agentConfigService);
+                    await syncCommand.execute();
+                } catch (error) {
+                    logger.error('PromptZ sync failed', error as Error);
+                    vscode.window.showErrorMessage(`PromptZ sync failed: ${(error as Error).message}`);
                 }
             }
         );
