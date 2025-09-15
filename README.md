@@ -108,12 +108,12 @@ kiro --install-extension agent-manager-for-q-cli-0.2.0.vsix
 We welcome contributions! Here's how you can help:
 
 ### 🐛 Bug Reports
-- Use the [GitHub Issues](https://github.com/qcli-agent-manager/agent-manager-for-q-cli/issues) page
+- Use the [GitHub Issues](https://github.com/raphael-shin/agent-manager-for-q-cli/issues) page
 - Include VS Code version, extension version, and steps to reproduce
 - Attach screenshots or logs when helpful
 
 ### 💡 Feature Requests
-- Open a [feature request](https://github.com/qcli-agent-manager/agent-manager-for-q-cli/issues/new?template=feature_request.md)
+- Open a [feature request](https://github.com/raphael-shin/agent-manager-for-q-cli/issues/new?template=feature_request.md)
 - Describe the use case and expected behavior
 - Consider contributing the implementation!
 
@@ -130,8 +130,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🔗 Links
 
-- **Repository**: [GitHub](https://github.com/qcli-agent-manager/agent-manager-for-q-cli)
-- **Issues**: [Bug Reports & Feature Requests](https://github.com/qcli-agent-manager/agent-manager-for-q-cli/issues)
+- **Repository**: [GitHub](https://github.com/raphael-shin/agent-manager-for-q-cli)
+- **Issues**: [Bug Reports & Feature Requests](https://github.com/raphael-shin/agent-manager-for-q-cli/issues)
 - **Marketplace**: [VS Code Extensions](https://marketplace.visualstudio.com/manage/publishers/raphael-shin/extensions/agent-manager-for-q-cli)
 
 ---
