@@ -30,7 +30,7 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
     private async initializeServices(): Promise<void> {
         try {
             // Import and initialize agent config service
-            const { AgentConfigService } = await import('../services/agentConfigService');
+            const { AgentConfigService } = await import('../../application/agent/agentConfigService');
             const agentConfigService = new AgentConfigService(this.logger);
             this.validationService.setAgentConfigService(agentConfigService);
         } catch (error) {
@@ -124,11 +124,11 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
         
         try {
             // Import and use agent config service to open the config file
-            const { AgentConfigService } = await import('../services/agentConfigService');
+            const { AgentConfigService } = await import('../../application/agent/agentConfigService');
             const agentConfigService = new AgentConfigService(this.logger);
             
             // Get the agent file path and open it
-            const agentPath = await agentConfigService.getAgentPath(agentName);
+            const agentPath = agentConfigService.getAgentFilePath(agentName);
             if (agentPath) {
                 const document = await vscode.workspace.openTextDocument(agentPath);
                 await vscode.window.showTextDocument(document);
@@ -263,9 +263,9 @@ export class WizardWebviewProvider implements IWizardWebviewProvider {
             const agentConfig = this.buildAgentConfig(finalState.stepData);
             
             // Import and use agent creation service
-            const { AgentConfigService } = await import('../services/agentConfigService');
-            const { AgentLocationService } = await import('../core/agent/AgentLocationService');
-            const { ErrorHandler } = await import('../shared/errors/errorHandler');
+            const { AgentConfigService } = await import('../../application/agent/agentConfigService');
+            const { AgentLocationService } = await import('../../domain/agent/AgentLocationService');
+            const { ErrorHandler } = await import('../../shared/errors/errorHandler');
             
             const locationService = new AgentLocationService();
             const errorHandler = new ErrorHandler(this.logger);
