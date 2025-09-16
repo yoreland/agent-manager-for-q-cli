@@ -1,0 +1,320 @@
+{
+  "name": "agent-manager-for-q-cli",
+  "displayName": "Agent Manager for Q CLI",
+  "description": "VS Code Extension that simplifies Amazon Q Developer CLI agent management with intuitive agent creation, configuration, and execution tools",
+  "version": "0.2.1",
+  "publisher": "raphael-shin",
+  "icon": "media/logo.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/raphael-shin/agent-manager-for-q-cli"
+  },
+  "engines": {
+    "vscode": "^1.94.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "amazon-q",
+    "q-cli",
+    "agent-management",
+    "ai-assistant"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "qcli-agent.openAgentManager",
+        "title": "Open Agent Manager for Q CLI",
+        "category": "Agent Manager for Q CLI"
+      },
+      {
+        "command": "qcli-context.refreshTree",
+        "title": "새로고침",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "qcli-context.openFile",
+        "title": "Open File",
+        "icon": "$(go-to-file)"
+      },
+      {
+        "command": "qcli-context.revealInExplorer",
+        "title": "Reveal in Explorer",
+        "icon": "$(folder-opened)"
+      },
+      {
+        "command": "qcli-context.copyPath",
+        "title": "Copy Path",
+        "icon": "$(copy)"
+      },
+      {
+        "command": "qcli-context.copyRelativePath",
+        "title": "Copy Relative Path",
+        "icon": "$(copy)"
+      },
+      {
+        "command": "qcli-context.searchFiles",
+        "title": "Search Files",
+        "icon": "$(search)"
+      },
+      {
+        "command": "qcli-context.clearSearch",
+        "title": "Clear Search",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "qcli-context.refreshResources",
+        "title": "Refresh Resources",
+        "icon": "$(sync)"
+      },
+      {
+        "command": "qcli-agents.refreshTree",
+        "title": "새로고침",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "qcli-agents.createAgent",
+        "title": "Create New Agent",
+        "icon": "$(add)"
+      },
+      {
+        "command": "qcli-agents.syncFromPromptz",
+        "title": "Sync from PromptZ",
+        "icon": "$(cloud-download)"
+      },
+      {
+        "command": "qcli-agents.selectAgent",
+        "title": "Select Agent"
+      },
+      {
+        "command": "qcli-agents.openAgent",
+        "title": "Open Agent Configuration",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "qcli-agents.deleteAgent",
+        "title": "Delete Agent",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "qcli-agents.runAgent",
+        "title": "Run Agent in Terminal",
+        "icon": "$(play)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "qcli-context",
+          "title": "Agent Manager for Q CLI",
+          "icon": "$(robot)"
+        }
+      ]
+    },
+    "views": {
+      "qcli-context": [
+        {
+          "id": "qcli-agents-tree",
+          "name": "Agent Management",
+          "when": "true"
+        },
+        {
+          "id": "qcli-context-tree",
+          "name": "Context Resources",
+          "when": "true"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "qcli-agents.refreshTree",
+          "when": "view == qcli-agents-tree",
+          "group": "navigation"
+        },
+        {
+          "command": "qcli-agents.createAgent",
+          "when": "view == qcli-agents-tree",
+          "group": "navigation"
+        },
+        {
+          "command": "qcli-agents.syncFromPromptz",
+          "when": "view == qcli-agents-tree",
+          "group": "navigation"
+        },
+        {
+          "command": "qcli-context.refreshTree",
+          "when": "view == qcli-context-tree",
+          "group": "navigation"
+        },
+        {
+          "command": "qcli-context.searchFiles",
+          "when": "view == qcli-context-tree",
+          "group": "navigation"
+        },
+        {
+          "command": "qcli-context.refreshResources",
+          "when": "view == qcli-context-tree",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "qcli-agents.deleteAgent",
+          "when": "view == qcli-agents-tree && viewItem == agentItem",
+          "group": "inline@1"
+        },
+        {
+          "command": "qcli-agents.runAgent",
+          "when": "view == qcli-agents-tree && viewItem == agentItem",
+          "group": "inline@2"
+        },
+        {
+          "command": "qcli-agents.openAgent",
+          "when": "view == qcli-agents-tree && viewItem == agentItem",
+          "group": "inline@3"
+        },
+        {
+          "command": "qcli-context.openFile",
+          "when": "view == qcli-context-tree && viewItem == resourceFile",
+          "group": "inline@1"
+        },
+        {
+          "command": "qcli-context.revealInExplorer",
+          "when": "view == qcli-context-tree && viewItem =~ /^resource/",
+          "group": "context@1"
+        },
+        {
+          "command": "qcli-context.copyPath",
+          "when": "view == qcli-context-tree && viewItem =~ /^resource/",
+          "group": "context@2"
+        },
+        {
+          "command": "qcli-context.copyRelativePath",
+          "when": "view == qcli-context-tree && viewItem =~ /^resource/",
+          "group": "context@3"
+        },
+        {
+          "command": "qcli-agents.openAgent",
+          "when": "view == qcli-agents-tree && viewItem == agentItem",
+          "group": "context@1"
+        },
+        {
+          "command": "qcli-agents.deleteAgent",
+          "when": "view == qcli-agents-tree && viewItem == agentItem",
+          "group": "context@2"
+        },
+        {
+          "command": "qcli-agents.runAgent",
+          "when": "view == qcli-agents-tree && viewItem == agentItem",
+          "group": "context@3"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Agent Manager for Q CLI",
+      "properties": {
+        "qcli-context.logLevel": {
+          "type": "string",
+          "enum": [
+            "debug",
+            "info",
+            "warn",
+            "error"
+          ],
+          "default": "info",
+          "description": "Set the logging level for the Agent Manager for Q CLI extension"
+        },
+        "qcli-context.enableDebugMode": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable debug mode for additional logging and notifications"
+        },
+        "qcli-context.showOutputOnError": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically show output channel when errors occur"
+        },
+        "qcli-context.logToConsole": {
+          "type": "boolean",
+          "default": false,
+          "description": "Also log messages to the developer console (useful for development)"
+        },
+        "qcli-agents.promptz.apiUrl": {
+          "type": "string",
+          "default": "",
+          "description": "PromptZ API URL (get from https://promptz.dev/mcp)"
+        },
+        "qcli-agents.promptz.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "PromptZ API Key (get from https://promptz.dev/mcp)"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "build": "node build.unified.config.js build",
+    "build:dev": "NODE_ENV=development node build.unified.config.js build",
+    "build:prod": "NODE_ENV=production node build.unified.config.js build",
+    "watch": "NODE_ENV=development node build.unified.config.js watch",
+    "analyze": "NODE_ENV=production node build.unified.config.js analyze",
+    "compile": "npm run build:dev",
+    "compile:dev": "npm run build:dev",
+    "compile:prod": "npm run build:prod",
+    "check-types": "tsc --project tsconfig.build.json --noEmit",
+    "check-types:full": "tsc --noEmit",
+    "lint": "eslint src --ext ts --fix",
+    "lint:check": "eslint src --ext ts",
+    "package": "npm run build:prod",
+    "package:skip-checks": "npm run build:prod",
+    "package:dev": "npm run check-types && npm run lint:check && npm run build:dev",
+    "vsce:package": "npm run package:skip-checks && npx @vscode/vsce package",
+    "vsce:publish": "npm run package && npx @vscode/vsce publish",
+    "package:vsix": "npm run build:prod && vsce package",
+    "package:vsix:skip-build": "vsce package --skip-build",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run build:dev && npm run lint:check",
+    "test": "npm run test:unit && npm run test:integration",
+    "test:unit": "jest --config jest.unit.config.js",
+    "test:unit:watch": "jest --config jest.unit.config.js --watch",
+    "test:unit:coverage": "jest --config jest.unit.config.js --coverage",
+    "test:integration": "jest --config jest.integration.config.js",
+    "test:integration:watch": "jest --config jest.integration.config.js --watch",
+    "test:e2e": "vscode-test",
+    "test:performance": "jest --config jest.performance.config.js",
+    "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e",
+    "clean": "rimraf out",
+    "rebuild": "npm run clean && npm run compile",
+    "dev": "npm run clean && npm run watch",
+    "dev:watch": "npm run watch",
+    "dev:build": "npm run build:dev",
+    "dev:test": "npm run test",
+    "dev:clean": "npm run clean"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "@types/sinon": "^17.0.4",
+    "@types/vscode": "^1.94.0",
+    "@typescript-eslint/eslint-plugin": "^8.39.0",
+    "@typescript-eslint/parser": "^8.39.0",
+    "@vscode/test-cli": "^0.0.11",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^3.2.1",
+    "esbuild": "^0.25.8",
+    "eslint": "^9.32.0",
+    "jest": "^29.7.0",
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^6.0.1",
+    "sinon": "^21.0.0",
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.9.2"
+  }
+}
