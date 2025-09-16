@@ -12,8 +12,8 @@ This feature allows you to sync prompts and rules from the PromptZ cloud service
 ## Configuration
 
 The integration uses the following PromptZ API settings:
-- API URL: `https://retdttpq2ngorbx7f5ht4cr3du.appsync-api.eu-central-1.amazonaws.com/graphql`
-- API Key: `da2-45yiufdo5rcflbas7rzd3twble`
+- API URL: `https://your-promptz-api-url.com/graphql`
+- API Key: `your-api-key-here`
 
 ## Requirements
 
